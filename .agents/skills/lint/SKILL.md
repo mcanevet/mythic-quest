@@ -23,8 +23,8 @@ worked in parallel by subagents, then aggregated and burned.
 
 ### 1. Discover targets
 
-- **`lint-dev`**: `git diff --name-only HEAD` + untracked files, excluding `.git/`, `.beads/`. If `.agents/lint/rules.yaml` is among the changed files, fall back to full scope.
-- **`lint-audit`**: all files in the repo, excluding `.git/`, `.beads/`, and build artifacts.
+- **`lint-dev`**: `git diff --name-only HEAD` + untracked files, excluding `.git/`, `.beads/`, `.agents/skills/beads/` (external), and symlinks. If `.agents/lint/rules.yaml` is among the changed files, fall back to full scope.
+- **`lint-audit`**: all files in the repo, excluding `.git/`, `.beads/`, `.agents/skills/beads/` (external), build artifacts, and symlinks.
 
 ### 2. Create the wisp
 
