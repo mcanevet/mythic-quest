@@ -36,18 +36,36 @@ prints the wisp ID, aggregate ID, and the child→file list.
 
 ### 2. Judge in parallel (subagent workers)
 
-Dispatch parallel harness subagents, one batch per ~4 children. Each worker:
+Dispatch parallel harness subagents, one batch per ~4 children. Give each
+worker: the child IDs and their file paths, this worker protocol, and the
+requirement to **report anomalies instead of improvising**.
+
+Worker protocol:
 
 1. Claims its child: `bd update <child-id> --claim`
 2. Reads the target file (path from the child title/description)
 3. Loads `.agents/lint/rules.yaml`, applies each rule's prompt to the file
    (the agent is the judge — semantic review, respecting `applies_to`)
-4. Posts exactly one comment summarizing findings (or PASS):
-   `bd comment <child-id> "<file>:<line>: <rule-id>: <why> (confidence: ...)"`
+4. Posts exactly one comment summarizing findings (or PASS). Use a heredoc so
+   backticks and quotes in the verdict are never interpreted by the shell:
+   ```bash
+   bd comment <child-id> <<'EOF'
+   <file>: <line>: <rule-id>: <why> (confidence: ...)
+   EOF
+   ```
 5. Closes: `bd close <child-id> --reason "PASS"` or `"FINDINGS: <n>"`
 
-If the file matches no rule's `applies_to`, close with
-`--reason "NO APPLICABLE RULES"`.
+Worker discipline:
+
+- **The comment must match the analysis.** If your reasoning identifies
+  violations, the verdict and close reason must reflect them — do not soften
+  findings into a PASS after the fact.
+- **Report, don't improvise.** If reality contradicts your instructions
+  (child bead missing, title mismatch, unexpected state), stop and report the
+  discrepancy in your result. Never create or modify beads beyond
+  claim/comment/close on your assigned children.
+- If the file matches no rule's `applies_to`, close with
+  `--reason "NO APPLICABLE RULES"`.
 
 ### 3. Aggregate (fan-in)
 

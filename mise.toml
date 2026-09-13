@@ -2,10 +2,8 @@
 # Everything a pipeline-dev session needs, versioned and reproducible.
 # Install/activate with: mise install && mise exec -- <command> (or `mise shell`).
 #
-# Vocabulary (see .agents/lint/rules.yaml):
-# - harness: opencode / Claude Code / Codex ...
-# - pipeline-dev session: developer session building this repo
-# - game-build session: consumer session generating a game
+# Vocabulary (harness, pipeline-dev session, game-build session) is defined
+# normatively in .agents/lint/rules.yaml.
 
 [tools]
 # Task tracking (beads) — single state layer for both session kinds
