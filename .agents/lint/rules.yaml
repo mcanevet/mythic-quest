@@ -1,0 +1,86 @@
+# Lint rules: single source of truth for harness governance.
+# All derived artifacts (AGENTS.md sections) are rendered from this file.
+# To add or change a rule: edit this file, run
+# .agents/skills/lint/scripts/render_rules.py, then run
+# .agents/skills/lint/scripts/lint.py to verify compliance.
+#
+# Vocabulary (normative):
+# - harness: the agent execution environment a session runs on (opencode,
+#   Claude Code, Codex, ...).
+# - swarm: MythicQuest itself — the set of agent definitions, skills,
+#   permissions, lint, and benchmark machinery we build. The swarm must be
+#   harness-agnostic.
+# - session: one run on some harness, instantiating some subset of the
+#   swarm's agents. Two kinds: game-build (consumer, typically multi-agent)
+#   and pipeline-dev (developer, currently mono-agent).
+
+version: 1
+
+rules:
+  prose-earns-place:
+    title: Prose earns its place
+    tier: llm-review
+    rationale: >
+      Mechanical transforms described in prose are a signal they belong in a
+      deterministic script. Agent and skill prose should contain decision
+      logic, not procedures.
+    check: no_agent_or_skill_file_contains_shell_command_blocks_that_are_deterministic
+    applies_to: agents/**, skills/**
+    prompt: >
+      Identify prose blocks that describe step-by-step mechanical procedures,
+      transforms, or deterministic operations (e.g. shell command sequences,
+      file manipulation recipes, or algorithmic text transforms written as
+      prose). These should be extracted into a deterministic script, not
+      expressed as prose. Only flag actual mechanical procedures; do not flag
+      decision logic, rationale, or high-level conceptual explanation.
+
+  citation-resolvable:
+    title: Gotchas cite resolvable evidence
+    tier: llm-review
+    rationale: >
+      Knowledge in the harness grows only from reproducible evidence. Every
+      stated gotcha, workaround, or caveat must cite a benchmark run, a bead,
+      or a dated incident so it can be audited and eventually retired.
+    check: every_gotcha_statement_has_citation_to_bead_or_benchmark
+    applies_to: agents/**, skills/**
+    prompt: >
+      Scan for statements that assert gotchas, workarounds, caveats, or known
+      issues. For each, check whether the statement cites resolvable evidence:
+      a bead ID (matching pattern like mythic-quest-XXX or bd-NNN), a benchmark
+      run reference, or a dated incident reference. Flag statements that lack
+      citations or cite vague, unresolvable sources (e.g. "as mentioned
+      before", "it is known that"). Do not flag general statements of
+      rationale or design philosophy.
+
+  least-privilege-permissions:
+    title: Permission grants cite their justification
+    tier: lint
+    rationale: >
+      Every permission allow-grant in agent configs must cite the bead or
+      benchmark run that justifies it, keeping the surface minimal and
+      auditable.
+    check: every_permission_allow_has_inline_citation
+    applies_to: agents/**
+
+  single-source-of-truth:
+    title: No restatement across files
+    tier: lint
+    rationale: >
+      Rules, conventions, and permission profiles live in exactly one place.
+      Generated sections in other files must originate from a render target,
+      never be hand-edited.
+    check: generated_sections_match_render_output_and_no_manual_duplicates
+    applies_to: "**"
+
+  bd-only-tracking:
+    title: No markdown TODOs
+    tier: lint
+    rationale: >
+      All task tracking happens in beads. Markdown TODO lists, checkbox
+      lists used as tracking, and ad-hoc plan files are forbidden.
+    check: no_markdown_todo_checklists_outside_generated_targets
+    applies_to: "**"
+
+tiers:
+  lint: deterministic script check, CI-enforced, exit nonzero on violation
+  llm-review: semantic judge run by llm_review.py using the harness model
