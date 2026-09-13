@@ -30,7 +30,6 @@ filter_files() {
       .beads/*|.agents/skills/beads/*) skip=1 ;;
     esac
     [ -L "$f" ] && skip=1
-    [ "$f" = "$RULES" ] && RULES_CHANGED=1
     if [ "$skip" -eq 0 ]; then
       printf '%s\n' "$f"
     fi
@@ -38,11 +37,11 @@ filter_files() {
 }
 
 # Discover targets -----------------------------------------------------------
-RULES_CHANGED=0
 FILTERED="$(discover_files "$MODE" | filter_files)"
 
-# rules.yaml changed => full scope
-if [ "$MODE" = "dev" ] && [ "${RULES_CHANGED:-0}" -eq 1 ]; then
+# rules.yaml changed => full scope. Checked out here (not in filter_files)
+# because command substitutions run in subshells where variable writes vanish.
+if [ "$MODE" = "dev" ] && printf '%s\n' "$FILTERED" | grep -qxF "$RULES"; then
   MODE="audit"
   FILTERED="$(discover_files "$MODE" | filter_files)"
 fi
