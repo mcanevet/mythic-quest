@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "mythic_quest",
+  "project_id": "c9a5a1a1-4a14-4c66-9e3b-be8bdc0decb4"
+}
