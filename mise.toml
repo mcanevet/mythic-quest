@@ -4,13 +4,11 @@
 #
 # Vocabulary (see .agents/lint/rules.yaml):
 # - harness: opencode / Claude Code / Codex ...
-# - swarm:   MythicQuest itself (this repo)
-# - session: game-build (consumer) or pipeline-dev (developer)
+# - pipeline-dev session: developer session building this repo
+# - game-build session: consumer session generating a game
 
 [tools]
 # Task tracking (beads) — single state layer for both session kinds
 "github:gastownhall/beads" = "1.2.2"
 # Primary harness (agent execution environment)
 opencode = "latest"
-# Semantic lint executor (llm-review tier of .agents/lint/rules.yaml)
-# Removed: embedded llm_review.py in .agents/skills/lint/ uses harness model directly

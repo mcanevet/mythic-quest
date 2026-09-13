@@ -201,22 +201,6 @@ bd prime                # Refresh Beads context
 **Architecture in one line:** issues live in a local Dolt DB; sync uses `refs/dolt/data` on your git remote; `.beads/issues.jsonl` is a passive export. See https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md for details and anti-patterns.
 <!-- END BEADS CODEX SETUP -->
 
-<!-- BEGIN LINT RULES (generated from lint/rules.yaml) -->
+## Governance Rules
 
-## Harness Governance Rules
-
-Generated from `.agents/lint/rules.yaml` (single source of truth).
-Do not hand-edit; run `.agents/skills/lint/scripts/render_rules.py`.
-
-- **Prose earns its place** (prose-earns-place, tier: llm-review)
-  Mechanical transforms described in prose are a signal they belong in a deterministic script. Agent and skill prose should contain decision logic, not procedures.
-- **Gotchas cite resolvable evidence** (citation-resolvable, tier: llm-review)
-  Knowledge in the harness grows only from reproducible evidence. Every stated gotcha, workaround, or caveat must cite a benchmark run, a bead, or a dated incident so it can be audited and eventually retired.
-- **Permission grants cite their justification** (least-privilege-permissions, tier: lint)
-  Every permission allow-grant in agent configs must cite the bead or benchmark run that justifies it, keeping the surface minimal and auditable.
-- **No restatement across files** (single-source-of-truth, tier: lint)
-  Rules, conventions, and permission profiles live in exactly one place. Generated sections in other files must originate from a render target, never be hand-edited.
-- **No markdown TODOs** (bd-only-tracking, tier: lint)
-  All task tracking happens in beads. Markdown TODO lists, checkbox lists used as tracking, and ad-hoc plan files are forbidden.
-
-<!-- END LINT RULES -->
+All governance rules live in `.agents/lint/rules.yaml` (single source of truth) and are enforced by the `lint` skill. Do not restate them here.
