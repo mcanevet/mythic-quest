@@ -82,11 +82,11 @@ the comments **before** burning — comments are deleted with the wisp.
 
 ### 4. Report and gate
 
-- **PASS**: no findings → `bd close <wisp-id> && bd mol burn <wisp-id> --force`
+- **PASS**: no findings → `bd close <wisp-id>` then `bd purge --force` (or `bd mol burn <wisp-id>` in bd < 1.3)
 - **FINDINGS**: report the table. Fix or get explicit user waiver before
-  committing. After resolution, burn the wisp.
+  committing. After resolution, purge the wisp.
 - If the run surfaced something worth keeping (e.g., a systemic issue),
-  `bd mol squash <wisp-id>` preserves a digest before burning.
+  `bd promote <wisp-id>` preserves a digest before purging.
 
 ## Changing rules
 

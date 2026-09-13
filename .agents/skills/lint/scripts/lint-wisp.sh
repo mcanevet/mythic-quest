@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # lint-wisp: orchestrate a parallel lint run as a beads wisp molecule.
 # Usage: lint-wisp.sh <mode>  (mode: dev | audit)
-# Requires: bash 3.2+, bd, jq, git
+# Requires: bash 3.2+, bd >= 1.3 (graph apply), jq, git
 set -euo pipefail
 
 MODE="${1:?usage: lint-wisp.sh <dev|audit>}"
@@ -12,8 +12,7 @@ RULES=".agents/lint/rules.yaml"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 
 discover_files() {
-  local mode="$1"
-  if [ "$mode" = "audit" ]; then
+  if [ "$1" = "audit" ]; then
     git ls-files
   else
     { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | sort -u
@@ -22,7 +21,7 @@ discover_files() {
 
 filter_files() {
   # Excludes .beads/, external skills, symlinks. Reads stdin, writes stdout.
-  local f ex skip
+  local f skip
   while IFS= read -r f; do
     [ -z "$f" ] && continue
     skip=0
@@ -54,27 +53,36 @@ fi
 N=$(printf '%s\n' "$FILTERED" | wc -l | tr -d ' ')
 echo "Lint mode: $MODE, $N file(s)"
 
-# Create wisp ----------------------------------------------------------------
-WISP_ID=$(bd create "Lint-$MODE $STAMP" -t epic --ephemeral --json | jq -r '.id')
+# Build graph plan: epic + one child per file + aggregate gated on all files.
+# One bd invocation creates the whole molecule atomically.
+PLAN=$(mktemp -t lint-wisp-plan)
+trap 'rm -f "$PLAN"' EXIT
 
-# Spawn children (one per file) + fan-in aggregate ---------------------------
-AGG_ID=$(bd create "Aggregate lint findings" --parent "$WISP_ID" \
-  --description "Read children's comments and render findings table" \
-  --ephemeral --json | jq -r '.id')
+{
+  printf '{\n  "commit_message": "Lint-%s %s",\n  "nodes": [\n' "$MODE" "$STAMP"
+  printf '    {"key": "epic", "title": "Lint-%s %s", "type": "epic", "ephemeral": true}' "$MODE" "$STAMP"
+  i=0
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    i=$((i+1))
+    printf ',\n    {"key": "f%d", "title": "Lint %s", "type": "task", "parent_key": "epic", "ephemeral": true, "description": "Apply all rules in %s to %s", "deps": [{"type": "blocks", "target": "agg"}]}' \
+      "$i" "$f" "$RULES" "$f"
+  done <<< "$FILTERED"
+  printf ',\n    {"key": "agg", "title": "Aggregate lint findings", "type": "task", "parent_key": "epic", "ephemeral": true, "description": "Read children comments and render findings table"}\n'
+  printf '  ],\n  "edges": []\n}\n'
+} > "$PLAN"
 
-LIST_FILE=$(mktemp -t lint-wisp)
-trap 'rm -f "$LIST_FILE"' EXIT
+RESULT=$(bd create --graph "$PLAN" --json)
 
-while IFS= read -r f; do
-  [ -z "$f" ] && continue
-  child=$(bd create "Lint $f" --parent "$WISP_ID" \
-    --description "Apply all rules in $RULES to $f" \
-    --ephemeral --json | jq -r '.id')
-  bd dep add "$AGG_ID" "$child" >/dev/null
-  printf '%s\t%s\n' "$child" "$f"
-done <<< "$FILTERED" > "$LIST_FILE"
+WISP_ID=$(echo "$RESULT" | jq -r '.ids.epic')
+AGG_ID=$(echo "$RESULT" | jq -r '.ids.agg')
 
 echo "Wisp: $WISP_ID"
 echo "Aggregate: $AGG_ID (ready when all children close)"
-echo "Children (saved to $LIST_FILE):"
-cat "$LIST_FILE"
+echo "Children:"
+i=0
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  i=$((i+1))
+  echo "  $(echo "$RESULT" | jq -r ".ids[\"f$i\"]")  $f"
+done <<< "$FILTERED"

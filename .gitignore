@@ -5,3 +5,4 @@
 .beads-credential-key
 .beads/proxieddb/
 .agents/lint/.llmreviewcache/
+*.gate.lock

@@ -7,6 +7,6 @@
 
 [tools]
 # Task tracking (beads) — single state layer for both session kinds
-"github:gastownhall/beads" = "1.2.2"
+"github:gastownhall/beads" = "1.3.0-rc.2"
 # Primary harness (agent execution environment)
 opencode = "latest"
