@@ -19,13 +19,13 @@ rules:
       prose should contain decision logic, not procedures; procedures belong
       in a script or another dedicated artifact.
     applies_to: "**"
-    prompt: >
-      Identify prose blocks that describe step-by-step mechanical procedures,
-      transforms, or deterministic operations (e.g. shell command sequences,
-      file manipulation recipes, or algorithmic text transforms written as
-      prose). These should be extracted into a script or dedicated artifact,
-      not expressed as prose. Only flag actual mechanical procedures; do not
-      flag       decision logic, rationale, or high-level conceptual explanation.
+      prompt: >
+        Identify prose blocks that describe step-by-step mechanical procedures,
+        transforms, or deterministic operations (e.g. shell command sequences,
+        file manipulation recipes, or algorithmic text transforms written as
+        prose). These should be extracted into a script or dedicated artifact,
+        not expressed as prose. Only flag actual mechanical procedures; do not
+        flag decision logic, rationale, or high-level conceptual explanation.
 
   least-privilege-permissions:
     title: Permission grants cite their justification
@@ -33,13 +33,16 @@ rules:
       Every permission allow-grant in agent configs must cite the bead or
       benchmark run that justifies it, keeping the surface minimal and
       auditable.
-    applies_to: agents/**
+    applies_to: "**"
     prompt: >
-      Scan agent permission configurations for allow-grants (permission
-      rules, allowed tools or commands). For each grant, check whether it
-      cites its justification: a bead ID (pattern like mythic-quest-XXX or
-      bd-NNN) or a benchmark run reference. Flag grants that lack citations,
-      are broader than their cited justification warrants, or accumulate
+      Files NOT matching *.json, *.jsonc, *.toml, *.yaml under the repo root
+      (top two levels) contain no permission configuration — close with
+      NO APPLICABLE RULES. For agent permission configurations (permission
+      rules, allowed tools or commands in opencode.json, .opencode/, and
+      similar harness configs), check each allow-grant: does it cite its
+      justification — a bead ID (pattern like mythic-quest-XXX or bd-NNN) or
+      a benchmark run reference? Flag grants that lack citations, are
+      broader than their cited justification warrants, or accumulate
       permissions with no justification at all.
 
   single-source-of-truth:

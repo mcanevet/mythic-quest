@@ -34,11 +34,13 @@ The script discovers targets, creates the wisp epic, one child per file,
 an aggregate child gated on all file children (`bd dep add` fan-in), and
 prints the wisp ID, aggregate ID, and the child→file list.
 
-### 2. Judge in parallel (subagent workers)
+### 2. Judge (worker sessions)
 
-Dispatch parallel harness subagents, one batch per ~4 children. Give each
-worker: the child IDs and their file paths, this worker protocol, and the
-requirement to **report anomalies instead of improvising**.
+Dispatch one worker per child (or small batches). Workers may be harness
+subagents or the main session acting as judge — use whichever reliably
+executes the protocol below. Give each worker: the child IDs and their
+file paths, this worker protocol, and the requirement to **report
+anomalies instead of improvising**.
 
 Worker protocol:
 
@@ -82,7 +84,7 @@ the comments **before** burning — comments are deleted with the wisp.
 
 ### 4. Report and gate
 
-- **PASS**: no findings → `bd close <wisp-id>` then `bd purge --force` (or `bd mol burn <wisp-id>` in bd < 1.3)
+- **PASS**: no findings → `bd close <wisp-id>` then `bd purge --force`
 - **FINDINGS**: report the table. Fix or get explicit user waiver before
   committing. After resolution, purge the wisp.
 - If the run surfaced something worth keeping (e.g., a systemic issue),

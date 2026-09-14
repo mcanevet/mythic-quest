@@ -26,7 +26,7 @@ filter_files() {
     [ -z "$f" ] && continue
     skip=0
     case "$f" in
-      .beads/*|.agents/skills/beads/*) skip=1 ;;
+      .beads/*) skip=1 ;;
     esac
     [ -L "$f" ] && skip=1
     if [ "$skip" -eq 0 ]; then

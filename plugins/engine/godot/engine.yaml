@@ -3,47 +3,6 @@ description: Godot engine plugin — provides game-build skills for Godot projec
 engine: godot
 version: 1
 
-# Requirements (documented for session awareness):
-requirements:
-  binary:
-    name: godot
-    version: ">=4.2.0"
-    note: "Install via mise or system package manager"
-  mcp_runtime:
-    name: godot-mcp-runtime
-    version: "latest"
-    install: |
-      MCP-driven runtime control (screenshots, input simulation, live script exec)
-      requires the godot-mcp-runtime server. Configure in your MCP client:
-
-      # Zero-install (npx):
-      {
-        "mcpServers": {
-          "godot": {
-            "command": "npx",
-            "args": ["-y", "godot-mcp-runtime"],
-            "env": { "GODOT_PATH": "/path/to/godot" }
-          }
-        }
-      }
-
-      # Or global install:
-      npm install -g godot-mcp-runtime
-      # Then use command: "godot-mcp-runtime"
-
-      See: https://github.com/Erodenn/godot-mcp-runtime
-
-skills:
-  init-project:
-    description: Scaffold Godot project files (project.godot, icon.svg, .gitignore)
-  create-entity:
-    description: Create Godot entity scenes + scripts (CharacterBody2D, RigidBody2D, Area2D)
-  create-ui:
-    description: Create Godot UI scenes (Control nodes, menus, HUD)
-  create-level:
-    description: Create full Godot level scenes composing entities and UI
-  playtest:
-    description: Run game headless, verify scene integrity, close bead with verdict
-
-# Sandbox-init uses this file to verify the engine exists and display info.
-# The session discovers tool availability naturally (try the tool, get error).
+# Skills live in skills/ (descriptions in each SKILL.md frontmatter).
+# MCP servers are declared in mcp.json (rendered into harness configs
+# by sandbox-init). Session discovers tool availability naturally.

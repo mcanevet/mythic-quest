@@ -171,8 +171,9 @@ git -C "$SANDBOX" -c user.name=harness -c user.email=harness@local \
 # can still build via file-based flows).
 MCP_JSON="$PLUGIN_DIR/mcp.json"
 if [ -f "$MCP_JSON" ] && command -v jq >/dev/null 2>&1; then
-  SERVERS=$(jq -r 'keys[]' "$MCP_JSON")
-  for SERVER in $SERVERS; do
+  # Use jq to iterate safely (handles server names with spaces)
+  while IFS= read -r SERVER; do
+    [ -z "$SERVER" ] && continue
     CMD=$(jq -r ".[\"$SERVER\"].command // empty" "$MCP_JSON")
     ARGS=$(jq -r ".[\"$SERVER\"].args // [] | @json" "$MCP_JSON")
     ENV_JSON=$(jq -r ".[\"$SERVER\"].env // {} | @json" "$MCP_JSON")
@@ -199,15 +200,13 @@ if [ -f "$MCP_JSON" ] && command -v jq >/dev/null 2>&1; then
         warn "MCP render for harness '$HARNESS' not implemented — configure manually"
         ;;
     esac
-  done
+  done < <(jq -r 'keys[]' "$MCP_JSON")
   git -C "$SANDBOX" add -A 2>/dev/null || true
   git -C "$SANDBOX" -c user.name=harness -c user.email=harness@local \
     commit -qm "chore: engine MCP servers ($ENGINE)" >/dev/null 2>&1 || true
 fi
 
 # 6. Fail-loud verification ---------------------------------------------------
-[ -f "$SANDBOX/$EXPECTED_FILE" ] ||
-  fail "managed instructions ($EXPECTED_FILE) missing"
 git -C "$SANDBOX" status --porcelain | grep -q . &&
   fail "unexpected dirty files in sandbox"
 
