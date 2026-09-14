@@ -3,16 +3,35 @@ description: Godot engine plugin — provides game-build skills for Godot projec
 engine: godot
 version: 1
 
-# Requirements (documented for sandbox-init verification and session awareness):
+# Requirements (documented for session awareness):
 requirements:
   binary:
     name: godot
     version: ">=4.2.0"
     note: "Install via mise or system package manager"
-  mcp:
+  mcp_runtime:
     name: godot-mcp-runtime
-    version: ">=3.3.0"
-    note: "Released version only — no local forks. MCP-driven scene editing requires this; file-based flows work without it."
+    version: "latest"
+    install: |
+      MCP-driven runtime control (screenshots, input simulation, live script exec)
+      requires the godot-mcp-runtime server. Configure in your MCP client:
+
+      # Zero-install (npx):
+      {
+        "mcpServers": {
+          "godot": {
+            "command": "npx",
+            "args": ["-y", "godot-mcp-runtime"],
+            "env": { "GODOT_PATH": "/path/to/godot" }
+          }
+        }
+      }
+
+      # Or global install:
+      npm install -g godot-mcp-runtime
+      # Then use command: "godot-mcp-runtime"
+
+      See: https://github.com/Erodenn/godot-mcp-runtime
 
 skills:
   init-project:
@@ -20,9 +39,9 @@ skills:
   create-entity:
     description: Create Godot entity scenes + scripts (CharacterBody2D, RigidBody2D, Area2D)
   create-ui:
-    description: Create Godot UI scenes (Control nodes, menus, HUD) — STUB
+    description: Create Godot UI scenes (Control nodes, menus, HUD)
   create-level:
-    description: Create full Godot level scenes — STUB
+    description: Create full Godot level scenes composing entities and UI
   playtest:
     description: Run game headless, verify scene integrity, close bead with verdict
 

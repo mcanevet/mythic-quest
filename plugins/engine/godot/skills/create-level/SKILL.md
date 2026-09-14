@@ -5,6 +5,24 @@ description: Create full Godot level scenes composing entities and UI. Use when 
 
 ## What I do
 
-Creates complete game levels by composing entity scenes, UI, and layout.
+Assembles a complete game level by composing entity scenes, UI elements, and layout:
 
-**STUB:** This skill is not yet implemented. Placeholder for future work.
+- Root `Node2D` (level) with exported NodePaths or groups for player spawner, checkpoints, win/fail triggers
+- Instanced entity scenes (player, enemies, pickups) with proper transforms
+- TileMap layer(s) for terrain/background
+- Camera node (follows player via script or tween)
+- HUD instance (from create-ui) anchored to viewport
+- Optional: ambient audio, particle emitters, light sources
+
+## Conventions
+
+- Levels live under `scenes/levels/` (e.g., `level_01.tscn`)
+- Player spawner → instanced player scene with transform override
+- Win/fail conditions → Area2D triggers with scripts that emit signals
+- Camera follow logic in a dedicated `CameraController.gd` (tween or direct follow)
+- Exported NodePaths for critical references (player, goal, hazards)
+
+## Done when
+
+Level loads in `godot --headless`, camera follows player, win/fail triggers fire,
+HUD updates, and the runtime bridge can screenshot/verify state transitions.

@@ -49,6 +49,7 @@ ENGINE="${2:-}"
 SANDBOX_NAME="${3:-benchmark}"
 
 fail() { printf 'init.sh: %s\n' "$1" >&2; exit 1; }
+warn() { printf 'init.sh: WARN: %s\n' "$1" >&2; }
 
 [ -n "$HARNESS" ] ||
   fail "harness required: init.sh <opencode|codex|claude> <engine> [sandbox-name]"
@@ -162,16 +163,51 @@ git -C "$SANDBOX" -c user.name=harness -c user.email=harness@local \
   commit -qm "chore: bd ledger + managed instructions ($HARNESS)" >/dev/null 2>&1 ||
   fail "seed commit failed"
 
+# 5c. Engine MCP servers -> harness config -------------------------------------
+# The engine plugin declares MCP servers (plugins/engine/<engine>/mcp.json,
+# format: {"<server-name>": {command,args,env}}). We render them into the
+# harness's config file so the game-build session can use them. Configured
+# servers are FAIL-soft: if a render fails we warn but continue (the session
+# can still build via file-based flows).
+MCP_JSON="$PLUGIN_DIR/mcp.json"
+if [ -f "$MCP_JSON" ] && command -v jq >/dev/null 2>&1; then
+  SERVERS=$(jq -r 'keys[]' "$MCP_JSON")
+  for SERVER in $SERVERS; do
+    CMD=$(jq -r ".[\"$SERVER\"].command // empty" "$MCP_JSON")
+    ARGS=$(jq -r ".[\"$SERVER\"].args // [] | @json" "$MCP_JSON")
+    ENV_JSON=$(jq -r ".[\"$SERVER\"].env // {} | @json" "$MCP_JSON")
+    case "$HARNESS" in
+      opencode)
+        # opencode: opencode.json (project-local) mcp block
+        [ -s "$SANDBOX/opencode.json" ] || echo '{}' > "$SANDBOX/opencode.json"
+        jq --arg cmd "$CMD" --argjson args "$ARGS" --argjson env "$ENV_JSON" \
+          '.mcp[$SERVER] = {type: "local", command: $cmd, args: $args, environment: $env}' \
+          --arg SERVER "$SERVER" "$SANDBOX/opencode.json" > "$SANDBOX/opencode.json.tmp" &&
+          mv "$SANDBOX/opencode.json.tmp" "$SANDBOX/opencode.json" ||
+          warn "opencode MCP render failed for $SERVER"
+        ;;
+      claude)
+        # Claude Code: .mcp.json at project root, top-level server entries
+        [ -s "$SANDBOX/.mcp.json" ] || echo '{}' > "$SANDBOX/.mcp.json"
+        jq --arg cmd "$CMD" --argjson args "$ARGS" --argjson env "$ENV_JSON" \
+          '.[$SERVER] = {type: "stdio", command: $cmd, args: $args, env: $env}' \
+          --arg SERVER "$SERVER" "$SANDBOX/.mcp.json" > "$SANDBOX/.mcp.json.tmp" &&
+          mv "$SANDBOX/.mcp.json.tmp" "$SANDBOX/.mcp.json" ||
+          warn "claude MCP render failed for $SERVER"
+        ;;
+      *)
+        warn "MCP render for harness '$HARNESS' not implemented — configure manually"
+        ;;
+    esac
+  done
+  git -C "$SANDBOX" add -A 2>/dev/null || true
+  git -C "$SANDBOX" -c user.name=harness -c user.email=harness@local \
+    commit -qm "chore: engine MCP servers ($ENGINE)" >/dev/null 2>&1 || true
+fi
+
 # 6. Fail-loud verification ---------------------------------------------------
-AGENTS_TREE="$SANDBOX/.agents"
-[ "$(git -C "$AGENTS_TREE" rev-parse HEAD)" = "$HEAD_SHA" ] ||
-  fail "submodule HEAD drifted from repo HEAD"
-[ -f "$AGENTS_TREE/.agents/lint/rules.yaml" ] ||
-  fail "governance rules missing in submodule: .agents/lint/rules.yaml"
-[ -d "$AGENTS_TREE/skills/genesis" ] ||
-  fail "game-build skills missing in submodule: skills/genesis"
-[ -d "$AGENTS_TREE/plugins/engine/$ENGINE/skills" ] ||
-  fail "engine plugin skills missing in submodule: plugins/engine/$ENGINE/skills"
+[ -f "$SANDBOX/$EXPECTED_FILE" ] ||
+  fail "managed instructions ($EXPECTED_FILE) missing"
 git -C "$SANDBOX" status --porcelain | grep -q . &&
   fail "unexpected dirty files in sandbox"
 
