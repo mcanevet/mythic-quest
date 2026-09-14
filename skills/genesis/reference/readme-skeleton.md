@@ -2,8 +2,8 @@
 
 Player-facing manual created at genesis time. Copy to `README.md` at the project
 root, substituting `[Game Title]` and the one-line description. Sections use
-`*Filled in as...*` placeholders because nothing exists yet; log-result replaces
-them with polished content as features land.
+`*Filled in as...*` placeholders because nothing exists yet; replace them
+with polished content as features land.
 
 ```markdown
 # [Game Title]

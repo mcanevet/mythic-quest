@@ -5,12 +5,12 @@
 # `prepare_test_dir.sh` with .opencode renamed to .agents):
 #
 #   test/<name>/              <- fresh consumer git repo (git init)
-#   └── .agents/              <- git SUBMODULE -> this harness repo @ committed HEAD
+#   └── .agents/              <- git SUBMODULE -> this pipeline-dev repo @ committed HEAD
 #       ├── agents/           <- game-build agents (top-level, once created)
 #       ├── skills/           <- game-build skills (top-level, once created)
 #       └── .agents/          <- pipeline-dev internals (lint, sandbox-init)
 #
-# The whole harness repo is mounted at .agents (as the old repo mounted at
+# The whole pipeline-dev repo is mounted at .agents (as the old repo mounted at
 # .opencode): game-build agents/skills live at the REPO TOP LEVEL so the
 # consumer sees .agents/agents + .agents/skills. Harness-internal
 # pipeline-dev skills live nested under .agents/.agents/ and stay behind.
@@ -37,7 +37,7 @@
 #   5. bd ledger initialized (bd init --quiet --stealth) and the harness's
 #      integration file(s) generated via `bd setup <harness>`.
 #   6. Fail-loud verification; exit 1 with a reason if anything is off.
-#   7. Commits nothing to the harness repo itself.
+#   7. Commits nothing to the pipeline-dev repo itself.
 #
 # Usage: init.sh <harness> <engine> [sandbox-name]
 #   harness: opencode | codex | claude | ... (any `bd setup` recipe; required)

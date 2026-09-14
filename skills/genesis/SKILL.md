@@ -8,7 +8,7 @@ description: Initialize a new game project with VISION.md, README.md, and a flat
 Creates the project's tracking state — a **beads ledger** — plus the player-facing README:
 
 1. **VISION.md** — Game title, vision statement, core mechanics (3-7), art style. Small, stable, read often.
-2. **README.md** — Player-facing manual with empty section skeletons, filled by log-result as features land.
+2. **README.md** — Player-facing manual with empty section skeletons, filled as features land.
 3. **Task backlog** — 10-20 concrete tasks as **flat beads** (no epics), in priority order.
 
 ## Execution
