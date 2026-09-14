@@ -179,10 +179,10 @@ if [ -f "$MCP_JSON" ] && command -v jq >/dev/null 2>&1; then
     ENV_JSON=$(jq -r ".[\"$SERVER\"].env // {} | @json" "$MCP_JSON")
     case "$HARNESS" in
       opencode)
-        # opencode: opencode.json (project-local) mcp block
+        # opencode: opencode.json — command is [cmd, *args], enabled required
         [ -s "$SANDBOX/opencode.json" ] || echo '{}' > "$SANDBOX/opencode.json"
         jq --arg cmd "$CMD" --argjson args "$ARGS" --argjson env "$ENV_JSON" \
-          '.mcp[$SERVER] = {type: "local", command: $cmd, args: $args, environment: $env}' \
+          '.mcp[$SERVER] = {type: "local", enabled: true, command: ([$cmd] + $args), environment: $env, timeout: 30000}' \
           --arg SERVER "$SERVER" "$SANDBOX/opencode.json" > "$SANDBOX/opencode.json.tmp" &&
           mv "$SANDBOX/opencode.json.tmp" "$SANDBOX/opencode.json" ||
           warn "opencode MCP render failed for $SERVER"
