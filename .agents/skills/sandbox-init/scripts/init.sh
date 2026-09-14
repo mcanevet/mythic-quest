@@ -119,12 +119,30 @@ git -C "$SANDBOX" -c user.name=harness -c user.email=harness@local \
   commit -qm "chore: pin pipeline-dev @ ${HEAD_SHA:0:8} (.agents submodule)"
 
 # 5. Seed the sandbox ledger and harness instructions -------------------------
-(cd "$SANDBOX" && bd init --quiet --stealth) >/dev/null 2>&1 ||
-  fail "bd init failed in sandbox (is bd on PATH?)"
+# bd version for game-build sessions: 1.3.0-rc.2 is REQUIRED (new bd features
+# used by game-build skills). This is an independent sandbox DB — unrelated to
+# the pipeline-dev repo's ledger — but init and session must resolve the SAME
+# version, else the session hits schema skew. All bd invocations below run via
+# mise against this pin, never the invoking shell's PATH bd.
+BD_VERSION="1.3.0-rc.2"
+BD_TOOL="github:gastownhall/beads"
+
+cat > "$SANDBOX/mise.toml" <<MISE
+# Game-build session toolchain.
+# bd is pinned to the version that initialized this ledger; resolved via mise
+# regardless of the user's PATH. Requires bd ${BD_VERSION} features.
+[tools]
+"${BD_TOOL}" = "${BD_VERSION}"
+MISE
+mise install -C "$SANDBOX" >/dev/null 2>&1 ||
+  fail "mise install failed for bd ${BD_VERSION} in sandbox"
+
+(cd "$SANDBOX" && mise exec -- bd init --quiet --stealth) >/dev/null 2>&1 ||
+  fail "bd init failed in sandbox (bd ${BD_VERSION})"
 [ -d "$SANDBOX/.beads" ] || fail "sandbox .beads/ missing after bd init"
 
-(cd "$SANDBOX" && bd setup "$HARNESS") >/dev/null 2>&1 ||
-  fail "bd setup $HARNESS failed in sandbox (is bd on PATH? valid recipe?)"
+(cd "$SANDBOX" && mise exec -- bd setup "$HARNESS") >/dev/null 2>&1 ||
+  fail "bd setup $HARNESS failed in sandbox (valid recipe?)"
 EXPECTED_FILE=$(expected_file)
 [ -f "$SANDBOX/$EXPECTED_FILE" ] ||
   fail "sandbox $EXPECTED_FILE missing after bd setup $HARNESS"
