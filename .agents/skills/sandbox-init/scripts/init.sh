@@ -148,6 +148,69 @@ EXPECTED_FILE=$(expected_file)
 [ -f "$SANDBOX/$EXPECTED_FILE" ] ||
   fail "sandbox $EXPECTED_FILE missing after bd setup $HARNESS"
 
+# 5b. Append the game-build loop contract (the orchestrator's ruleset).
+# This block IS the control plane: it owns the molecule lifecycle,
+# bead wiring, and the dev loop. Skills (genesis, create-*) are content
+# and implementation only. Rendered below the bd-managed instructions
+# so the session treats it as standing orders.
+cat >> "$SANDBOX/$EXPECTED_FILE" <<'CONTRACT'
+
+## Game-Build Session Contract (orchestrator)
+
+You are the **orchestrator** of a game-build session. You own the workflow;
+skills own the content. Follow this loop:
+
+1. **Bootstrap (once, if needed)**:
+   - If no `VISION.md`: read `.agents/skills/genesis/SKILL.md` and execute it
+     (produces VISION.md + BACKLOG.md — creative content only).
+   - If no molecule epic exists (check: `mise exec -- bd list --type epic` is
+     empty): create one:
+     ```bash
+     mise exec -- bd create "[Game Title] build" -t epic -p 1
+     ```
+   - Parse BACKLOG.md and create each task as a child of the epic:
+     ```bash
+     mise exec -- bd create "<title>" -t task --parent <epic-id> \
+       -l <label> -p <0|1|2> -d "<description>"
+     ```
+   - Create the release chain — playtest and release beads, wired so release
+     waits for all dev children:
+     ```bash
+     mise exec -- bd create "Playtest the full game" -t task --parent <epic-id> -p 1
+     mise exec -- bd create "Release: ship the game" -t task --parent <epic-id> -p 1
+     ```
+     Then make playtest and release wait on the dev beads:
+     ```bash
+     mise exec -- bd dep add <playtest-id> <each-dev-bead-id>...
+     # (add release AFTER playtest exists, so the waiters/order is clear)
+     mise exec -- bd dep add <release-id> <playtest-id>
+     ```
+   - One bead per BACKLOG.md task; do not invent extra beads at bootstrap.
+
+2. **Dev loop (repeat until nothing is ready)**:
+   ```bash
+   READY=$(mise exec -- bd ready --json)
+   ```
+   - Pick the highest-priority ready bead. Claim it: `mise exec -- bd update <id> --claim`
+   - Execute it using the matching engine skill under
+     `.agents/plugins/engine/<engine>/skills/` (init-project for project
+     scaffolding, create-entity/create-ui/create-level for features,
+     playtest for verification). Read the skill BEFORE acting.
+   - Close it: `mise exec -- bd close <id> --reason "PASS: <observed behavior>"` or
+     `"FAIL: <what failed>"`. Only close PASS for behavior you actually
+     verified (run the game, simulate input, read debug output) — never
+     because stubs exist or the code compiles.
+   - **Discoveries**: new work found mid-task →
+     `mise exec -- bd create "<title>" -p <0-4> --deps discovered-from:<current-bead>`
+     (standalone, not epic children; they surface in `bd ready` naturally).
+
+3. **Stop condition**: `bd ready` returns nothing and the epic has no open
+   children — the board is drained. Report a summary: game title, beads
+   closed (PASS/FAIL counts), discoveries filed, final playtest verdict.
+CONTRACT
+
+git -C "$SANDBOX" add -A 2>/dev/null || true
+
 # Some recipes (e.g. codex) install files INTO .agents/ — but .agents is the
 # submodule, so those files dirty its worktree. Checkout-local excludes hide
 # them from both repos' status (same trick the old repo used for node_modules).
