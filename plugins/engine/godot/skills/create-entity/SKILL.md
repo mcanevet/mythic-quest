@@ -1,45 +1,23 @@
 ---
 name: create-entity
-description: Create Godot entity scenes with scripts (CharacterBody2D, RigidBody2D, Area2D). Use when implementing game entities (player, enemies, pickups, obstacles).
+description: Create Godot entity scenes with scripts. Use when implementing game entities (player, enemies, pickups).
 ---
 
 ## What I do
 
-Creates complete Godot entity scenes:
-- `.tscn` scene file with proper node hierarchy
-- `.gd` script with architecture patterns
-- Supporting resources (collision shapes, placeholder art)
-
-## Execution
-
-### Step 1: Context Discovery
-
-Read the claimed bead's description to extract:
-- Entity type (Player, Enemy, Pickup, Obstacle)
-- Root node type (CharacterBody2D, RigidBody2D, Area2D)
-- Required child nodes and signals
-- Definition of Done
-
-### Step 2: Plan the scene
-
-Document the node hierarchy before creating files.
-
-### Step 3: Create scene file (.tscn)
-
-Write the scene with:
-- Proper node types and inheritance
-- Collision shapes (CollisionShape2D for physics nodes)
+Creates entity scenes and scripts:
+- `.tscn` scene with proper node hierarchy (root + collision shape + script)
+- `.gd` script with test hooks (`_on_test_verify()`, `_on_test_get_state()`)
 - Groups for identification (never rely on `.name`)
-- Script attachment
 
-### Step 4: Create script (.gd)
+## Conventions
 
-Write the script with:
-- Proper extends clause
-- Signals as declared in the scene
-- Test hooks (`_on_test_verify()`, `_on_test_get_state()`)
-- Architecture patterns from project docs
+- Player/AI movement → CharacterBody2D
+- Physics objects → RigidBody2D
+- Triggers/pickups → Area2D
+- Identify instanced nodes by groups, not names
+- Connect signals explicitly; discrete input in `_input`, not polled
 
-### Step 5: Validate
+## Done when
 
-Run validation checks (collision shapes present, signals connected, groups set).
+Scene loads in `godot --headless` without errors and test hooks respond.

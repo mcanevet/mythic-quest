@@ -1,43 +1,33 @@
 ---
 name: playtest
-description: Run the game headless, verify scene integrity, capture screenshots. Use to validate that a built feature works in the running game.
+description: Run Godot headless to verify a scene. Close the bead with PASS/FAIL verdict.
 ---
 
 ## What I do
 
-Runs the game to verify a built feature:
-- Headless run with automated invariant checks
-- Screenshot capture for visual verification
-- Playtest report persisted to reports/
+Runs the game to verify a built feature, then closes the bead.
 
 ## Execution
 
-### Step 1: Determine target scene
-
-From the claimed bead's description: the main scene or the feature scene to verify.
-
-### Step 2: Headless run
+### Step 1: Run headless
 
 ```bash
 godot --headless res://scenes/<scene>.tscn --quit-after 60
 ```
 
-Capture stdout/stderr; any script error is a failure.
+Capture stdout/stderr. Script error = FAIL.
 
-### Step 3: Integrity checks
+### Step 2: Check results
 
-Deterministic checks after the run:
-- Scene loads without script errors
-- Test hooks callable (if the entity provides them)
-- Expected groups present
+- No script errors → PASS
+- Errors → FAIL (report the error)
 
-### Step 4: Screenshots (when visual verification is needed)
+### Step 3: Close the bead
 
-Render-based screenshot run; save to `reports/screenshots/`.
+```bash
+bd close <bead-id> --reason "PASS: scene loads cleanly"
+# or
+bd close <bead-id> --reason "FAIL: script error on line X"
+```
 
-### Step 5: Report
-
-Persist the playtest outcome to `reports/playtest-<bead-id>.md`:
-- Verdict: PASS / FAIL (with failing checks)
-- Stdout excerpt if failed
-- Screenshot references
+No report files. Verdict lives in the close reason and bead metadata.
