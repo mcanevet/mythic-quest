@@ -130,16 +130,18 @@ git -C "$SANDBOX" -c user.name=harness -c user.email=harness@local \
 # 4b. Stage game-build skills: flat skills/ dir merging engine-agnostic core
 # skills (repo skills/) with the chosen engine plugin's skills. Symlinks keep
 # a single source of truth — no copies to drift.
-stage_skill() { # <target-name> <source-dir>
-  [ -d "$2" ] || fail "cannot stage skill '$1': $2 missing"
-  ln -s "$2" "$SANDBOX/skills/$1"
+stage_skill() { # <target-name> <source-rel-path-from-skills-dir>
+  [ -d "$SANDBOX/$2" ] || fail "cannot stage skill '$1': $2 missing"
+  ln -s "../$2" "$SANDBOX/skills/$1"
 }
 mkdir -p "$SANDBOX/skills"
 for skill_dir in "$REPO_ROOT/skills"/*/; do
-  stage_skill "$(basename "$skill_dir")" ".agents/skills/$(basename "$skill_dir")"
+  name="$(basename "$skill_dir")"
+  stage_skill "$name" ".agents/skills/$name"
 done
 for skill_dir in "$PLUGIN_DIR/skills"/*/; do
-  stage_skill "$(basename "$skill_dir")" ".agents/plugins/engine/$ENGINE/skills/$(basename "$skill_dir")"
+  name="$(basename "$skill_dir")"
+  stage_skill "$name" ".agents/plugins/engine/$ENGINE/skills/$name"
 done
 
 # 5. Seed the sandbox ledger and harness instructions -------------------------
@@ -175,7 +177,8 @@ MANIFEST="$PLUGIN_DIR/engine.yaml"
 [ -f "$MANIFEST" ] || fail "engine manifest missing: $MANIFEST"
 
 # Parse engine version requirement (simple YAML grep — not a full parser)
-ENGINE_VERSION_REQ=$(grep -A2 "^requirements:" "$MANIFEST" | grep "version:" | head -1 | sed 's/.*version:[[:space:]]*//' | tr -d '"' | tr -d "'")
+# Extracts the version under requirements.binary.version
+ENGINE_VERSION_REQ=$(grep -A3 "^  binary:" "$MANIFEST" | grep "version:" | head -1 | sed 's/.*version:[[:space:]]*//' | tr -d '"' | tr -d "'")
 [ -n "$ENGINE_VERSION_REQ" ] || fail "engine version requirement missing from manifest"
 
 # Health check command (if defined)
