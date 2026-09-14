@@ -39,20 +39,31 @@
 #   6. Fail-loud verification; exit 1 with a reason if anything is off.
 #   7. Commits nothing to the harness repo itself.
 #
-# Usage: init.sh <harness> [sandbox-name]
+# Usage: init.sh <harness> <engine> [sandbox-name]
 #   harness: opencode | codex | claude | ... (any `bd setup` recipe; required)
+#   engine: godot | ... (must exist under plugins/engine/; required)
 #   sandbox-name defaults to "benchmark"; lives under test/ (gitignored).
 # Exit codes: 0 = ready, 1 = verification failed
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
 HARNESS="${1:-}"
-SANDBOX_NAME="${2:-benchmark}"
+ENGINE="${2:-}"
+SANDBOX_NAME="${3:-benchmark}"
 
 fail() { printf 'init.sh: %s\n' "$1" >&2; exit 1; }
 
 [ -n "$HARNESS" ] ||
-  fail "harness required: init.sh <opencode|codex|claude> [sandbox-name]"
+  fail "harness required: init.sh <opencode|codex|claude> <engine> [sandbox-name]"
+[ -n "$ENGINE" ] ||
+  fail "engine required: init.sh <harness> <godot|...> [sandbox-name]"
+
+# Engine plugin: skills live at plugins/engine/<engine>/skills/. The sandbox
+# stages a flat, loader-scannable skills/ dir merging the repo's engine-
+# agnostic core skills with the chosen engine plugin's skills.
+PLUGIN_DIR="$REPO_ROOT/plugins/engine/$ENGINE"
+[ -d "$PLUGIN_DIR/skills" ] ||
+  fail "unknown engine plugin: $PLUGIN_DIR/skills missing (available: $(ls "$REPO_ROOT/plugins/engine" 2>/dev/null | tr '\n' ' '))"
 
 # Integration file each harness's loader expects after bd setup.
 expected_file() {
@@ -116,6 +127,21 @@ git -C "$SANDBOX" add .agents
 git -C "$SANDBOX" -c user.name=harness -c user.email=harness@local \
   commit -qm "chore: pin harness @ ${HEAD_SHA:0:8} (.agents submodule)"
 
+# 4b. Stage game-build skills: flat skills/ dir merging engine-agnostic core
+# skills (repo skills/) with the chosen engine plugin's skills. Symlinks keep
+# a single source of truth — no copies to drift.
+stage_skill() { # <target-name> <source-dir>
+  [ -d "$2" ] || fail "cannot stage skill '$1': $2 missing"
+  ln -s "$2" "$SANDBOX/skills/$1"
+}
+mkdir -p "$SANDBOX/skills"
+for skill_dir in "$REPO_ROOT/skills"/*/; do
+  stage_skill "$(basename "$skill_dir")" ".agents/skills/$(basename "$skill_dir")"
+done
+for skill_dir in "$PLUGIN_DIR/skills"/*/; do
+  stage_skill "$(basename "$skill_dir")" ".agents/plugins/engine/$ENGINE/skills/$(basename "$skill_dir")"
+done
+
 # 5. Seed the sandbox ledger and harness instructions -------------------------
 (cd "$SANDBOX" && bd init --quiet --stealth) >/dev/null 2>&1 ||
   fail "bd init failed in sandbox (is bd on PATH?)"
@@ -144,6 +170,22 @@ git -C "$SANDBOX" -c user.name=harness -c user.email=harness@local \
   commit -qm "chore: bd ledger + managed instructions ($HARNESS)" >/dev/null 2>&1 ||
   fail "seed commit failed"
 
+# 5. Verify engine plugin requirements (manifest-driven) ----------------------
+MANIFEST="$PLUGIN_DIR/engine.yaml"
+[ -f "$MANIFEST" ] || fail "engine manifest missing: $MANIFEST"
+
+# Parse engine version requirement (simple YAML grep — not a full parser)
+ENGINE_VERSION_REQ=$(grep -A2 "^requirements:" "$MANIFEST" | grep "version:" | head -1 | sed 's/.*version:[[:space:]]*//' | tr -d '"' | tr -d "'")
+[ -n "$ENGINE_VERSION_REQ" ] || fail "engine version requirement missing from manifest"
+
+# Health check command (if defined)
+HEALTH_CHECK=$(grep -A5 "^health_check:" "$MANIFEST" | grep "^  - command:" | head -1 | sed 's/.*- command:[[:space:]]*//')
+if [ -n "$HEALTH_CHECK" ]; then
+  # Run health check (may need path substitution for MCP runtime)
+  eval "$HEALTH_CHECK" >/dev/null 2>&1 ||
+    fail "engine health check failed: $HEALTH_CHECK"
+fi
+
 # 6. Fail-loud verification ---------------------------------------------------
 # Top-level agents/ and skills/ are the game-build surface (may not exist
 # yet — the harness pins whatever IS committed). The internals must be there.
@@ -152,9 +194,10 @@ AGENTS_TREE="$SANDBOX/.agents"
   fail "submodule HEAD drifted from harness HEAD"
 [ -f "$AGENTS_TREE/.agents/lint/rules.yaml" ] ||
   fail "governance rules missing in submodule: .agents/lint/rules.yaml"
+[ -d "$SANDBOX/skills" ] || fail "skills/ staging missing"
 git -C "$SANDBOX" status --porcelain | grep -q . &&
   fail "unexpected dirty files in sandbox"
 
-printf 'READY: %s | harness @ %s (%s) | git initialized | ledger seeded\n' \
-  "$SANDBOX" "${HEAD_SHA:0:8}" "$HARNESS"
+printf 'READY: %s | harness @ %s (%s, %s) | git initialized | ledger seeded | skills staged\n' \
+  "$SANDBOX" "${HEAD_SHA:0:8}" "$HARNESS" "$ENGINE"
 printf 'next: cd %s && %s (game-build session)\n' "$SANDBOX" "$HARNESS"

@@ -1,0 +1,30 @@
+name: godot
+description: Godot engine plugin — provides game-build skills for Godot projects (init-project, create-entity, playtest).
+engine: godot
+version: 1
+
+requirements:
+  binary:
+    name: godot
+    version: ">=4.2.0"
+
+# godot-mcp-runtime >= 3.3.0 (released, no local forks) is required once
+# MCP-driven scene editing lands; file-based flows work without it.
+# mcp:
+#   name: godot-mcp-runtime
+#   version: ">=3.3.0"
+
+skills:
+  init-project:
+    description: Scaffold Godot project files (project.godot, icon.svg, .gitignore)
+  create-entity:
+    description: Create Godot entity scenes + scripts (CharacterBody2D, RigidBody2D, Area2D)
+  create-ui:
+    description: Create Godot UI scenes (Control nodes, menus, HUD) — STUB
+  create-level:
+    description: Create full Godot level scenes — STUB
+  playtest:
+    description: Run game headless, verify scene integrity, capture screenshots
+
+health_check:
+  - command: godot --headless --version

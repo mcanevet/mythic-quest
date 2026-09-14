@@ -1,0 +1,238 @@
+# Game Build Four Loops Formula
+#
+# Encodes the four-loop topology from build.md:
+# - Dev loop (developer): claim → implement → playtest-verify → log-result
+# - QA loop (quality): milestone smoke + functional QA → bug beads back to dev
+# - Vision loop (creative): milestone vision checks + release gate → vision beads back to dev
+# - Consumer loop (critic): streamer critique → recommendation → creative disposition
+#
+# Usage:
+#   bd mol pour game-four-loops
+#   # Creates prototype beads representing the workflow structure
+#
+# Note: This is a reference formula documenting the orchestration pattern.
+# The actual build agent executes this procedurally (not poured) to maintain
+# dynamic gating based on verdicts.
+
+formula = "game-four-loops"
+description = """
+MythicQuest game build workflow - four-loop orchestration.
+
+Loops:
+1. Dev loop (developer): claim/backlog-grooming → create-scene-with-script → playtest(scene-verify) → log-result
+2. QA loop (quality): milestone smoke tests + functional QA gates → bug beads → back to dev
+3. Vision loop (creative): milestone vision checks + release gate → vision beads → back to dev
+4. Consumer loop (critic): streamer critique → recommendation → creative disposition → rework or ship
+
+Release gate chain:
+- Release bead (label: release, P0) blocked by three human gates: qa → vision → consumer
+- Each PASS resolves the next gate; each FAIL routes back to the appropriate loop
+- Consumer loop can be skipped via SKIP_CONSUMER_LOOP flag
+
+Anti-patterns encoded:
+- Max 2 tasks per delegation (batching cap)
+- 3-retry circuit breaker (attempts metadata)
+- No direct implementation by orchestrator (permission-enforced)
+- No markdown TODOs (beads only)
+"""
+type = "workflow"
+version = 1
+
+[vars.game_title]
+description = "Title of the game being built"
+required = false
+default = "MythicQuest Game"
+
+# =============================================================================
+# Dev Loop (developer) - Continuous
+# =============================================================================
+
+[[steps]]
+id = "dev-claim"
+title = "Claim next task bead"
+description = """
+Read `bd ready --json` and select the highest-priority claimable bead.
+Check `bd show <id> --json` for task description and acceptance criteria.
+
+Circuit-breaker check: if `attempts >= 3`, decompose into smaller child beads.
+"""
+
+[[steps]]
+id = "dev-plan-build-playtest-log"
+title = "Plan → Build → Playtest → Log"
+needs = ["dev-claim"]
+description = """
+Execute the full dev cycle:
+1. backlog-grooming: claims the bead, derives plan file
+2. create-scene-with-script: implements the task
+3. playtest (scene-verify mode): validates invariants
+4. log-result: closes the bead with validation evidence
+
+Batching rule: max 2 tightly-related tasks per delegation.
+"""
+
+[[steps]]
+id = "dev-verify-close"
+title = "Verify bead closed"
+description = """
+Confirm `bd show <id> --json` shows status = "closed".
+If not closed, retry log-result (max 3 retries total).
+"""
+
+# =============================================================================
+# QA Loop (quality) - Milestone Gates
+# =============================================================================
+
+[[steps]]
+id = "qa-milestone"
+title = "Milestone smoke test"
+needs = ["dev-verify-close"]
+description = """
+Every 3-7 tasks (adaptive based on cross-references):
+- QA engineer runs playtest (scene-verify mode)
+- Report to reports/milestone-smoke-test.md
+- Verdict: QA PASS (0 violations) → continue; QA FAIL → file bug beads, stop
+
+Cadence:
+- ≤3 cross-refs: checkpoint every 7 tasks
+- 4-6 cross-refs: checkpoint every 5 tasks
+- ≥7 cross-refs: checkpoint every 3 tasks
+"""
+
+[[steps]]
+id = "qa-functional"
+title = "Functional QA gate"
+needs = ["qa-milestone"]
+description = """
+At end of Phase 1 (all dev beads closed):
+- QA engineer runs playtest (functional mode)
+- Report to reports/functional-qa.md
+- Verdict: QA PASS → proceed to vision gate; QA FAIL → file bug beads, return to dev loop
+"""
+
+# =============================================================================
+# Vision Loop (creative) - Coarser Cadence
+# =============================================================================
+
+[[steps]]
+id = "vision-milestone"
+title = "Milestone vision check"
+needs = ["qa-milestone"]
+description = """
+Every OTHER milestone (half the QA cadence):
+- Creative director runs playtest (vision mode)
+- Report to reports/milestone-vision-<n>.md
+- Verdict: aligned → continue; drifted → file vision beads, freeze feature work, fix first
+"""
+
+[[steps]]
+id = "vision-gate"
+title = "Vision alignment gate"
+needs = ["qa-functional"]
+description = """
+At release gate:
+- The creative director runs playtest (vision mode)
+- Report to reports/vision-qa.md
+- Verdict: aligned → proceed to consumer gate; drifted → file vision beads, return to dev loop
+"""
+
+# =============================================================================
+# Consumer Loop (critic) - Outer Gate
+# =============================================================================
+
+[[steps]]
+id = "consumer-critique"
+title = "Consumer streamer critique"
+needs = ["vision-gate"]
+description = """
+Skipped if SKIP_CONSUMER_LOOP flag exists.
+- The consumer critic plays the game as a player (no spec, no reports)
+- Delivers recommendation: RECOMMEND_SHIP or RECOMMEND_REWORK (+ B-hole rating)
+- Report to reports/consumer-critique-<n>.md
+"""
+
+[[steps]]
+id = "consumer-disposition"
+title = "Creative disposition of consumer critique"
+needs = ["consumer-critique"]
+description = """
+Route the streamer critic's report to the creative director:
+- CONFIRM_SHIP → proceed to release
+- ORDER_REWORK → file critique beads, return to dev loop
+- REVISE_VISION → update VISION.md, queue revision tasks, return to dev loop
+
+Rework cap: 2 cycles of *taste-driven* rework (ORDER_REWORK / REVISE_VISION for features/juice). Bug-fix rework (P0/P1 bugs discovered by consumer replay or QA) does not count toward the cap; escalate to human only on taste divergence (third ORDER_REWORK/REVISE_VISION after all known bugs are fixed).
+"""
+
+# =============================================================================
+# Release Gate Chain
+# =============================================================================
+
+[[steps]]
+id = "release-entry"
+title = "Create release bead chain"
+needs = ["consumer-disposition"]
+description = """
+Create release bead (label: release, P0) with three gates:
+- G1: qa gate (Functional QA pass required)
+- G2: vision gate (Vision alignment required)  
+- G3: consumer gate (Consumer CONFIRM_SHIP required)
+
+Commands:
+```bash
+RID=$(bd create "Release [game]" -t task --label release -p 0)
+G1=$(bd gate create "$RID" qa "Functional QA pass required")
+G2=$(bd gate create "$RID" vision "Vision alignment required")
+G3=$(bd gate create "$RID" consumer "Consumer CONFIRM_SHIP required")
+```
+"""
+
+[[steps]]
+id = "release-qa-pass"
+title = "Resolve QA gate"
+needs = ["release-entry"]
+description = """
+On QA PASS verdict:
+```bash
+bd gate resolve "$G1" --resolution passed --note "Functional QA: 0 violations"
+```
+"""
+
+[[steps]]
+id = "release-vision-pass"
+title = "Resolve vision gate"
+needs = ["release-qa-pass"]
+description = """
+On vision-aligned verdict:
+```bash
+bd gate resolve "$G2" --resolution passed --note "Vision: aligned with VISION.md"
+```
+"""
+
+[[steps]]
+id = "release-consumer-pass"
+title = "Resolve consumer gate"
+needs = ["release-vision-pass"]
+description = """
+On CONFIRM_SHIP disposition:
+```bash
+bd gate resolve "$G3" --resolution passed --note "Consumer: CONFIRM_SHIP"
+```
+"""
+
+[[steps]]
+id = "release-complete"
+title = "Ship release"
+needs = ["release-consumer-pass"]
+description = """
+All gates resolved:
+```bash
+bd close "$RID" --reason "All gates resolved — shipped"
+```
+
+Generate COMPLETION_REPORT.md with:
+- Task counts (total, completed, blocked)
+- Attempt totals from bead metadata
+- Playtest results, vision evaluation, critique
+- Known issues, recommendations for v1.1
+"""
