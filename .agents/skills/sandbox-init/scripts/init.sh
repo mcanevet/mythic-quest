@@ -192,9 +192,11 @@ multi-loop workflow:
 
 2. **Backlog grooming** — route raw children:
    - For each raw child of the `raw-backlog` step:
-     - Decide assignee: poppy (implementation), rachel (QA), ian (vision),
+     - Decide assignee: poppy (implementation), phil (materials),
+       stephen (animation), gustavo (audio), rachel (QA), ian (vision),
        pootie (consumer)
-     - Add skill label: `skill:<skill-name>` (create-entity, create-ui, etc.)
+     - Add skill label: `skill:<skill-name>` (create-entity, create-ui,
+       apply-material, apply-animation, apply-audio, etc.)
      - Update description with "Use skill: <skill-name>"
    - Example:
      ```bash

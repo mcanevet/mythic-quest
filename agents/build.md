@@ -20,6 +20,9 @@ permission:
   task:
     "*": deny        # build: anti-recursion baseline
     poppy: allow     # build: delegate implementation
+    phil: allow      # build: delegate materials
+    stephen: allow   # build: delegate animation
+    gustavo: allow   # build: delegate audio
     rachel: allow    # build: delegate QA
     ian: allow       # build: delegate vision
     pootie: allow    # build: delegate consumer
@@ -39,8 +42,10 @@ Session Contract in AGENTS.md, with this role split:
   `raw-backlog` step (one per game concept you invent). No assignment yet.
 - **Groom backlog**: For each unassigned bead (raw-backlog children AND
   gate-discovered bugs), decide routing:
-  - Assignee: poppy (implementation), rachel (QA), ian (vision), pootie (consumer)
-  - Label: `skill:<skill-name>` (create-entity, create-ui, create-level, playtest)
+  - Assignee: poppy (implementation), phil (materials), stephen (animation),
+    gustavo (audio), rachel (QA), ian (vision), pootie (consumer)
+  - Label: `skill:<skill-name>` (create-entity, create-ui, create-level,
+    apply-material, apply-animation, apply-audio, playtest)
   - Description: add "Use skill: <skill-name>"
   ```bash
   bd update <id> --assignee poppy
