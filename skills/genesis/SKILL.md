@@ -1,15 +1,15 @@
 ---
 name: genesis
-description: Invent a game and produce VISION.md + BACKLOG.md. Do NOT create beads directly.
+description: Invent a game and produce VISION.md + raw (unassigned) task beads under the raw-backlog step. Do NOT assign, route, or wire dependencies.
 ---
 
 ## What I do
 
 Creates the creative foundation for a new game project:
 1. **VISION.md** — Title, vision statement, core mechanics, art style
-2. **BACKLOG.md** — Structured task list (not beads yet) for the orchestrator to wire
+2. **Raw task beads** — 10-20 unassigned children of the `raw-backlog` step
 
-**Critical constraint**: I am the **creative director**, not the orchestrator. I produce **content**, not ledger structure. The orchestrator (session following AGENTS.md) will pour the molecule epic and parent my tasks as children.
+**Critical constraint**: I am the **creative director**, not the orchestrator. I spawn **raw, unrouted** children — no assignee, no skill label, no dependencies. The orchestrator's backlog-grooming stage decides routing (assignee + skill) for each child.
 
 ## Execution
 
@@ -38,50 +38,30 @@ Creates the creative foundation for a new game project:
 [Visual direction: palette, mood, reference aesthetics]
 ```
 
-### Step 3: Write BACKLOG.md
+### Step 3: Spawn raw task beads
 
-Format is strict — the orchestrator parses this to create beads:
+For each task, create an unassigned child of the `raw-backlog` step:
 
-```markdown
-# Backlog for [Game Title]
-
-## P0 - Core Loop (first 7 tasks, playable)
-
-### Task 1: [Imperative title]
-**Label**: core
-**Description**: [Concrete implementation detail]
-
-### Task 2: [Imperative title]
-**Label**: core
-**Description**: [Concrete implementation detail]
-
-...
-
-## P1 - Secondary Features
-
-### Task 8: [Imperative title]
-**Label**: optional
-**Description**: [Concrete implementation detail]
-
-...
-
-## P2 - Future Polish
-
-### Task 15: [Imperative title]
-**Label**: future
-**Description**: [Concrete implementation detail]
+```bash
+bd create "[Imperative title]" \
+  --parent <raw-backlog-step-id> \
+  -t task \
+  -p <0|1|2> \
+  --description "[Concrete implementation detail]"
 ```
 
 **Rules**:
 - Titles are **imperative verbs** ("Create X", "Implement Y", "Add Z")
-- Labels: `core` (P0), `optional` (P1), `future` (P2)
+- Priorities: `0` (core loop, first 7 tasks), `1` (secondary features), `2` (future polish)
 - Descriptions are **implementation-ready** (not vague; an engineer can execute)
 - Exactly 10-20 tasks total; first 7 must form a playable loop
-- No dependencies in BACKLOG.md — the orchestrator wires those
+- **NO assignee** — grooming decides (poppy/rachel/ian/pootie)
+- **NO skill labels or "Use skill:" prefixes** — grooming decides routing
+- **NO dependencies between siblings** — grooming wires those
 
 ## Done when
 
 - VISION.md exists with all required sections (title, vision, mechanics, art)
-- BACKLOG.md exists with 10-20 well-formed tasks
-- Both files are **self-contained** (no references to beads, epics, or workflow)
-- I have **not** created any beads myself — that is the orchestrator's job
+- 10-20 raw task beads exist as children of the `raw-backlog` step
+- Every bead is unassigned and unrouted (no labels, no deps)
+- I have **not** groomed anything — assignment/routing is the orchestrator's job

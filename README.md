@@ -14,57 +14,25 @@ An autonomous game-generation pipeline: **skills** that implement engine-specifi
 
 ```mermaid
 flowchart TD
-    subgraph PipelineDev["Pipeline-Dev (one-shot at sandbox init)"]
-        S1[sandbox-init<br/>renders contract + agents<br/>wires MCP + ledger]
-    end
+    GEN[genesis] --> RAW[raw-backlog<br/>unassigned children]
+    RAW --> GROOM[backlog-grooming<br/>assignee + skill routing]
+    GROOM --> DEV[dev-loop<br/>poppy implements]
+    DEV -->|"waits_for: all-children"| QAG{{"qa-gate<br/>rachel"}}
+    QAG -->|"waits_for: all-children"| VIG{{"vision-gate<br/>ian"}}
+    VIG -->|"waits_for: all-children"| CG{{"consumer-gate<br/>pootie"}}
+    CG --> REL[release]
+    QAG -.->|"bugs as children"| QAG
+    VIG -.->|"misalignments as children"| VIG
+    CG -.->|"critiques as children"| CG
 
-    subgraph GameBuild["Game-Build Sandbox (self-contained, autonomous)"]
-        A[AGENTS.md Contract]
-        subgraph Agents["Agents (copied in at init)"]
-            B["build — orchestrator<br/>(edit: DENY, bd-read only)"]
-            PO["poppy — implementer<br/>(edit: ALLOW, MCP, ledger)"]
-        end
-        subgraph Skills["Skills (read-only, via .agents mount)"]
-            G[genesis<br/>VISION.md + BACKLOG.md]
-            ES[init-project / create-entity<br/>create-ui / create-level / playtest]
-        end
-        M[(Molecule Epic)]
-        D1[Dev Beads]
-        PT[Playtest Bead]
-        R[Release Bead]
-        MCP[Godot MCP Runtime<br/>run_project · simulate_input<br/>get_debug_output · screenshot]
-    end
-
-    S1 -->|"renders once"| GameBuild
-
-    %% Self-contained loop
-    B -->|"bootstrap: dispatch genesis"| PO
-    PO --> G --> M
-    M --> D1 --> PT --> R
-    B -->|"1. bd ready --json"| B
-    B -->|"2. dispatch bead"| PO
-    PO -->|"3. read skill"| ES
-    PO -->|"4. verify"| MCP
-    MCP -->|"observed behavior"| PO
-    PO -->|"5. bd close"| D1
-    B -->|"6. verify close reason"| PO
-    R -->|"board drained"| DONE((Done))
-
-    style B fill:#f9f,stroke:#333,stroke-width:2px
-    style PO fill:#bbf,stroke:#333,stroke-width:2px
-    style MCP fill:#bfb,stroke:#333,stroke-width:2px
-    style DONE fill:#ff9,stroke:#333,stroke-width:2px
-    style S1 fill:#ddd,stroke:#333
+    style QAG fill:#bfb
+    style VIG fill:#fbf
+    style CG fill:#fdf
 ```
 
 **Legend**:
-- **Gray**: pipeline-dev — participates only at init (one-shot, then out of the picture)
-- **Pink**: Orchestrator (workflow control, no code writes)
-- **Blue**: Implementer (code, ledger, MCP calls)
-- **Green**: MCP runtime (verification oracle)
-- **Yellow**: Terminal state (board drained)
-
-The game-build workflow is **fully self-contained**: after `sandbox-init` renders it, the session runs autonomously (bootstrap → dev loop → playtest → release) with no further interaction with the pipeline-dev repo. Skills are consumed read-only through the `.agents` submodule mount.
+- Rectangles: workflow steps (poured from `workflows/game-run.formula.toml` at init)
+- Rounded diamonds: human gates — closed via `bd gate resolve` after all rework children (dashed loops) are closed PASS
 
 ## Quick Start
 
@@ -222,7 +190,7 @@ Metrics tracked:
 1. **Find ready work**: `bd ready --json`
 2. **Claim**: `bd update <id> --claim`
 3. **Implement per skill conventions**: Read the relevant `SKILL.md` before acting.
-4. **Lint**: `mise exec -- bd lint` (checks `.agents/lint/rules.yaml`)
+4. **Lint**: `bd lint` (checks `.agents/lint/rules.yaml`)
 5. **Close**: `bd close <id> --reason "PASS/FAIL: ..."`
 6. **Push**: `bd dolt push` (syncs beads to Dolt remote)
 

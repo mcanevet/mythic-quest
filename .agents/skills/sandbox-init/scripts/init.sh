@@ -139,7 +139,7 @@ MISE
 mise install -C "$SANDBOX" >/dev/null 2>&1 ||
   fail "mise install failed for bd ${BD_VERSION} in sandbox"
 
-(cd "$SANDBOX" && mise exec -- bd init --quiet --stealth) >/dev/null 2>&1 ||
+(cd "$SANDBOX" && bd init --quiet --stealth) >/dev/null 2>&1 ||
   fail "bd init failed in sandbox (bd ${BD_VERSION})"
 [ -d "$SANDBOX/.beads" ] || fail "sandbox .beads/ missing after bd init"
 
@@ -156,7 +156,7 @@ mkdir -p "$SANDBOX/.beads/formulas"
 command cp "$FORMULA_SRC" "$SANDBOX/.beads/formulas/" ||
   fail "failed to copy game-run formula into sandbox"
 
-(cd "$SANDBOX" && mise exec -- bd setup "$HARNESS") >/dev/null 2>&1 ||
+(cd "$SANDBOX" && bd setup "$HARNESS") >/dev/null 2>&1 ||
   fail "bd setup $HARNESS failed in sandbox (valid recipe?)"
 EXPECTED_FILE=$(expected_file)
 [ -f "$SANDBOX/$EXPECTED_FILE" ] ||
@@ -172,38 +172,61 @@ cat >> "$SANDBOX/$EXPECTED_FILE" <<'CONTRACT'
 ## Game-Build Session Contract (orchestrator)
 
 You run as the **build** agent (see .opencode/agents/build.md): the
-orchestrator. You own the workflow; **poppy** (subagent) owns implementation.
-Follow this loop:
+orchestrator. You own the workflow; role agents (**poppy**, **rachel**, **ian**,
+**pootie**) own implementation, QA, vision, and consumer critique. Follow this
+multi-loop workflow:
 
-1. **Bootstrap (once, if needed)** — dispatch to poppy:
-   - If no `VISION.md`: brief poppy to run the genesis skill
-     (`.agents/skills/genesis/SKILL.md`) — produces VISION.md + BACKLOG.md.
-   - If no molecule epic exists (check: `bd list --type epic` is empty):
-     pour the game-build formula:
+1. **Bootstrap (once, if needed)** — pour the molecule:
+   - If no `VISION.md` exists: dispatch genesis skill
+     (`skills/genesis/SKILL.md`) — produces VISION.md and spawns raw task
+     children under the `raw-backlog` step.
+   - If no molecule epic exists (`bd list --type epic` is empty): pour the
+     game-run formula:
      ```bash
-     bd cook .beads/formulas/game-build.formula.toml > /tmp/proto.json
-     bd mol pour game-build --var game_title="<from VISION.md>"
+     bd cook .beads/formulas/game-run.formula.toml > /tmp/proto.json
+     bd mol pour game-run --var game_title="<from VISION.md>"
      ```
-     Then brief poppy to wire the molecule:
-     - Parse BACKLOG.md and spawn one child per task under the dev-backlog
-       step (`bd create --parent <dev-backlog-id> -t task -l <label> -p <0-4>`).
-     - The playtest step automatically waits for all children via `waits_for`.
-     - Release waits on playtest via the formula's `needs`.
+     The formula creates the skeleton: genesis → raw-backlog →
+     backlog-grooming → dev-loop → qa-gate → vision-gate → consumer-gate →
+     release.
 
-2. **Dev loop (repeat until nothing is ready)**:
-   - Inspect the frontier: `bd ready --json`
-   - Pick the highest-priority ready bead; dispatch it to poppy via the Task
-     tool with the bead ID and any context (which skill applies:
-     `.agents/plugins/engine/<engine>/skills/...`).
-   - After poppy returns: verify the close reason (`bd show <id>`) — honest
-     verdicts only; "stubs ready" is not a PASS. If poppy reported
-     discoveries, they are already filed via `discovered-from`.
-   - **You never implement yourself** — no file writes, no non-bd commands.
-     Everything goes through poppy.
+2. **Backlog grooming** — route raw children:
+   - For each raw child of the `raw-backlog` step:
+     - Decide assignee: poppy (implementation), rachel (QA), ian (vision),
+       pootie (consumer)
+     - Add skill label: `skill:<skill-name>` (create-entity, create-ui, etc.)
+     - Update description with "Use skill: <skill-name>"
+   - Example:
+     ```bash
+     bd update <id> --assignee poppy
+     bd update <id> --set-labels "skill:create-entity"
+     bd update <id> --description "Use skill: create-entity"
+     ```
 
-3. **Stop condition**: `bd ready` returns nothing and the molecule has no
-   open children — the board is drained. Report a summary: game title, beads
-   closed (PASS/FAIL counts), discoveries filed, final playtest verdict.
+3. **Dev loop (repeat until dev-loop is complete)**:
+   - Claim beads assigned to you (build): `bd ready --json`
+   - Dispatch to role agents via Task tool with bead ID and context
+   - After each agent returns: verify the close reason (`bd show <id>`)
+   - Gate supervision every ~2 minutes:
+     - `bd gate check` — auto-resolve timer/gh gates
+     - `bd reclaim` — reclaim stale claims (dead workers)
+     - `bd mol progress` — check molecule progress
+
+4. **Gate resolution** — human gates close manually:
+   - **qa-gate**: rachel verifies all children PASS → `bd gate resolve rachel-qa-signoff`
+   - **vision-gate**: ian validates against VISION.md → `bd gate resolve ian-vision-review`
+   - **consumer-gate**: pootie accepts the experience → `bd gate resolve pootie-consumer-acceptance`
+   - Bugs discovered during gates are spawned as children of the gate
+     (`--parent <gate-id>`) so the `waits_for` catches them.
+
+5. **Release** — close the molecule:
+   - When consumer-gate closes, claim and close the release bead
+   - Close the molecule epic
+   - Report summary: game title, beads closed (PASS/FAIL), discoveries,
+     final verdicts
+
+**You never implement yourself** — no file writes, no non-bd commands.
+Everything goes through role agents.
 CONTRACT
 
 git -C "$SANDBOX" add -A 2>/dev/null || true
