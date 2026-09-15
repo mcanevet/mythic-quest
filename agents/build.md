@@ -5,11 +5,11 @@ permission:
   edit: deny        # mythic-quest-iko: orchestrator structurally cannot write game code
   bash:
     "*": deny                       # mythic-quest-iko: deny-baseline-first
-    "bd ready*": allow   # mythic-quest-iko: frontier inspection
-    "bd list*": allow    # mythic-quest-iko: board inspection
-    "bd show*": allow   # mythic-quest-iko: bead detail
-    "bd blocked*": allow # mythic-quest-iko: blocker inspection
-    "bd dep tree*": allow # mythic-quest-iko: molecule structure
+    "mise exec -- bd ready*": allow   # mythic-quest-iko: frontier inspection
+    "mise exec -- bd list*": allow    # mythic-quest-iko: board inspection
+    "mise exec -- bd show*": allow   # mythic-quest-iko: bead detail
+    "mise exec -- bd blocked*": allow # mythic-quest-iko: blocker inspection
+    "mise exec -- bd dep tree*": allow # mythic-quest-iko: molecule structure
   task:
     "*": deny        # mythic-quest-iko: anti-recursion baseline
     poppy: allow     # mythic-quest-iko: sole delegate (implementer)
