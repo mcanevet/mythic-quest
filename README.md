@@ -101,7 +101,6 @@ mythic-quest/
 ├── agents/                    # Game-build agent profiles (mounted as .agents/agents/ in sandbox)
 │   ├── build.md              # Orchestrator: workflow owner, edit deny, task: poppy-only
 │   ├── poppy.md              # Implementer: game-tree writes, MCP verification, task: deny
-│   └── sketches.md           # Deferred roles (rachel/ian/pootie)
 ├── skills/                   # Engine-agnostic skills
 │   └── genesis/             # Creative director: VISION.md + BACKLOG.md
 ├── plugins/engine/godot/     # Godot plugin
