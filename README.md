@@ -21,9 +21,12 @@ flowchart TD
     QAG -->|"waits_for: all-children"| VIG{{"vision-gate<br/>ian"}}
     VIG -->|"waits_for: all-children"| CG{{"consumer-gate<br/>pootie"}}
     CG --> REL[release]
-    QAG -.->|"bugs as children"| QAG
-    VIG -.->|"misalignments as children"| VIG
-    CG -.->|"critiques as children"| CG
+
+    %% Rework loops: gate owners discover unassigned bugs as children;
+    %% backlog-grooming routes them, dev-loop fixes them
+    QAG -.->|"discovers unassigned bugs"| GROOM
+    VIG -.->|"discovers unassigned misalignments"| GROOM
+    CG -.->|"discovers unassigned critiques"| GROOM
 
     style QAG fill:#bfb
     style VIG fill:#fbf
@@ -32,7 +35,8 @@ flowchart TD
 
 **Legend**:
 - Rectangles: workflow steps (poured from `workflows/game-run.formula.toml` at init)
-- Rounded diamonds: human gates — closed via `bd gate resolve` after all rework children (dashed loops) are closed PASS
+- Rounded diamonds: human gates — closed via `bd gate resolve` after all children (including rework) are closed PASS
+- Dashed arrows: gate owners discover issues as **unassigned** children of the gate (`--parent <gate-id>` keeps `waits_for` working), then backlog-grooming routes them like any other raw bead
 
 ## Quick Start
 

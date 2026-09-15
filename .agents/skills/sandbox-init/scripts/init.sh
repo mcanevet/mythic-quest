@@ -216,8 +216,10 @@ multi-loop workflow:
    - **qa-gate**: rachel verifies all children PASS → `bd gate resolve rachel-qa-signoff`
    - **vision-gate**: ian validates against VISION.md → `bd gate resolve ian-vision-review`
    - **consumer-gate**: pootie accepts the experience → `bd gate resolve pootie-consumer-acceptance`
-   - Bugs discovered during gates are spawned as children of the gate
-     (`--parent <gate-id>`) so the `waits_for` catches them.
+   - Bugs discovered during gates are spawned as **unassigned** children of
+     the gate (`--parent <gate-id>`) so the `waits_for` catches them; you
+     then groom them (assignee + skill) like any raw bead, and dev-loop
+     fixes them.
 
 5. **Release** — close the molecule:
    - When consumer-gate closes, claim and close the release bead

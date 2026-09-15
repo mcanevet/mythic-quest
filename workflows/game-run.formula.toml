@@ -50,7 +50,7 @@ type = "task"
 needs = ["dev-loop"]
 waits_for = "all-children"
 assignee = "rachel"
-description = "Rachel verifies all dev children via MCP runtime. Discovers bugs as children of qa-gate (--parent). Gate closes only when all children PASS."
+description = "Rachel verifies all dev children via MCP runtime. Discovers UNASSIGNED bugs as children of qa-gate (--parent); grooming routes, dev fixes. Gate closes only when all children PASS."
 
 [steps.gate]
 type = "human"
@@ -65,7 +65,7 @@ type = "task"
 needs = ["qa-gate"]
 waits_for = "all-children"
 assignee = "ian"
-description = "Ian validates against VISION.md. May discover vision-misalignment bugs as children. Gate closes only when clean."
+description = "Ian validates against VISION.md. Writes critiques and discovers UNASSIGNED misalignment bugs as children. Gate closes only when clean."
 
 [steps.gate]
 type = "human"
@@ -80,7 +80,7 @@ type = "task"
 needs = ["vision-gate"]
 waits_for = "all-children"
 assignee = "pootie"
-description = "Pootie experiences game via MCP (screenshots, input sim), writes critique. Code-blind. Gate closes on acceptance."
+description = "Pootie experiences game via MCP (screenshots, input sim), writes critique and discovers UNASSIGNED improvement bugs. Code-blind. Gating routes; dev fixes."
 
 [steps.gate]
 type = "human"
