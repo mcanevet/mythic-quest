@@ -41,7 +41,7 @@ start_test(scenario={
 })
 ```
 
-**Rule names matter:** the harness matches `rule` exactly — an unknown name is a silent no-op (verification appears to pass while nothing is checked). See `./../../init-project/reference/testing-patterns.md` for the canonical rule list. `no_fatal_errors` is a marker for process-level crash detection verified externally (crash kills the engine before the harness could check) — the other invariants do the in-run work.
+**Rule names matter:** the harness matches `rule` exactly — an unknown name is a silent no-op (verification appears to pass while nothing is checked). See `./../init-project/reference/testing-patterns.md` for the canonical rule list. `no_fatal_errors` is a marker for process-level crash detection verified externally (crash kills the engine before the harness could check) — the other invariants do the in-run work.
 
 ### Step 2: Get structured report
 
@@ -67,7 +67,7 @@ var report = await tp.await_test_done(scenario_duration + 30)
 Run the report renderer (deterministic — the JSON-to-table transform is script territory, not prose):
 
 ```
-<skill-path>/scripts/render_report.py <report.json>
+../playtest/scripts/render_report.py <report.json>
 ```
 
 It emits the standard table (Invariant | Status | Evidence rows for crash, physics stability, FPS p99, engine stalls, FPS floor, input responsiveness, plus one row per violation), an **Overall: PASS/FAIL** line, and the violation count. Exit code 1 when any violation is present. Columns present in `metrics` but not listed here are ignored; missing metrics simply omit their row. The engine-stalls row is **telemetry, not an invariant**: `stall_ticks_over_100ms` / `worst_frame_ms` / `warmup_resets` quantify host-side stalls (background throttle, display sleep, memory pressure — 10-12s frames observed overnight, run 12). A non-zero count renders as ⚠️ INFO with a pointer to the background-throttle gotcha; it never flips the PASS/FAIL verdict, and percentile metrics exclude stalled ticks by design.

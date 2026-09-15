@@ -73,4 +73,4 @@ col_shape.shape = shape
 If validator fails on "missing shape property":
 1. Check `[sub_resource]` blocks exist after `[gd_scene format=3]`
 2. Verify `shape = SubResource("shape_X")` references correct ID
-3. Run validator: `<skill-path>/scripts/validate.sh scenes/main.tscn`
+3. Run validator: `../scripts/validate.sh scenes/main.tscn`

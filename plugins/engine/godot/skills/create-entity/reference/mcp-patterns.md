@@ -118,7 +118,7 @@ Before the first engine tool call in a session, call `godot-mcp-runtime:get_proj
 
 **If `godot-mcp-runtime:run_project` fails (bridge timeout, "did not respond", "process exited"):**
 1. Call `godot-mcp-runtime:get_debug_output()` immediately — read actual error
-2. Kill lingering engine process: `bash("<skill-path>/../create-entity/scripts/stop_engine.sh")` — the blessed stop script (kills only `godot --path …`, waits for port release). **NEVER run pkill yourself** (see warning below)
+2. Kill lingering engine process: `bash("../scripts/stop_engine.sh")` — the blessed stop script (kills only `godot --path …`, waits for port release). **NEVER run pkill yourself** (see warning below)
 3. Fix specific issue in source files
 4. Retry once. If same error → **STOP** and report to caller: `⛔ BLOCKED: runtime phase failed after sanctioned recovery (debug → stop_engine → fix → retry). Do not self-launch Godot or use attach_project.`
    - **DO NOT invent workarounds**: manual launch scripts, `attach_project`, custom validation hooks, shell-based test runners, or "background mode" hacks. These look equivalent but bypass the sanctioned verification path (no captured debug output, unsanctioned infra; mimo run 5, Task 11 subagent built tmp launch/kill scripts and attached-mode tested after 4 bridge timeouts instead of reporting BLOCKED).

@@ -46,7 +46,7 @@ If this returns an error or times out → **FAIL IMMEDIATELY**. Report "MCP brid
 
 For quick dev checks during implementation, use `scene-verify` (launches single scene, runs chaos scenario, returns invariant report).
 
-The framework uses genre-agnostic bots (chaos, pursuit, replay, nav_agent) and invariants — see `../../init-project/reference/testing-patterns.md` for the configuration schema.
+The framework uses genre-agnostic bots (chaos, pursuit, replay, nav_agent) and invariants — see `../init-project/reference/testing-patterns.md` for the configuration schema.
 
 ## Parameters
 
@@ -80,7 +80,7 @@ The framework uses genre-agnostic bots (chaos, pursuit, replay, nav_agent) and i
 
 > ⚠️ **Engine-unresponsive signature (read before any run_script retry):** if `get_debug_output()` succeeds while a **trivial** `run_script` probe (`return {"ok": true}`) times out — and this persists across an engine restart — the engine is not servicing RPC. Likely root cause observed in run 10: **host memory pressure** (macOS suspends the engine process; a suspended engine keeps its socket bound and stdio readable but never services calls — restarting cannot fix a starved host). The per-call error "Is the game running?" is misleading: the game IS running. Cap: ONE restart cycle + one TestPlayer-autoload-removal try, 5-minute cumulative timeout budget per phase, then `⛔ BLOCKED: engine unresponsive …` (full procedure and rationale in `../create-entity/reference/mcp-patterns.md`, _Engine/transport unresponsive_). Run 10 (09-07): an agent that ignored this budget spent 4h58m / 5.6M tokens in a timeout ladder producing zero forward progress.
 
-> ⚠️ **Never run pkill yourself** (any variant): the MCP server process (`npx godot-mcp-runtime`) contains "godot" in its command line and broad patterns kill it — permanently removing all engine tools for the session. Even the previously-safe quoted `pkill -f 'godot --path'` is now forbidden: permission rules string-match (not argv-parse), and repeated denials push models toward unquoted forms that killed a live run. Use the blessed script instead: `bash("<skill-path>/scripts/stop_engine.sh")`. See the Critical warning in `../create-entity/reference/mcp-patterns.md`.
+> ⚠️ **Never run pkill yourself** (any variant): the MCP server process (`npx godot-mcp-runtime`) contains "godot" in its command line and broad patterns kill it — permanently removing all engine tools for the session. Even the previously-safe quoted `pkill -f 'godot --path'` is now forbidden: permission rules string-match (not argv-parse), and repeated denials push models toward unquoted forms that killed a live run. Use the blessed script instead: `bash("../create-entity/scripts/stop_engine.sh")`. See the Critical warning in `../create-entity/reference/mcp-patterns.md`.
 
 **Screenshots are now rare** — taken only when a violation occurs, not as primary verification.
 
