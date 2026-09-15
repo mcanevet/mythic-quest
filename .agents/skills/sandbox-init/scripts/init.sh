@@ -139,11 +139,11 @@ MISE
 mise install -C "$SANDBOX" >/dev/null 2>&1 ||
   fail "mise install failed for bd ${BD_VERSION} in sandbox"
 
-(cd "$SANDBOX" && mise exec -- bd init --quiet --stealth) >/dev/null 2>&1 ||
+(cd "$SANDBOX" && bd init --quiet --stealth) >/dev/null 2>&1 ||
   fail "bd init failed in sandbox (bd ${BD_VERSION})"
 [ -d "$SANDBOX/.beads" ] || fail "sandbox .beads/ missing after bd init"
 
-(cd "$SANDBOX" && mise exec -- bd setup "$HARNESS") >/dev/null 2>&1 ||
+(cd "$SANDBOX" && bd setup "$HARNESS") >/dev/null 2>&1 ||
   fail "bd setup $HARNESS failed in sandbox (valid recipe?)"
 EXPECTED_FILE=$(expected_file)
 [ -f "$SANDBOX/$EXPECTED_FILE" ] ||
@@ -165,7 +165,7 @@ Follow this loop:
 1. **Bootstrap (once, if needed)** — dispatch to poppy:
    - If no `VISION.md`: brief poppy to run the genesis skill
      (`.agents/skills/genesis/SKILL.md`) — produces VISION.md + BACKLOG.md.
-   - If no molecule epic exists (check: `mise exec -- bd list --type epic`
+   - If no molecule epic exists (check: `bd list --type epic`
      is empty): brief poppy to pour the molecule — create the epic, parent
      one bead per BACKLOG.md task (labels/priorities per the backlog), and
      wire the release chain: playtest bead + release bead as children,
@@ -174,11 +174,11 @@ Follow this loop:
    - One bead per BACKLOG.md task; no extra beads at bootstrap.
 
 2. **Dev loop (repeat until nothing is ready)**:
-   - Inspect the frontier: `mise exec -- bd ready --json`
+   - Inspect the frontier: `bd ready --json`
    - Pick the highest-priority ready bead; dispatch it to poppy via the Task
      tool with the bead ID and any context (which skill applies:
      `.agents/plugins/engine/<engine>/skills/...`).
-   - After poppy returns: verify the close reason (`mise exec -- bd show
+   - After poppy returns: verify the close reason (`bd show
      <id>`) — honest verdicts only; "stubs ready" is not a PASS. If poppy
      reported discoveries, they are already filed via `discovered-from`.
    - **You never implement yourself** — no file writes, no non-bd commands.
