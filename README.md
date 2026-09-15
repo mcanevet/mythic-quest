@@ -14,74 +14,57 @@ An autonomous game-generation pipeline: **skills** that implement engine-specifi
 
 ```mermaid
 flowchart TD
-    subgraph Pipeline["Pipeline-Dev Repo (mythic-quest)"]
-        S1[sandbox-init<br/>renders AGENTS.md + agents]
-        G[genesis/SKILL.md<br/>VISION.md + BACKLOG.md]
-        E1[create-entity/SKILL.md]
-        U1[create-ui/SKILL.md]
-        L1[create-level/SKILL.md]
-        P1[playtest/SKILL.md<br/>MCP verification]
+    subgraph PipelineDev["Pipeline-Dev (one-shot at sandbox init)"]
+        S1[sandbox-init<br/>renders contract + agents<br/>wires MCP + ledger]
     end
 
-    subgraph Sandbox["Sandbox (test/<name>)"]
+    subgraph GameBuild["Game-Build Sandbox (self-contained, autonomous)"]
         A[AGENTS.md Contract]
-        M[Molecule Epic]
-        D1[Dev Beads<br/>P0/P1/P2 children]
+        subgraph Agents["Agents (copied in at init)"]
+            B["build — orchestrator<br/>(edit: DENY, bd-read only)"]
+            PO["poppy — implementer<br/>(edit: ALLOW, MCP, ledger)"]
+        end
+        subgraph Skills["Skills (read-only, via .agents mount)"]
+            G[genesis<br/>VISION.md + BACKLOG.md]
+            ES[init-project / create-entity<br/>create-ui / create-level / playtest]
+        end
+        M[(Molecule Epic)]
+        D1[Dev Beads]
         PT[Playtest Bead]
         R[Release Bead]
-        
-        subgraph Agents["Agents"]
-            B[build.md<br/>Orchestrator<br/>edit: DENY]
-            PO[poppy.md<br/>Implementer<br/>edit: ALLOW]
-        end
-        
-        MCP[Godot MCP Runtime<br/>run_project, simulate_input,<br/>get_debug_output, screenshot]
+        MCP[Godot MCP Runtime<br/>run_project · simulate_input<br/>get_debug_output · screenshot]
     end
 
-    %% Sandbox initialization
-    S1 --> A
-    A --> B
-    A --> PO
-    
-    %% Workflow execution
-    B -->|"dispatch"| PO
-    PO -->|"genesis"| G
-    G -->|"output"| M
-    M --> D1
-    M --> PT
-    M --> R
-    
-    D1 -->|"needs"| PT
-    PT -->|"needs"| R
-    
-    %% Execution loop
-    B -->|"bd ready --json"| B
-    B -->|"claim + dispatch"| PO
-    PO -->|"execute skill"| E1
-    PO -->|"execute skill"| U1
-    PO -->|"execute skill"| L1
-    PO -->|"verify"| P1
-    
-    P1 --> MCP
-    MCP -->|"debug output, state"| PO
-    
-    %% Closure
-    PO -->|"bd close"| D1
-    PO -->|"bd close"| PT
-    PO -->|"bd close"| R
+    S1 -->|"renders once"| GameBuild
+
+    %% Self-contained loop
+    B -->|"bootstrap: dispatch genesis"| PO
+    PO --> G --> M
+    M --> D1 --> PT --> R
+    B -->|"1. bd ready --json"| B
+    B -->|"2. dispatch bead"| PO
+    PO -->|"3. read skill"| ES
+    PO -->|"4. verify"| MCP
+    MCP -->|"observed behavior"| PO
+    PO -->|"5. bd close"| D1
+    B -->|"6. verify close reason"| PO
     R -->|"board drained"| DONE((Done))
-    
+
     style B fill:#f9f,stroke:#333,stroke-width:2px
     style PO fill:#bbf,stroke:#333,stroke-width:2px
     style MCP fill:#bfb,stroke:#333,stroke-width:2px
     style DONE fill:#ff9,stroke:#333,stroke-width:2px
+    style S1 fill:#ddd,stroke:#333
 ```
 
 **Legend**:
+- **Gray**: pipeline-dev — participates only at init (one-shot, then out of the picture)
 - **Pink**: Orchestrator (workflow control, no code writes)
 - **Blue**: Implementer (code, ledger, MCP calls)
 - **Green**: MCP runtime (verification oracle)
 - **Yellow**: Terminal state (board drained)
+
+The game-build workflow is **fully self-contained**: after `sandbox-init` renders it, the session runs autonomously (bootstrap → dev loop → playtest → release) with no further interaction with the pipeline-dev repo. Skills are consumed read-only through the `.agents` submodule mount.
 
 ## Quick Start
 
