@@ -18,6 +18,19 @@ Creates entity scenes and scripts:
 - Identify instanced nodes by groups, not names
 - Connect signals explicitly; discrete input in `_input`, not polled
 
+## Gotchas
+
+Empirically observed godot-mcp-runtime schema quirks (walkthrough6, 2026-09-15):
+
+- **Colors**: pass `{r, g, b, a}` objects with floats 0–1, not hex strings. `"#1b2a41"` fails; use `{r: 27/255, g: 42/255, b: 65/255, a: 1}`.
+- **Scripts**: pass plain `res://` path strings (e.g. `"res://scripts/station.gd"`), not nested objects.
+- **Scene root name**: verify the root node name via `godot_get_scene_tree` before writing scripts that reference node paths like `/root/Main/Lamp` — the root name may differ from the scene filename.
+- **Polygon2D**: the `polygon` property takes an array of `{x, y}` points.
+- **Overlap queries**: `Area2D.get_overlapping_bodies()` won't detect non-physics placeholder nodes; iterate children instead when entities are `Node2D` placeholders.
+- **Batch scene operations**: malformed or loosely-formatted JSON payloads fail; keep JSON compact and canonical.
+
 ## Done when
 
-Scene loads in `godot --headless` without errors and test hooks respond.
+`scripts/validate.sh <res://scenes/....tscn>` (in this skill) runs without
+errors — it wraps `godot --headless <scene> --quit-after 1` — and test hooks
+respond.

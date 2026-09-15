@@ -30,7 +30,7 @@ title = "Groom backlog: assign roles, skills, priorities"
 type = "task"
 needs = ["raw-backlog"]
 assignee = "build"
-description = "For each raw child: (1) decide assignee (poppy/rachel/ian/pootie), (2) select skill (create-entity, create-ui, etc.), (3) set priority/labels. Update description with 'Use skill: <skill-name>'."
+description = "For each raw child: (1) decide assignee (poppy/rachel/ian/pootie), (2) select skill (create-entity, create-ui, etc.), (3) set priority/labels, (4) REPARENT the child to the dev-loop step so gates with waits_for=all-children can see it. Update description with 'Use skill: <skill-name>'."
 
 # Phase 2: Implementation Loop (poppy)
 [[steps]]

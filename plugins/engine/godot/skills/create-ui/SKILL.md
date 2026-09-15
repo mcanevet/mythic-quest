@@ -22,5 +22,6 @@ Creates UI scenes with Control-node hierarchy and a script:
 
 ## Done when
 
-Scene loads in `godot --headless` without errors, and buttons respond to
+Scene loads cleanly via `scripts/validate.sh <scene>` (in this skill — wraps
+`godot --headless`) without errors, and buttons respond to
 `pressed` in the runtime bridge (input simulation or a smoke-script call).

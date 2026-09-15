@@ -43,6 +43,15 @@ creating or moving ANY file.
    consume this, or a pipeline-dev session?" Game consumer → root surface
    dir (`skills/`, `agents/`, `plugins/`, `workflows/`). Pipeline consumer
    → `.agents/`. Neither → `.beads/formulas/` is always wrong.
+6. **The same litmus test applies to BEADS, not just files.** `bd` writes
+   to whichever ledger owns the current working directory — before ANY
+   `bd create`, check WHERE you are. Improvements to agents, skills,
+   formulas, permissions, or workflow wiring observed during a game-run
+   are PIPELINE-DEV work: `cd` to the repo root (or run from there) and
+   create the bead in THIS repo's ledger. Only in-game content (features,
+   bugs, game tasks) goes in the sandbox ledger. (Real incident 2026-09-15:
+   improvement beads created while cwd'd in `test/walkthrough6/` landed in
+   the game ledger and had to be closed and re-created in the repo ledger.)
 
 ## Quick Reference
 

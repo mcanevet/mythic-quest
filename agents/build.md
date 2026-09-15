@@ -47,10 +47,14 @@ Session Contract in AGENTS.md, with this role split:
   - Label: `skill:<skill-name>` (create-entity, create-ui, create-level,
     apply-material, apply-animation, apply-audio, playtest)
   - Description: add "Use skill: <skill-name>"
+  - **Reparent to dev-loop**: gates use `waits_for = "all-children"` on the
+    dev-loop step — children parked under raw-backlog are INVISIBLE to the
+    gates. When grooming a bead, ALWAYS reparent it to the dev-loop step:
   ```bash
   bd update <id> --assignee poppy
   bd update <id> --set-labels "skill:create-entity"
   bd update <id> --description "Use skill: create-entity"
+  bd update <id> --parent <dev-loop-step-id>
   ```
 - **Dispatch**: Claim beads assigned to YOU (build), then dispatch to role
   agents via Task tool with bead ID and context.

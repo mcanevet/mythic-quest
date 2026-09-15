@@ -14,5 +14,6 @@ Creates the minimal Godot 4 project structure:
 
 ## Done when
 
-`godot --headless --quit` runs without errors AND every input action
+`scripts/validate.sh` (in this skill) runs without errors — it wraps
+`godot --headless --quit` — AND every input action
 referenced by game scripts exists in the input map.

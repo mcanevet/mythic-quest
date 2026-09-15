@@ -24,5 +24,6 @@ Assembles a complete game level by composing entity scenes, UI elements, and lay
 
 ## Done when
 
-Level loads in `godot --headless`, camera follows player, win/fail triggers fire,
+Level loads cleanly via `scripts/validate.sh <scene>` (in this skill — wraps
+`godot --headless`), camera follows player, win/fail triggers fire,
 HUD updates, and the runtime bridge can screenshot/verify state transitions.

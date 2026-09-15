@@ -18,8 +18,13 @@ run_project → launches with bridge (background: true avoids stealing focus)
 get_debug_output → capture stdout/stderr — script errors = FAIL
 ```
 
-If MCP tools are unavailable or hang (retry at most once), fall back:
-`godot --headless res://scenes/<scene>.tscn --quit-after 60`.
+If MCP tools are unavailable or hang (retry at most once), fall back to this
+skill's helpers (all non-interactive, headless):
+
+- `scripts/run_headless.sh <scene> [seconds]` — wraps
+  `godot --headless res://scenes/<scene>.tscn --quit-after <seconds>` (default 60)
+- `scripts/stop_engine.sh` — stops a leftover engine safely (PID-file first,
+  narrow path-bound pattern; never a broad kill)
 
 ### Step 2: Verify behavior, not just absence of errors
 
