@@ -143,6 +143,19 @@ mise install -C "$SANDBOX" >/dev/null 2>&1 ||
   fail "bd init failed in sandbox (bd ${BD_VERSION})"
 [ -d "$SANDBOX/.beads" ] || fail "sandbox .beads/ missing after bd init"
 
+# Deploy the game-run formula into the sandbox's OWN ledger. The formula is
+# game-build infrastructure shipped as repo content (workflows/), NOT part of
+# the pipeline-dev ledger's .beads/ namespace — sandboxes pour it from their
+# own .beads/formulas/ so the two ledgers stay disjoint. Skeleton: genesis ->
+# raw-backlog -> grooming -> dev (poppy) -> qa (rachel) -> vision (ian) ->
+# consumer (pootie) -> release, with waits_for fan-ins and human gates.
+FORMULA_SRC="$REPO_ROOT/workflows/game-run.formula.toml"
+[ -f "$FORMULA_SRC" ] ||
+  fail "game-run formula missing from pipeline repo (workflows/)"
+mkdir -p "$SANDBOX/.beads/formulas"
+command cp "$FORMULA_SRC" "$SANDBOX/.beads/formulas/" ||
+  fail "failed to copy game-run formula into sandbox"
+
 (cd "$SANDBOX" && mise exec -- bd setup "$HARNESS") >/dev/null 2>&1 ||
   fail "bd setup $HARNESS failed in sandbox (valid recipe?)"
 EXPECTED_FILE=$(expected_file)
@@ -165,27 +178,31 @@ Follow this loop:
 1. **Bootstrap (once, if needed)** — dispatch to poppy:
    - If no `VISION.md`: brief poppy to run the genesis skill
      (`.agents/skills/genesis/SKILL.md`) — produces VISION.md + BACKLOG.md.
-   - If no molecule epic exists (check: `mise exec -- bd list --type epic`
-     is empty): brief poppy to pour the molecule — create the epic, parent
-     one bead per BACKLOG.md task (labels/priorities per the backlog), and
-     wire the release chain: playtest bead + release bead as children,
-     release `bd dep add`-blocked on playtest, playtest blocked on all dev
-     beads.
-   - One bead per BACKLOG.md task; no extra beads at bootstrap.
+   - If no molecule epic exists (check: `bd list --type epic` is empty):
+     pour the game-build formula:
+     ```bash
+     bd cook .beads/formulas/game-build.formula.toml > /tmp/proto.json
+     bd mol pour game-build --var game_title="<from VISION.md>"
+     ```
+     Then brief poppy to wire the molecule:
+     - Parse BACKLOG.md and spawn one child per task under the dev-backlog
+       step (`bd create --parent <dev-backlog-id> -t task -l <label> -p <0-4>`).
+     - The playtest step automatically waits for all children via `waits_for`.
+     - Release waits on playtest via the formula's `needs`.
 
 2. **Dev loop (repeat until nothing is ready)**:
-   - Inspect the frontier: `mise exec -- bd ready --json`
+   - Inspect the frontier: `bd ready --json`
    - Pick the highest-priority ready bead; dispatch it to poppy via the Task
      tool with the bead ID and any context (which skill applies:
      `.agents/plugins/engine/<engine>/skills/...`).
-   - After poppy returns: verify the close reason (`mise exec -- bd show
-     <id>`) — honest verdicts only; "stubs ready" is not a PASS. If poppy
-     reported discoveries, they are already filed via `discovered-from`.
+   - After poppy returns: verify the close reason (`bd show <id>`) — honest
+     verdicts only; "stubs ready" is not a PASS. If poppy reported
+     discoveries, they are already filed via `discovered-from`.
    - **You never implement yourself** — no file writes, no non-bd commands.
      Everything goes through poppy.
 
-3. **Stop condition**: `bd ready` returns nothing and the epic has no open
-   children — the board is drained. Report a summary: game title, beads
+3. **Stop condition**: `bd ready` returns nothing and the molecule has no
+   open children — the board is drained. Report a summary: game title, beads
    closed (PASS/FAIL counts), discoveries filed, final playtest verdict.
 CONTRACT
 

@@ -5,6 +5,45 @@ This project uses **bd** (beads) for issue tracking. Run `bd prime` for full wor
 > Architecture and sync anti-patterns: see the generated blocks below and
 > [SYNC_CONCEPTS.md](https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md).
 
+## Scope Boundary: Pipeline-Dev vs Game-Build (MANDATORY)
+
+This repo serves TWO audiences with STRICTLY DISJOINT ledgers. Violating this
+boundary has caused repeated real mistakes — read this section before
+creating or moving ANY file.
+
+- **Pipeline-dev** (this repo's own sessions): infrastructure work —
+  skills, agent profiles, sandbox-init, lint, governance. Its beads live
+  in THIS repo's `.beads/` and track infra tasks only.
+- **Game-build** (sandbox sessions under `test/<name>/`): actual game
+  content — VISION.md, game beads, the poured molecule, game code. Its
+  beads live in the sandbox's `.beads/`.
+
+### Placement rules
+
+1. **This repo's `.beads/` is pipeline-dev territory.** NEVER put
+   game-build artifacts (formulas, molecules, game tasks) there. A game
+   formula in the pipeline ledger conflates the two worlds — this exact
+   mistake has been made and reverted twice.
+2. **Game-build infrastructure ships as repo CONTENT** in game-build
+   surface dirs at the repo root, existing only to be deployed into
+   sandboxes at init:
+   - `skills/` — engine-agnostic game skills (genesis, ...)
+   - `plugins/engine/<engine>/` — engine plugins (skills, mcp.json)
+   - `agents/` — game-build agent profiles (build, poppy, rachel, ian,
+     pootie)
+   - `workflows/` — game-build formulas (game-run.formula.toml)
+   None of these are for pipeline-dev sessions to execute, pour, or claim.
+3. **Pipeline internals stay nested** under `.agents/` (lint,
+   sandbox-init) — invisible to game-build sessions (mounted behind
+   `.agents/.agents/` in the sandbox).
+4. **Deployment is one-way, at init time**: `sandbox-init` copies agents
+   + formulas into the sandbox and renders the AGENTS.md contract. After
+   init, the game session is self-contained; it never writes back here.
+5. **Litmus test before creating a file**: "Will a game-build session
+   consume this, or a pipeline-dev session?" Game consumer → root surface
+   dir (`skills/`, `agents/`, `plugins/`, `workflows/`). Pipeline consumer
+   → `.agents/`. Neither → `.beads/formulas/` is always wrong.
+
 ## Quick Reference
 
 ```bash

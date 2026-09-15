@@ -1,0 +1,97 @@
+formula = "game-run"
+description = "Multi-loop game build: genesis → grooming → dev (poppy) → QA (rachel) → vision (ian) → consumer (pootie) → release"
+version = 1
+type = "workflow"
+
+[vars.game_title]
+description = "Title of the game being built"
+required = true
+
+# Phase 0: Genesis (creative)
+[[steps]]
+id = "genesis"
+title = "Invent {{game_title}} concept"
+type = "task"
+assignee = "build"
+description = "Invent game concept. Spawn raw task children under 'raw-backlog' container (no assignment or skill routing yet)."
+
+[[steps]]
+id = "raw-backlog"
+title = "Raw backlog (unassigned)"
+type = "task"
+needs = ["genesis"]
+assignee = "build"
+description = "Container for raw task beads from genesis. Pending grooming."
+
+# Phase 1: Backlog Grooming (build decides routing)
+[[steps]]
+id = "backlog-grooming"
+title = "Groom backlog: assign roles, skills, priorities"
+type = "task"
+needs = ["raw-backlog"]
+assignee = "build"
+description = "For each raw child: (1) decide assignee (poppy/rachel/ian/pootie), (2) select skill (create-entity, create-ui, etc.), (3) set priority/labels. Update description with 'Use skill: <skill-name>'."
+
+# Phase 2: Implementation Loop (poppy)
+[[steps]]
+id = "dev-loop"
+title = "Implement features"
+type = "task"
+needs = ["backlog-grooming"]
+assignee = "poppy"
+waits_for = "all-children"
+description = "Poppy claims beads assigned to poppy. Each bead description includes 'Use skill: <skill-name>'. Inline playtest verification via MCP runtime. Discoveries spawn children here."
+
+# Phase 3: QA Gate (rachel)
+[[steps]]
+id = "qa-gate"
+title = "QA signoff (Rachel)"
+type = "task"
+needs = ["dev-loop"]
+waits_for = "all-children"
+assignee = "rachel"
+description = "Rachel verifies all dev children via MCP runtime. Discovers bugs as children of qa-gate (--parent). Gate closes only when all children PASS."
+
+[steps.gate]
+type = "human"
+id = "rachel-qa-signoff"
+description = "Rachel must run 'bd gate resolve' after all qa-gate children are closed PASS."
+
+# Phase 4: Vision Validation (ian)
+[[steps]]
+id = "vision-gate"
+title = "Vision validation (Ian)"
+type = "task"
+needs = ["qa-gate"]
+waits_for = "all-children"
+assignee = "ian"
+description = "Ian validates against VISION.md. May discover vision-misalignment bugs as children. Gate closes only when clean."
+
+[steps.gate]
+type = "human"
+id = "ian-vision-review"
+description = "Ian must run 'bd gate resolve' after validation."
+
+# Phase 5: Consumer Critique (pootie)
+[[steps]]
+id = "consumer-gate"
+title = "Consumer acceptance (Pootie)"
+type = "task"
+needs = ["vision-gate"]
+waits_for = "all-children"
+assignee = "pootie"
+description = "Pootie experiences game via MCP (screenshots, input sim), writes critique. Code-blind. Gate closes on acceptance."
+
+[steps.gate]
+type = "human"
+id = "pootie-consumer-acceptance"
+description = "Pootie must run 'bd gate resolve' after critique."
+
+# Phase 6: Release
+[[steps]]
+id = "release"
+title = "Release {{game_title}}"
+type = "task"
+needs = ["consumer-gate"]
+assignee = "build"
+description = "Final validation, clean reimport, stable run. Ship."
