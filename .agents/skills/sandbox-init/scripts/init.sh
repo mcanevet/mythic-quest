@@ -9,10 +9,11 @@
 #       ├── plugins/engine/<engine>/skills/  <- engine plugin skills
 #       └── .agents/          <- pipeline-dev internals (lint, sandbox-init)
 #
-# The whole pipeline-dev repo is mounted at .agents: game-build skills live
-# at the REPO TOP LEVEL (skills/, plugins/) so the consumer session reads
-# them at .agents/skills/... and .agents/plugins/engine/<engine>/skills/...
-# Pipeline-dev skills live nested under .agents/.agents/ and stay behind.
+# The whole pipeline-dev repo is mounted at .agents: game-build skills and
+# agents live at the REPO TOP LEVEL (skills/, plugins/, agents/) so the
+# consumer session reads them at .agents/skills/..., .agents/plugins/...,
+# and .agents/agents/... (harness agent files). Pipeline-dev skills live
+# nested under .agents/.agents/ and stay behind.
 # All supported harnesses (opencode, codex, claude, ...) read .agents/
 # natively. The harness argument selects the `bd setup <recipe>` that
 # generates the right instructions file (AGENTS.md, CLAUDE.md, ...).
@@ -157,52 +158,31 @@ cat >> "$SANDBOX/$EXPECTED_FILE" <<'CONTRACT'
 
 ## Game-Build Session Contract (orchestrator)
 
-You are the **orchestrator** of a game-build session. You own the workflow;
-skills own the content. Follow this loop:
+You run as the **build** agent (see .opencode/agents/build.md): the
+orchestrator. You own the workflow; **poppy** (subagent) owns implementation.
+Follow this loop:
 
-1. **Bootstrap (once, if needed)**:
-   - If no `VISION.md`: read `.agents/skills/genesis/SKILL.md` and execute it
-     (produces VISION.md + BACKLOG.md — creative content only).
-   - If no molecule epic exists (check: `mise exec -- bd list --type epic` is
-     empty): create one:
-     ```bash
-     mise exec -- bd create "[Game Title] build" -t epic -p 1
-     ```
-   - Parse BACKLOG.md and create each task as a child of the epic:
-     ```bash
-     mise exec -- bd create "<title>" -t task --parent <epic-id> \
-       -l <label> -p <0|1|2> -d "<description>"
-     ```
-   - Create the release chain — playtest and release beads, wired so release
-     waits for all dev children:
-     ```bash
-     mise exec -- bd create "Playtest the full game" -t task --parent <epic-id> -p 1
-     mise exec -- bd create "Release: ship the game" -t task --parent <epic-id> -p 1
-     ```
-     Then make playtest and release wait on the dev beads:
-     ```bash
-     mise exec -- bd dep add <playtest-id> <each-dev-bead-id>...
-     # (add release AFTER playtest exists, so the waiters/order is clear)
-     mise exec -- bd dep add <release-id> <playtest-id>
-     ```
-   - One bead per BACKLOG.md task; do not invent extra beads at bootstrap.
+1. **Bootstrap (once, if needed)** — dispatch to poppy:
+   - If no `VISION.md`: brief poppy to run the genesis skill
+     (`.agents/skills/genesis/SKILL.md`) — produces VISION.md + BACKLOG.md.
+   - If no molecule epic exists (check: `mise exec -- bd list --type epic`
+     is empty): brief poppy to pour the molecule — create the epic, parent
+     one bead per BACKLOG.md task (labels/priorities per the backlog), and
+     wire the release chain: playtest bead + release bead as children,
+     release `bd dep add`-blocked on playtest, playtest blocked on all dev
+     beads.
+   - One bead per BACKLOG.md task; no extra beads at bootstrap.
 
 2. **Dev loop (repeat until nothing is ready)**:
-   ```bash
-   READY=$(mise exec -- bd ready --json)
-   ```
-   - Pick the highest-priority ready bead. Claim it: `mise exec -- bd update <id> --claim`
-   - Execute it using the matching engine skill under
-     `.agents/plugins/engine/<engine>/skills/` (init-project for project
-     scaffolding, create-entity/create-ui/create-level for features,
-     playtest for verification). Read the skill BEFORE acting.
-   - Close it: `mise exec -- bd close <id> --reason "PASS: <observed behavior>"` or
-     `"FAIL: <what failed>"`. Only close PASS for behavior you actually
-     verified (run the game, simulate input, read debug output) — never
-     because stubs exist or the code compiles.
-   - **Discoveries**: new work found mid-task →
-     `mise exec -- bd create "<title>" -p <0-4> --deps discovered-from:<current-bead>`
-     (standalone, not epic children; they surface in `bd ready` naturally).
+   - Inspect the frontier: `mise exec -- bd ready --json`
+   - Pick the highest-priority ready bead; dispatch it to poppy via the Task
+     tool with the bead ID and any context (which skill applies:
+     `.agents/plugins/engine/<engine>/skills/...`).
+   - After poppy returns: verify the close reason (`mise exec -- bd show
+     <id>`) — honest verdicts only; "stubs ready" is not a PASS. If poppy
+     reported discoveries, they are already filed via `discovered-from`.
+   - **You never implement yourself** — no file writes, no non-bd commands.
+     Everything goes through poppy.
 
 3. **Stop condition**: `bd ready` returns nothing and the epic has no open
    children — the board is drained. Report a summary: game title, beads
@@ -219,6 +199,20 @@ if git -C "$SANDBOX/.agents" status --porcelain | grep -q '^??'; then
   mkdir -p "$SUB_GD/info"
   git -C "$SANDBOX/.agents" status --porcelain | sed -n 's/^?? \(.*\)$/\1/p' \
     >> "$SUB_GD/info/exclude"
+fi
+
+# 5a. Render game-build agent profiles into the sandbox ------------------------
+# agents/*.md at repo root define the build (orchestrator) + poppy
+# (implementer) split (mythic-quest-iko). Copied (not symlinked) into the
+# harness's agent dir so each sandbox owns its copy; deny-baseline-first
+# permissions are structural, per-agent.
+if [ -d "$REPO_ROOT/agents" ]; then
+  AGENT_DIR="$SANDBOX/.opencode/agents"
+  mkdir -p "$AGENT_DIR"
+  command cp "$REPO_ROOT"/agents/*.md "$AGENT_DIR/" ||
+    fail "failed to copy agent profiles"
+  [ -f "$AGENT_DIR/build.md" ] && [ -f "$AGENT_DIR/poppy.md" ] ||
+    fail "agent profiles incomplete (need build.md + poppy.md)"
 fi
 
 git -C "$SANDBOX" add -A 2>/dev/null || true
