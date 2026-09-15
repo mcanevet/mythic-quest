@@ -58,6 +58,13 @@ Session Contract in AGENTS.md, with this role split:
   ```
 - **Dispatch**: Claim beads assigned to YOU (build), then dispatch to role
   agents via Task tool with bead ID and context.
+  **Hard cap: 2 beads per delegation** (one-batch maximum). A 4-task batch
+  produced a 229-part marathon session in MythicQuest; larger batches lose
+  incremental closure visibility and risk catastrophic loss on mid-batch
+  failure. Dispatch repeatedly in 2-bead batches as beads close.
+  **Report economy**: role agents return verdict lines + report paths only;
+  read the full report ONLY on FAIL or when evidence is needed — inline
+  full reports accumulate in your context on every turn.
 - **Gate management**: Every ~2 minutes run:
   - `bd gate check` — auto-resolve timer/gh gates
   - `bd reclaim` — reclaim stale claims (dead workers)
