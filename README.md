@@ -10,6 +10,79 @@ An autonomous game-generation pipeline: **skills** that implement engine-specifi
 - **Ledger isolation**: Pipeline-dev beads (infrastructure work) live in the repo's `.beads/`. Game-build beads (actual games) live in sandboxes under `test/`. They never mix.
 - **MCP runtime as oracle**: Playtest closes on observed runtime behavior (input simulation, state assertions, screenshots) — never "stubs ready" or "compiles clean."
 
+## Workflow Diagram
+
+```mermaid
+flowchart TD
+    subgraph Pipeline["Pipeline-Dev Repo (mythic-quest)"]
+        S1[sandbox-init<br/>renders AGENTS.md + agents]
+        G[genesis/SKILL.md<br/>VISION.md + BACKLOG.md]
+        E1[create-entity/SKILL.md]
+        U1[create-ui/SKILL.md]
+        L1[create-level/SKILL.md]
+        P1[playtest/SKILL.md<br/>MCP verification]
+    end
+
+    subgraph Sandbox["Sandbox (test/<name>)"]
+        A[AGENTS.md Contract]
+        M[Molecule Epic]
+        D1[Dev Beads<br/>P0/P1/P2 children]
+        PT[Playtest Bead]
+        R[Release Bead]
+        
+        subgraph Agents["Agents"]
+            B[build.md<br/>Orchestrator<br/>edit: DENY]
+            PO[poppy.md<br/>Implementer<br/>edit: ALLOW]
+        end
+        
+        MCP[Godot MCP Runtime<br/>run_project, simulate_input,<br/>get_debug_output, screenshot]
+    end
+
+    %% Sandbox initialization
+    S1 --> A
+    A --> B
+    A --> PO
+    
+    %% Workflow execution
+    B -->|"dispatch"| PO
+    PO -->|"genesis"| G
+    G -->|"output"| M
+    M --> D1
+    M --> PT
+    M --> R
+    
+    D1 -->|"needs"| PT
+    PT -->|"needs"| R
+    
+    %% Execution loop
+    B -->|"bd ready --json"| B
+    B -->|"claim + dispatch"| PO
+    PO -->|"execute skill"| E1
+    PO -->|"execute skill"| U1
+    PO -->|"execute skill"| L1
+    PO -->|"verify"| P1
+    
+    P1 --> MCP
+    MCP -->|"debug output, state"| PO
+    
+    %% Closure
+    PO -->|"bd close"| D1
+    PO -->|"bd close"| PT
+    PO -->|"bd close"| R
+    R -->|"board drained"| DONE((Done))
+    
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style PO fill:#bbf,stroke:#333,stroke-width:2px
+    style MCP fill:#bfb,stroke:#333,stroke-width:2px
+    style DONE fill:#ff9,stroke:#333,stroke-width:2px
+```
+
+**Legend**:
+- **Pink**: Orchestrator (workflow control, no code writes)
+- **Blue**: Implementer (code, ledger, MCP calls)
+- **Green**: MCP runtime (verification oracle)
+- **Yellow**: Terminal state (board drained)
+
 ## Quick Start
 
 ### Prerequisites
