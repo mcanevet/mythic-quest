@@ -28,6 +28,7 @@ Empirically observed godot-mcp-runtime schema quirks (walkthrough6, 2026-09-15):
 - **Polygon2D**: the `polygon` property takes an array of `{x, y}` points.
 - **Overlap queries**: `Area2D.get_overlapping_bodies()` won't detect non-physics placeholder nodes; iterate children instead when entities are `Node2D` placeholders.
 - **Batch scene operations**: malformed or loosely-formatted JSON payloads fail; keep JSON compact and canonical.
+- **Running engine overwrites scene files**: a live `run_project`/playtest serializes runtime state back into `.tscn` files, clobbering concurrent edits. MANDATORY: call `godot_stop_project` BEFORE any scene-file edit (create/edit/save), and only restart the engine after the edit round completes. Evidence: walkthrough6, 2026-09-15.
 
 ## Done when
 

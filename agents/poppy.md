@@ -44,6 +44,7 @@ permission:
     "bd prime*": allow
     "bd update*": allow
     "bd unclaim*": allow
+    "bd close --force*": deny
     "bd close*": allow
     "bd note*": allow
     "bd comment*": allow
@@ -77,9 +78,25 @@ bead (and context) from the orchestrator and you make it real:
    `bd close <id> --reason "PASS: <observed behavior>"` or
    `--reason "FAIL: <what failed>"`. Verdicts in close reasons, no report
    files.
+   Never use `bd close --force` (denied). If the close is refused (e.g. an
+   assignee mismatch because someone else claimed it), do NOT improvise
+   workarounds — report `⛔ BLOCKED: bd close refused for <id> (<error>)` to
+   the orchestrator, who owns re-claiming or handing back the chore.
 6. Discoveries found mid-task →
    `bd create "<title>" -p <0-4> --deps discovered-from:<id>`
    and mention them in your report back to the orchestrator.
 
 You cannot spawn subagents. If a bead is bigger than one sitting, say so in
 your report — the orchestrator will split it.
+
+**Escalation contract (one-pass discipline)**:
+- Deterministic errors (schema quirks, missing scaffolds, permission
+  denials) → STOP immediately, report
+  `⛔ BLOCKED: <cause> / Evidence / Action required`. Never retry.
+- Transient infra (transport timeout, bridge glitch) → one bounded retry;
+  still failing → escalate via `⛔ BLOCKED`.
+- Blocking on a fix: create the prevention-fix bead (or find it), wire
+  `bd dep add <your-bead> <fix-bead>` — your bead auto-shows ● blocked and
+  resumes when the fix closes. Mention the link in your report.
+- Each BLOCKED becomes a prevention fix: gotcha entry, scaffold addition,
+  or upstream doc/fix bead (`bd create ... --deps discovered-from:<id>`).
