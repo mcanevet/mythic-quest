@@ -45,6 +45,8 @@ primary prompt doesn't reach.
 
 | Metric | Source |
 |---|---|
+| godot-mcp-runtime version | pinned in `plugins/engine/godot/mcp.json` — record in every results file; version changes invalidate comparisons |
+|---|---|
 | Total wall-clock time | session timestamps (root session `time_created` → `time_updated`) |
 | Token usage (if exposed) | session DB / provider dashboard |
 | Subagent count + per-agent durations | session DB, `parent_id` tree |
@@ -64,4 +66,5 @@ Results go in `results/YYYY-MM-DD-<game>-<model>-<outcome>.md`.
 
 | Date | Prompt | Model | Result | Notes |
 |---|---|---|---|---|
-| 2026-09-15 | walkthrough6 (ad-hoc prompt) | lumo-max | running | Old harness: loose perms, no one-pass, no context-economy, no TestPlayer — serves as the CONTROL GROUP for the 4rl/57s ports |
+| 2026-09-15 | walkthrough6 (ad-hoc, "Lamplight of the Storm") | lumo-max | PASS (4 QA bugs found+fixed) | CONTROL: old harness. 5h47m, 13.73M input tok, 23 sessions, 1,106 tools, 0 compactions. Full analysis: [results/2026-09-15-walkthrough6-lumomax-control.md](results/2026-09-15-walkthrough6-lumomax-control.md) |
+| 2026-09-16 | walkthrough7 (game-run formula, v3.7.0) | — | pending | Pinned runtime: godot-mcp-runtime@3.7.0 (cold-asset auto-import + self-clearing sessions + profiler) |
