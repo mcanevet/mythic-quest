@@ -67,4 +67,4 @@ Results go in `results/YYYY-MM-DD-<game>-<model>-<outcome>.md`.
 | Date | Prompt | Model | Result | Notes |
 |---|---|---|---|---|
 | 2026-09-15 | walkthrough6 (ad-hoc, "Lamplight of the Storm") | lumo-max | PASS (4 QA bugs found+fixed) | CONTROL: old harness. 5h47m, 13.73M input tok, 23 sessions, 1,106 tools, 0 compactions. Full analysis: [results/2026-09-15-walkthrough6-lumomax-control.md](results/2026-09-15-walkthrough6-lumomax-control.md) |
-| 2026-09-16 | walkthrough7 (game-run formula, v3.7.0) | — | pending | Pinned runtime: godot-mcp-runtime@3.7.0 (cold-asset auto-import + self-clearing sessions + profiler) |
+| 2026-09-16 | walkthrough7 (game-run formula, v3.7.0) | lumo-max | PASS (QA clean, 3 consumer bugs fixed) | 2h27m, 7.08M input tok, 18 sessions, 747 tools. vs control: −58% time, −48% input. Full analysis: [results/2026-09-16-walkthrough7-rallywall-lumomax.md](results/2026-09-16-walkthrough7-rallywall-lumomax.md) |
