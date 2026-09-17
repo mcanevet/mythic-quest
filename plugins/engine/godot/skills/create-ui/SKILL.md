@@ -20,6 +20,8 @@ Creates UI scenes with Control-node hierarchy and a script:
 - Text via `Label`, never baked into textures
 - Identify nodes by groups or exported NodePaths, not `.name` lookups
 
+**Sanctioned-paths-only**: mutate scene files exclusively through MCP tools; direct `.tscn` edits are not permitted — report `⛔ BLOCKED: tool cannot express <operation>` if a needed operation is unavailable. See create-entity SKILL.md for the full rule.
+
 ## Done when
 
 Scene loads cleanly via `scripts/validate.sh <scene>` (in this skill — wraps

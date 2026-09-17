@@ -22,6 +22,8 @@ Assembles a complete game level by composing entity scenes, UI elements, and lay
 - Camera follow logic in a dedicated `CameraController.gd` (tween or direct follow)
 - Exported NodePaths for critical references (player, goal, hazards)
 
+**Sanctioned-paths-only**: mutate scene files exclusively through MCP tools; direct `.tscn` edits are not permitted — report `⛔ BLOCKED: tool cannot express <operation>` if a needed operation is unavailable. See create-entity SKILL.md for the full rule.
+
 ## Done when
 
 Level loads cleanly via `scripts/validate.sh <scene>` (in this skill — wraps

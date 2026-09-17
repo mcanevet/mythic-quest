@@ -18,6 +18,8 @@ Creates entity scenes and scripts:
 - Identify instanced nodes by groups, not names
 - Connect signals explicitly; discrete input in `_input`, not polled
 
+**Sanctioned-paths-only rule**: Scene files are **only** mutated through MCP tools (`create_scene`, `add_node`, `set_node_properties`, `batch_scene_operations`). Direct `.tscn` edits (shell heredocs, text editors, shell scripts) are **not permitted** — if an operation the tools cannot express is required (ext_resource reordering, scene metadata repair), report `⛔ BLOCKED: tool cannot express <operation>` to the orchestrator. Never improvise file-system workarounds. This rule prevents silent corruption and permission-profile violations (observed: heredoc bypasses edit deny).
+
 **Reference files (read the one matching your entity before Step 3):**
 - Physics node selection decision tree → [reference/physics-nodes.md](reference/physics-nodes.md)
 - Worked examples (player, pickup, projectile — node hierarchies + script skeletons) → [reference/examples.md](reference/examples.md)
@@ -37,11 +39,15 @@ Empirically observed godot-mcp-runtime schema quirks (walkthrough6, 2026-09-15).
 - **Batch scene operations**: malformed or loosely-formatted JSON payloads fail; keep JSON compact and canonical.
 - **Running engine overwrites scene files**: a live `run_project`/playtest serializes runtime state back into `.tscn` files, clobbering concurrent edits. MANDATORY: call `godot_stop_project` BEFORE any scene-file edit (create/edit/save), and only restart the engine after the edit round completes. Evidence: walkthrough6, 2026-09-15.
 - **`:=` type inference in run_script**: `var x := dict.get("k", d)` fails with "cannot infer the type" — use untyped `var x = ...` or explicit `var x: int = ...` in dynamically submitted scripts (walkthrough6, 2026-09-15; also the largest compile-error class in MythicQuest's 09-07 run, 14 occurrences).
+- **Batch-validation economics**: when verifying multiple entities, run one `validate.sh` per logical unit (not per file). Godot's headless boot caches imports; repeated boots waste 15-30s each with zero added value. Group validations by scene dependency.
+
+**Signal wiring** (post-upstream-8nk): once `verify_node_connections` is available, replace manual 4-point checks with the tool. Until then: verify connections via `get_node_signals`, confirm `_on_<node>_<signal>` handler naming, and manually fire the signal to test the path. See [reference/signals.md](reference/signals.md) for the procedure.
 
 ## Done when
 
 `scripts/validate.sh <res://scenes/....tscn>` (in this skill) runs without
 errors — it wraps `godot --headless <scene> --quit-after 1` — AND test hooks
 respond AND the entity is integrated into its parent scene (an entity not
-in the scene tree is dead code — see Step 4b in
-[reference/mcp-patterns.md](reference/mcp-patterns.md)).
+in the scene tree is dead code — integrate via `add_node` under the
+project's Main scene at the plan-specified node path, then confirm via
+`get_scene_tree()` that it appears under its parent).

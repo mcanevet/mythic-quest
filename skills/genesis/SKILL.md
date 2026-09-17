@@ -64,9 +64,27 @@ bd create "[Imperative title]" \
 - **NO skill labels or "Use skill:" prefixes** — grooming decides routing
 - **NO dependencies between siblings** — grooming wires those
 
+### Step 4: Validate genesis output (mandatory, deterministic exit-0)
+
+Run the validation script before returning success:
+
+```bash
+scripts/validate.sh
+```
+
+Exit code must be 0. The script checks:
+- Beads ledger initialized (`bd list` succeeds)
+- ≥10 open task beads with core/optional/future labels
+- VISION.md has required sections (Vision, Core Mechanics, Art Style)
+- README.md exists
+
+If validation fails, fix the issues and re-run. Do not return success with a non-zero exit.
+
 ## Done when
 
 - VISION.md exists with all required sections (title, vision, mechanics, art)
+- README.md skeleton exists (with `*Filled in as...*` placeholders)
 - 10-20 raw task beads exist as children of the `raw-backlog` step
 - Every bead is unassigned and unrouted (no labels, no deps)
 - I have **not** groomed anything — assignment/routing is the orchestrator's job
+- `scripts/validate.sh` exits 0 (deterministic gate)
