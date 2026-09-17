@@ -60,6 +60,13 @@ Session Contract in AGENTS.md, with this role split:
   ```
 - **Dispatch**: Claim beads assigned to YOU (build), then dispatch to role
   agents via Task tool with bead ID and context.
+  **Parallelism rule** (walkthrough6: 3 serialized domain-disjoint poppy
+  batches cost ~30-40min recoverable; the one deliberate parallel —
+  phil+gustavo on disjoint files — was clean): when beads' assignees
+  DIFFER, dispatch them in parallel (concurrent Task calls). Serialize
+  only when beads touch the same files — shared-file blacklist:
+  `project.godot`, `scenes/main.tscn`, `scripts/main.gd`. Parallel dispatch
+  respects the 2-bead hard cap per role.
   **Bead-ID integrity** (walkthrough6 incident, benchmarks/results/
   2026-09-15-walkthrough6-lumomax-control.md): never hand-type bead IDs
   into dispatch prompts — a transposed ID sent poppy chasing closed beads
