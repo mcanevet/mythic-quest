@@ -29,7 +29,7 @@ Creates entity scenes and scripts:
 
 ## Gotchas
 
-Empirically observed godot-mcp-runtime schema quirks (walkthrough6, 2026-09-15). The full annotated failure list with evidence citations lives in [reference/gotchas.md](reference/gotchas.md). Verify each before closing a task:
+Empirically observed godot-mcp-runtime schema quirks (lumomax control run, benchmarks/results/2026-09-15-walkthrough6-lumomax-control.md). The full annotated failure list with evidence citations lives in [reference/gotchas.md](reference/gotchas.md). Verify each before closing a task:
 
 - **Colors**: pass `{r, g, b, a}` objects with floats 0–1, not hex strings. `"#1b2a41"` fails; use `{r: 27/255, g: 42/255, b: 65/255, a: 1}`.
 - **Scripts**: pass plain `res://` path strings (e.g. `"res://scripts/station.gd"`), not nested objects.
@@ -37,11 +37,37 @@ Empirically observed godot-mcp-runtime schema quirks (walkthrough6, 2026-09-15).
 - **Polygon2D**: the `polygon` property takes an array of `{x, y}` points.
 - **Overlap queries**: `Area2D.get_overlapping_bodies()` won't detect non-physics placeholder nodes; iterate children instead when entities are `Node2D` placeholders.
 - **Batch scene operations**: malformed or loosely-formatted JSON payloads fail; keep JSON compact and canonical.
-- **Running engine overwrites scene files**: a live `run_project`/playtest serializes runtime state back into `.tscn` files, clobbering concurrent edits. MANDATORY: call `godot_stop_project` BEFORE any scene-file edit (create/edit/save), and only restart the engine after the edit round completes. Evidence: walkthrough6, 2026-09-15.
-- **`:=` type inference in run_script**: `var x := dict.get("k", d)` fails with "cannot infer the type" — use untyped `var x = ...` or explicit `var x: int = ...` in dynamically submitted scripts (walkthrough6, 2026-09-15; also the largest compile-error class in MythicQuest's 09-07 run, 14 occurrences).
-- **Batch-validation economics**: when verifying multiple entities, run one `validate.sh` per logical unit (not per file). Godot's headless boot caches imports; repeated boots waste 15-30s each with zero added value. Group validations by scene dependency.
+- **Running engine overwrites scene files**: a live `run_project`/playtest serializes runtime state back into `.tscn` files, clobbering concurrent edits. MANDATORY: call `godot_stop_project` BEFORE any scene-file edit (create/edit/save), and only restart the engine after the edit round completes. Evidence: benchmarks/results/2026-09-15-walkthrough6-lumomax-control.md.
+- **`:=` type inference in run_script**: `var x := dict.get("k", d)` fails with "cannot infer the type" — use untyped `var x = ...` or explicit `var x: int = ...` in dynamically submitted scripts (lumomax control run, benchmarks/results/2026-09-15-walkthrough6-lumomax-control.md; also the largest compile-error class in the lumo-max rallywall run, 14 occurrences — benchmarks/results/2026-09-07-rallywall-lumo-max-medium-shipped.md).
+- **Batch-validation economics**: when verifying multiple entities, run one
+  `validate.sh` per logical unit (not per file). Godot's headless boot
+  caches imports; repeated boots waste 15–30s each with zero added value.
+  Group validations by scene dependency (observed: 09-07 rallywall run,
+  benchmarks/results/2026-09-07-rallywall-lumo-max-medium-shipped.md — 14
+  occurrences of type-inference parse errors).
 
-**Signal wiring** (post-upstream-8nk): once `verify_node_connections` is available, replace manual 4-point checks with the tool. Until then: verify connections via `get_node_signals`, confirm `_on_<node>_<signal>` handler naming, and manually fire the signal to test the path. See [reference/signals.md](reference/signals.md) for the procedure.
+**Signal wiring**: use `verify_node_connections` instead of manual 4-point
+checks (upstream status: released on the pinned combo branch
+`combo/mythic-quest-integration`, PRs #45–#47; retire the manual procedure
+when a tagged upstream release ships the tool). See
+[reference/signals.md](reference/signals.md) for the manual path.
+
+## Test scenario contract (creator-authored)
+
+You wrote the entity — you write its test contract, not QA. For every
+interactive entity, author `tests/scenarios/<entity_name>.json` using the
+canonical schema in [../init-project/reference/testing-patterns.md](../init-project/reference/testing-patterns.md):
+
+- Start from the canonical scenario schema; add a `custom` invariant per
+  game-specific behavior (requires `get_test_state()` on the entity)
+- **Never invent a `rule` name** — an unknown rule is silently ignored by the
+  harness (passes while checking nothing). Use only the canonical invariant
+  rules list in testing-patterns.md
+- This file is a functional contract: `playtest`'s `functional` mode globs
+  `tests/scenarios/*.json` and merges these invariants into the final QA
+  scenario — entity-specific correctness gets checked at final QA because
+  you declared it here, at creation time. QA verifies against this contract;
+  the creator authors it.
 
 ## Done when
 
@@ -50,4 +76,9 @@ errors — it wraps `godot --headless <scene> --quit-after 1` — AND test hooks
 respond AND the entity is integrated into its parent scene (an entity not
 in the scene tree is dead code — integrate via `add_node` under the
 project's Main scene at the plan-specified node path, then confirm via
-`get_scene_tree()` that it appears under its parent).
+`get_scene_tree()` that it appears under its parent). Before runtime
+verification, also run `scripts/validate.sh` with **no argument** — the
+headless project-boot mode (legacy `headless_check.sh` equivalent) catches
+script parse errors across the whole project that single-scene loading
+misses. AND `tests/scenarios/<entity_name>.json` exists for interactive
+entities (see _Test scenario contract_ above).

@@ -3,20 +3,38 @@ description: Animator — adds motion and life to entities (tweens, clips, frame
 mode: subagent
 permission:
   edit:
-    "*": deny                    # stephen: deny-baseline-first
-    "**/*.gd": allow             # stephen: scripts (tween code, triggers)
-    "**/*.tscn": allow           # stephen: scenes (AnimationPlayer nodes)
+    "*": deny                    # stephen: deny-baseline-first (mythic-quest-4u3)
+    "**/*.gd": allow             # stephen: scripts (tween code, triggers) (09-15 walkthrough6)
+    # Scene files: DENIED — sanctioned-paths-only; AnimationPlayer nodes and
+    # scene mutations go through the engine MCP tools (add_node,
+    # set_node_properties, batch ops), same policy as poppy/rachel.
   bash:
-    "*": deny                    # stephen: deny-baseline-first
-    "bd ready --assignee stephen*": allow  # stephen: claim queue
-    "bd update*": allow             # stephen: claim assigned beads
-    "bd list*": allow                       # stephen: inspect board
-    "bd show*": allow                      # stephen: bead details
-    "bd close*": allow                     # stephen: close animation beads
-    "bd create*": allow                    # stephen: discover animation bugs
-    "godot*": allow                         # stephen: MCP runtime verification
-    "npx godot-mcp-runtime*": allow        # stephen: MCP server
+    "*": deny                    # stephen: deny-baseline-first (mythic-quest-4u3)
+    "bd ready --assignee stephen*": allow  # stephen: claim queue (09-15 walkthrough6)
+    "bd update*": allow             # stephen: claim assigned beads (09-15 walkthrough6)
+    "bd list*": allow                       # stephen: inspect board (09-15 walkthrough6)
+    "bd show*": allow                      # stephen: bead details (09-15 walkthrough6)
+    "bd close*": allow                     # stephen: close animation beads (09-15 walkthrough6)
+    "bd create*": allow                    # stephen: discover animation bugs (09-15 walkthrough6)
+    "godot*": allow                         # stephen: CLI engine invocation (mythic-quest-4u3)
+    "npx godot-mcp-runtime*": allow        # stephen: MCP server (mythic-quest-4u3)
   task: deny                   # stephen: no subagent spawning
+  # Engine MCP — read/verify/mutate surface for animation work (tweens,
+  # AnimationPlayer nodes via add_node/set_node_properties).
+  # Granted by mythic-quest-4u3 (was: workflows said "verify via MCP" with no grants).
+  "godot-mcp-runtime_*": deny
+  "godot-mcp-runtime_get_project_info": allow
+  "godot-mcp-runtime_run_project": allow
+  "godot-mcp-runtime_stop_project": allow
+  "godot-mcp-runtime_take_screenshot": allow
+  "godot-mcp-runtime_simulate_input": allow
+  "godot-mcp-runtime_get_scene_tree": allow
+  "godot-mcp-runtime_get_node_properties": allow
+  "godot-mcp-runtime_add_node": allow
+  "godot-mcp-runtime_set_node_properties": allow
+  "godot-mcp-runtime_batch_scene_operations": allow
+  "godot-mcp-runtime_validate": allow
+  "godot-mcp-runtime_validate_scene_structure": allow
 ---
 
 You are **stephen**, the animator. You add motion and life to existing entities.
@@ -29,9 +47,8 @@ You are **stephen**, the animator. You add motion and life to existing entities.
 1. Claim: `bd update <id> --claim` (only beads assigned to you: `bd ready --assignee stephen`)
 2. Read the bead's description (what should move, when, how it should feel)
 3. Read the skill: "Use skill: apply-animation" → `.agents/plugins/engine/godot/skills/apply-animation/SKILL.md`
-4. Implement per conventions (tweens for one-shots, AnimationPlayer for clips)
-5. Verify via MCP (`run_project` + `simulate_input` + `take_screenshot`) — the animation must fire at the right trigger
-6. Close honestly: `bd close <id> --reason "PASS: <observed motion>"` or `"FAIL: <what failed>"`
+4. Implement per conventions (the skill documents implementation patterns and verification)
+5. Close honestly: `bd close <id> --reason "PASS: <observed motion>"` or `"FAIL: <what failed>"`
 
 **Discoveries**: animation bugs found mid-task → `bd create "<title>" -p <0-4> --deps discovered-from:<id>` (unassigned — grooming routes them).
 
