@@ -64,3 +64,76 @@ Conventions (from HARNESS_BEADS heritage):
   is the in-harness workaround).
 - **Retire:** the create-entity Gotchas entries marked "schema quirks"
   shrink to a pointer at the (now-documented) upstream schema.
+
+### Auto-verify signal connections (replace manual verification procedure)
+- **Observed:** walkthrough6 & 7 — every signal-wiring task required a 4-point
+  manual check (connection list, handler naming, manual firing test, common
+  failure patterns). Agents burned 10-15 min per entity re-deriving the
+  procedure; regressions slipped when steps were skipped.
+- **Proposed upstream fix:** Add `verify_node_connections(node_path: str)` tool.
+  - Reads the scene file (or live state via remote debugger) to list all
+    connected signals for the target node.
+  - Compares against `_on_<node>_<signal>` methods in the attached script
+    (via `GDScriptAnalyzer` or script reflection).
+  - Returns: `{connected: [{signal, target, method}], orphan_handlers: [method],
+    missing_connections: [{signal, expected_handler}]}`.
+  - Optional: `--auto-fix` flag to connect missing signals if the handler exists.
+- **Status:** proposed (no repro needed — this is a capability gap, not a bug).
+  Bead: mythic-quest-8nk (new).
+- **Retire:** delete the "Signal wiring verification procedure" section from
+  create-entity SKILL.md; replace with "Run `verify_node_connections` and
+  assert zero missing/orphaned". The 4-point procedure becomes obsolete.
+
+### Structural scene validation (replace manual shape/node checks)
+- **Observed:** walkthrough6 — `validate.sh` only checks if a scene *loads*;
+  it doesn't verify required nodes exist (e.g., `CollisionShape2D` with a
+  `shape` property set). Agents had to write custom `text-validate.sh` scripts
+  or manually inspect `.tscn` files.
+- **Proposed upstream fix:** Add `validate_scene_structure(scene_path: str,
+  schema: dict)` tool.
+  - Schema format: `{"type": "CharacterBody2D", "children": [{"type":
+    "CollisionShape2D", "has_property": "shape"}, {"type": "Sprite2D"}]}`.
+  - Runs headless, loads the scene, traverses the tree, and validates each
+    node against the schema (type, required properties, child structure).
+  - Returns: `{valid: bool, missing_nodes: [{path, expected_type}],
+    missing_properties: [{path, prop}], errors: [str]}`.
+- **Status:** proposed (capability gap). Bead: mythic-quest-a0m (new).
+- **Retire:** delete the "CollisionShape shape-presence check" gotcha and
+  the validator pair rule from create-entity reference; replace with a
+  single `validate_scene_structure` call in the skill's "Done when" section.
+
+### Automated UI interaction testing (replace click_element strategy)
+- **Observed:** walkthrough7 — UI validation required ad-hoc `simulate_input`
+  sequences + manual screenshot analysis. Every button/slider required
+  custom scripting; no standard pattern existed.
+- **Proposed upstream fix:** Add `click_ui_element(ui_path: str,
+  button: str = "pressed")` tool.
+  - Uses Godot's `Control` node hierarchy to find the target by path/name.
+  - Detects node type (`Button`, `CheckBox`, `Slider`, etc.) and emits the
+    appropriate event (`mouse_button_clicked`, `focus_entered`, value change).
+  - Returns: `{clicked: bool, signal_emitted: str, new_value: any}`.
+  - Optional: `--wait-for-response` to block until a signal fires or timeout.
+- **Status:** proposed (capability gap). Bead: mythic-quest-8p5 (new).
+- **Retire:** delete the "UI click_element validation strategy" section from
+  create-ui SKILL.md; replace with "Run `click_ui_element` on each button
+  and assert expected signal/value changes".
+
+### Auto-recover from dead bridge (replace manual health check)
+- **Observed:** every skill's "Step 0" requires `get_project_info` to verify
+  the MCP bridge is alive; agents waste cycles on dead bridges before
+  escalating.
+- **Proposed upstream fix (two options):**
+  - **Option A (auto-recovery):** When a tool call fails due to a missing
+    bridge, the runtime automatically attempts to restart the engine (if
+    allowed by config) or re-inject the bridge, then retries the call once.
+  - **Option B (health tool):** Add `check_health()` tool returning detailed
+    status: `{bridge_loaded: bool, bridge_version: str, engine_version: str,
+    active_session: bool, diagnostics: [str]}`.
+- **Status:** proposed (capability gap). Bead: mythic-quest-xki (new).
+- **Retire:** delete the "MCP health check" Step 0 from create-entity/
+  create-level/create-ui SKILL.mds; replace with "Runtime auto-recovers
+  from dead bridges; report `⛔ BLOCKED` only after 2 automatic retries fail".
+
+---
+*New entries added 2026-09-17. Each represents a runtime contribution that
+eliminates a procedural knowledge requirement from our skills.*
