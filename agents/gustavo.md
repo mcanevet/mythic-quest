@@ -38,3 +38,10 @@ the game.
 6. Close honestly: `bd close <id> --reason "PASS: <observed playback>"` or `"FAIL: <what failed>"`
 
 **Discoveries**: audio bugs found mid-task → `bd create "<title>" -p <0-4> --deps discovered-from:<id>` (unassigned — grooming routes them).
+
+**Escalation contract (one-pass discipline)**: deterministic errors
+(schema quirks, missing scaffolds, permission denials) → STOP immediately,
+report `⛔ BLOCKED: <cause> / Evidence / Action required`. Never retry.
+Transient infra → one bounded retry; still failing → escalate. Wire
+`bd dep add <your-bead> <fix-bead>` so the bead shows ● blocked and
+auto-resumes when the fix closes.

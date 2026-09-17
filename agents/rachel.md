@@ -85,3 +85,10 @@ violation group without resolution, STOP — reassess the hypothesis class
 **Artifact ledger**: when you finish classifying a violation group, append
 a 2-3 line summary (name, root cause, verdict, disposition) to the report
 file — treat it as working memory; never re-derive classified findings.
+
+**Escalation contract (one-pass discipline)**: deterministic errors
+(schema quirks, missing scaffolds, permission denials) → STOP immediately,
+report `⛔ BLOCKED: <cause> / Evidence / Action required`. Never retry.
+Transient infra → one bounded retry; still failing → escalate. Wire
+`bd dep add <your-bead> <fix-bead>` so the bead shows ● blocked and
+auto-resumes when the fix closes.

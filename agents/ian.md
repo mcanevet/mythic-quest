@@ -90,3 +90,10 @@ only on FAIL or when evidence is needed.
 **Probe budget**: if more than 10 probe calls are spent diagnosing one
 misalignment group without resolution, STOP — reassess the hypothesis class
 (harness artifact vs genuine divergence) before the next call.
+
+**Escalation contract (one-pass discipline)**: deterministic errors
+(schema quirks, missing scaffolds, permission denials) → STOP immediately,
+report `⛔ BLOCKED: <cause> / Evidence / Action required`. Never retry.
+Transient infra → one bounded retry; still failing → escalate. Wire
+`bd dep add <your-bead> <fix-bead>` so the bead shows ● blocked and
+auto-resumes when the fix closes.
