@@ -7,7 +7,8 @@ description: Invent a game and produce VISION.md + raw (unassigned) task beads u
 
 Creates the creative foundation for a new game project:
 1. **VISION.md** — Title, vision statement, core mechanics, art style
-2. **Raw task beads** — 10-20 unassigned children of the `raw-backlog` step
+2. **README.md** — player-facing skeleton ([readme-skeleton.md](reference/readme-skeleton.md)): copy it, substitute title + one-line description, keep the `*Filled in as...*` placeholders — implementers replace them as features land
+3. **Raw task beads** — 10-20 unassigned children of the `raw-backlog` step
 
 **Critical constraint**: I am the **creative director**, not the orchestrator. I spawn **raw, unrouted** children — no assignee, no skill label, no dependencies. The orchestrator's backlog-grooming stage decides routing (assignee + skill) for each child.
 
@@ -37,6 +38,10 @@ Creates the creative foundation for a new game project:
 ## Art Style
 [Visual direction: palette, mood, reference aesthetics]
 ```
+
+### Step 2b: Copy README skeleton
+
+Copy `reference/readme-skeleton.md` to `README.md` at the project root, substituting `[Game Title]` and the one-line description. Leave all `*Filled in as...*` placeholders intact — implementers replace them as features land.
 
 ### Step 3: Spawn raw task beads
 

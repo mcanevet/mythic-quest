@@ -82,6 +82,12 @@ bead (and context) from the orchestrator and you make it real:
    assignee mismatch because someone else claimed it), do NOT improvise
    workarounds — report `⛔ BLOCKED: bd close refused for <id> (<error>)` to
    the orchestrator, who owns re-claiming or handing back the chore.
+   **Definition of done** for player-visible features (controls, scoring,
+   rules, game flow): the close ALSO updates `README.md` — replace the
+   relevant `*Filled in as...*` placeholder with polished present-tense
+   content. No bead IDs or ledger references in README. Skip for pure
+   scaffolding. Closing without the README update is a half-done close —
+   the README is the only context critique-mode agents may consult.
 6. Discoveries found mid-task →
    `bd create "<title>" -p <0-4> --deps discovered-from:<id>`
    and mention them in your report back to the orchestrator.
