@@ -74,6 +74,12 @@ if [ "$MODE" = "audit" ]; then
   FILTERED="$(printf '%s\n' "$FILTERED" | filter_cached)"
 fi
 
+# Deterministic GDScript pre-pass (always runs, non-blocking)
+if [ -n "$FILTERED" ] && printf '%s\n' "$FILTERED" | grep -qE '\.(gd|md)$'; then
+  echo "Running GDScript parse pre-pass..."
+  bash ".agents/skills/lint/scripts/lint-gdscript-check.sh" || true
+fi
+
 # rules.yaml changed => full scope. Checked out here (not in filter_files)
 # because command substitutions run in subshells where variable writes vanish.
 if [ "$MODE" = "dev" ] && printf '%s\n' "$FILTERED" | grep -qxF "$RULES"; then
