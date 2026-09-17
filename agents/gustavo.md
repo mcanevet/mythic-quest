@@ -11,6 +11,7 @@ permission:
   bash:
     "*": deny                    # gustavo: deny-baseline-first
     "bd ready --assignee gustavo*": allow  # gustavo: claim queue
+    "bd update*": allow              # gustavo: claim assigned beads
     "bd list*": allow                        # gustavo: inspect board
     "bd show*": allow                       # gustavo: bead details
     "bd close*": allow                      # gustavo: close audio beads

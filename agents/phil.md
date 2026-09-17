@@ -11,6 +11,7 @@ permission:
   bash:
     "*": deny                    # phil: deny-baseline-first
     "bd ready --assignee phil*": allow  # phil: claim queue
+    "bd update*": allow         # phil: claim assigned beads
     "bd list*": allow                   # phil: inspect board
     "bd show*": allow                  # phil: bead details
     "bd close*": allow                 # phil: close material beads

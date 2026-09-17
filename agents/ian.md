@@ -23,6 +23,7 @@ permission:
     "*scripts/*.sh*": allow
     "*scripts/*.py*": allow
     "bd ready*": allow
+    "bd update*": allow  # ian: claim assigned beads
     "bd show*": allow
     "bd list*": allow
     "bd search*": allow

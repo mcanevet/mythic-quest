@@ -9,6 +9,7 @@ permission:
   bash:
     "*": deny                    # stephen: deny-baseline-first
     "bd ready --assignee stephen*": allow  # stephen: claim queue
+    "bd update*": allow             # stephen: claim assigned beads
     "bd list*": allow                       # stephen: inspect board
     "bd show*": allow                      # stephen: bead details
     "bd close*": allow                     # stephen: close animation beads
