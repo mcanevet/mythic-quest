@@ -2,12 +2,18 @@
 # The linter covers all files in the repo. Do not restate rules elsewhere —
 # other files (e.g. AGENTS.md) point here, they never copy rule text.
 # To add or change a rule: edit this file, then run the lint to verify
-# compliance.
+# compliance (skills/lint wisp — see .agents/skills/lint/SKILL.md).
+#
+# Schema: each rule has a title, rationale, applies_to (file globs), and a
+# prompt (injected verbatim into the judge subagent for each file).
+# Paths in prompts are repo-relative from this repo's root: game-build
+# surface dirs are agents/, skills/, plugins/, workflows/; pipeline
+# internals live under .agents/.
 #
 # Vocabulary (normative):
 # - harness: the agent execution environment (opencode, Claude Code, Codex, ...)
-# - pipeline-dev session: developer session building the repo
-# - game-build session: consumer session generating a game
+# - pipeline-dev session: developer session building this repo
+# - game-build session: consumer session generating a game in a sandbox
 
 version: 1
 
@@ -15,35 +21,40 @@ rules:
   prose-earns-place:
     title: Prose earns its place
     rationale: >
-      Mechanical procedures buried in prose rot and drift. Agent and skill
-      prose should contain decision logic, not procedures; procedures belong
-      in a script or another dedicated artifact.
+      Instruction prose must be load-bearing: every step, checklist entry,
+      or caution prevents an observed failure, encodes non-obvious engine
+      or tool behavior, or calibrates judgment. Noise costs context on
+      every skill read; deterministic enforcement is evidence enough.
     applies_to: "**"
-      prompt: >
-        Identify prose blocks that describe step-by-step mechanical procedures,
-        transforms, or deterministic operations (e.g. shell command sequences,
-        file manipulation recipes, or algorithmic text transforms written as
-        prose). These should be extracted into a script or dedicated artifact,
-        not expressed as prose. Only flag actual mechanical procedures; do not
-        flag decision logic, rationale, or high-level conceptual explanation.
+    prompt: >
+      Identify prose blocks that describe step-by-step mechanical procedures,
+      transforms, or deterministic operations (e.g. shell command sequences,
+      file manipulation recipes, or algorithmic text transforms written as
+      prose) — these belong in a script or dedicated artifact. Also flag
+      content that is self-evident, derivable from tool schemas, or already
+      enforced structurally by permissions, scripts, or the harness. Only
+      flag actual mechanical procedures and free-floating noise; do not flag
+      decision logic, rationale, observed-failure cautions, or calibration
+      knowledge a new model would lack.
 
   least-privilege-permissions:
     title: Permission grants cite their justification
     rationale: >
       Every permission allow-grant in agent configs must cite the bead or
       benchmark run that justifies it, keeping the surface minimal and
-      auditable.
-    applies_to: "**"
+      auditable. Unjustified grants are presumptively too broad.
+    applies_to: "agents/**, plugins/**, .opencode/**"
     prompt: >
-      Files NOT matching *.json, *.jsonc, *.toml, *.yaml under the repo root
-      (top two levels) contain no permission configuration — close with
-      NO APPLICABLE RULES. For agent permission configurations (permission
-      rules, allowed tools or commands in opencode.json, .opencode/, and
-      similar harness configs), check each allow-grant: does it cite its
-      justification — a bead ID (pattern like mythic-quest-XXX or bd-NNN) or
-      a benchmark run reference? Flag grants that lack citations, are
-      broader than their cited justification warrants, or accumulate
-      permissions with no justification at all.
+      Files that are not agent profiles or permission configuration
+      contain no permission grants — close with NO APPLICABLE RULES. For
+      agent permission configurations (agents/*.md frontmatter, permission
+      rules, allowed tools/commands in harness configs), check each
+      allow-grant: does it cite its justification — a bead ID (bd-NNN or
+      similar) or a benchmark run reference? Flag grants lacking citations,
+      broader than their cited justification warrants, or accumulating with
+      no justification. Read-only tools (read, glob, grep, todowrite,
+      question) don't need narrowing — the principle bites on mutating
+      tools (edit, write, bash) and MCP write patterns.
 
   single-source-of-truth:
     title: No restatement across files
@@ -59,3 +70,227 @@ rules:
       — restatements outside such generated blocks are violations. Flag
       hand-edited-looking copies of content that should be generated or
       centralized, and any generated block whose source of truth is unclear.
+
+  engine-agnostic-agents:
+    title: Agent decision logic is engine-agnostic
+    rationale: >
+      Agents are portable across engines; skills carry the engine specifics.
+      Engine API names, file formats, MCP tool names, or process management
+      in agent instruction text break that portability boundary.
+    applies_to: "agents/**"
+    prompt: >
+      In agent instruction text (not frontmatter permissions — those are
+      configuration), flag engine-specific content: engine API names (e.g.
+      Godot node types, .tscn files), MCP tool names, or process
+      management commands. References to skills for implementation details
+      are legal; that IS the portability mechanism. Implementation patterns
+      belong in skills (plugins/engine/*/skills/), not agents — if a rule
+      would survive an engine switch it is decision logic (agent); if it
+      names APIs/files/tools it is implementation (skill).
+
+  no-improvised-alternatives:
+    title: Sanctioned paths only — no improvised alternatives
+    rationale: >
+      Where a skill defines one sanctioned path, the correct outcome on
+      failure is a structured BLOCKED report, not a detour. Work done
+      outside the sanctioned path is not done.
+    applies_to: "agents/**, plugins/**, skills/**"
+    prompt: >
+      Flag instruction text offering fallback, alternative, or "last
+      resort" paths where a skill defines one sanctioned path. Wording red
+      flags: "if X fails, you can alternatively…", "or fall back to…",
+      "as a last resort, manually…". Legal: prohibition lines ("never
+      fall back"), domain splits with stated reasons, scoped degradation
+      with stated reason, and the structured BLOCKED escape hatch itself.
+      Permission-level exceptions in frontmatter are the only sanctioned
+      divergence and require observed evidence.
+
+  genre-agnostic-content:
+    title: Genre-agnostic skills and agents
+    rationale: >
+      Game-build content must work for any genre — puzzle, action,
+      strategy, simulation alike. Genre assumptions baked into skills or
+      agents silently break other games.
+    applies_to: "agents/**, plugins/**, skills/**"
+    prompt: >
+      Judge the assumption, not the vocabulary: a skill assuming a "jump
+      arc" or "respawn timer" is a violation; a frame-time budget is not.
+      Citing a genre only as a worked example ("e.g. a platformer") is
+      legal; assuming the genre in decision logic is not. Named games and
+      cultural commentary are violations; incident anecdotes naming genre
+      objects as observed evidence are legal.
+
+  agent-agnostic-skills:
+    title: Skills are agent-agnostic
+    rationale: >
+      Any agent can execute any skill; role judgment is applied by the
+      agent, not encoded in the skill. Persona voice, role rubrics, or
+      inter-agent choreography in skills couples the two wrongly.
+    applies_to: "plugins/**, skills/**"
+    prompt: >
+      Flag agent names (e.g. Poppy, Ian, Pootie, Rachel) or role-specific
+      judgment in skills ("Poppy should…", "the Lead Engineer ensures…"),
+      including paraphrases. Also flag persona voice, evaluation rubrics
+      belonging to a specific role, or collaboration patterns tied to one
+      agent. Generic pronouns are fine.
+
+  encode-real-failures:
+    title: Encode observed failures as checks
+    rationale: >
+      Observed playtest/validation failures must become a gotcha line or
+      validator check, or they recur. A rule that exists because of an
+      incident beats a rule invented from theory.
+    applies_to: "plugins/**, skills/**"
+    prompt: >
+      This rule evaluates rule QUALITY rather than flagging violations:
+      note (do not flag) content that looks like it encodes a real observed
+      failure (dated incident references, benchmark citations). Flag
+      instruction text that asserts failure modes with no observed basis
+      where the claim is non-obvious — either cite the observation or drop
+      the claim.
+
+  citation-resolvable:
+    title: Incident citations must be resolvable
+    rationale: >
+      "Observed <date>" citations must be traceable: a dated file in
+      benchmarks/results/, a commit hash, or a "<model> run" qualifier.
+      A bare date with no locatable evidence is provenance theater.
+    applies_to: "plugins/**, skills/**, agents/**, benchmarks/**"
+    prompt: >
+      Scan for incident citations ("observed <date>", "run N", "benchmark
+      results"). Each must carry a resolvable reference: a
+      benchmarks/results/ path, a commit hash, a git-log anchor, or a
+      "<model> run/benchmark" qualifier. Flag bare dates or run numbers
+      with no locatable evidence — keep the lesson, fix the citation.
+      Never cite session DB IDs or traces that only exist on one machine.
+
+  no-pkill:
+    title: No pkill usage or instruction
+    rationale: >
+      Broad pkill patterns match the MCP server's command line and kill
+      it, permanently removing all engine tools for the session. The
+      sanctioned engine stop is the stop_engine.sh helper.
+    applies_to: "agents/**, plugins/**, skills/**"
+    prompt: >
+      Flag any pkill usage or instruction to use pkill (including
+      "pkill -f" variants) except in the sanctioned stop-engine script
+      itself and in prohibition lines that document the ban ("Never run
+      pkill", "the only sanctioned engine stop"). If an engine stop is
+      needed, the reference should point to the stop_engine helper script.
+
+  benchmark-objective-triad:
+    title: Benchmark decisions optimize the objective triad
+    rationale: >
+      Harness evaluation and benchmark-record decisions optimize a
+      three-part objective, strictly ordered: (1) OUTCOME — the game works
+      per the vision; (2) SPEED — wall clock; (3) TOKEN EFFICIENCY.
+      Lexicographic, not weighted: a faster or cheaper run that ships a
+      broken game is a regression.
+    applies_to: "agents/**, plugins/**, skills/**, benchmarks/**"
+    prompt: >
+      In benchmark reports, run comparisons, and evaluation instructions,
+      flag conclusions drawn without stating results on the three ordered
+      axes (outcome quality, wall clock, token totals), or any framing
+      that treats speed or cost savings as acceptable trades against a
+      broken or vision-missing shipped game.
+
+  incident-narrative-minimalism:
+    title: Incidents are protocol, not narrative
+    rationale: >
+      Incident knowledge in harness documents is recorded as signature,
+      deployed protocol, one-sentence root cause, and evidence citations —
+      not as timeline storytelling that costs context and rots.
+    applies_to: "plugins/**, skills/**, agents/**, benchmarks/results/**"
+    prompt: >
+      In documentation of run incidents (stalls, wedges, crashes, denial
+      storms), flag timeline reconstructions, hour-by-hour archaeology,
+      event-narration chains ("first X then Y then Z"), incidental host
+      forensics beyond a one-line root cause, and speculation about
+      process internals presented as cause. Legal: the failure SIGNATURE,
+      the deployed PROTOCOL, a one-sentence verified root cause, observed
+      metric rows, and one sentence of incident grounding.
+
+  config-not-hardcoded:
+    title: Game-specific values are config, not hardcoded
+    rationale: >
+      Input action names, node paths, bounds, and thresholds hardcoded
+      into harness scripts or skill docs assume one game's conventions —
+      the next genre breaks silently. Discover dynamically or require
+      explicit config.
+    applies_to: "plugins/**, skills/**"
+    prompt: >
+      In scripts and embedded code blocks of skill docs, flag
+      game-specific values treated as constants where they vary per game:
+      input action names, node paths, scores, bounds, durations, movement
+      speeds. Legal: engine-protocol actions that ARE the domain
+      (the meta-action keys of a bot config), engine-agnostic parameter
+      names with values supplied by callers, and convention FALLBACKS
+      that can be overridden by explicit config (e.g. trying "move_up"
+      then "up" then "ui_up" when no actions override is given) — a
+      hardcoded-only path with no override is the violation.
+
+  upstream-lifecycle-status:
+    title: Upstream workarounds cite status and retirement
+    rationale: >
+      Workarounds for upstream dependency gaps (engine, MCP runtime,
+      bridge safety policies) without a filed/patched/released status and
+      a retirement condition rot into permanent cargo cult.
+    applies_to: "plugins/**, skills/**, agents/**"
+    prompt: >
+      Flag workaround instructions targeting an upstream dependency
+      (version pins to dodge a bug, restrictions imposed by a bridge
+      safety policy, manual steps compensating for a missing tool
+      feature) that lack (a) upstream lifecycle status — filed, patched,
+      released, or pinned-version note — and (b) a retirement condition
+      ("remove when >= vX.Y"). Do not judge whether the fix actually
+      shipped; only whether the file records enough to check later.
+
+  trigger-quality:
+    title: Skill descriptions state what AND when
+    rationale: >
+      SKILL.md descriptions drive skill selection by agents that never
+      read the body. A vague description ("helps with scenes") means the
+      skill is chosen wrongly or never.
+    applies_to: "plugins/*/skills/*/SKILL.md, skills/*/SKILL.md"
+    prompt: >
+      Judge the frontmatter description of this SKILL.md: does it state
+      WHAT the skill does AND WHEN to use it, specifically enough that an
+      agent choosing between sibling skills picks correctly? Flag vague
+      descriptions ("helps with scenes", "for quality") and descriptions
+      that omit the trigger conditions. Files that are not SKILL.md close
+      with NO APPLICABLE RULES.
+
+  progressive-disclosure:
+    title: SKILL.md stays lean; detail lives in reference/
+    rationale: >
+      SKILL.md is read in full on every skill load — it must stay under
+      ~500 lines with detail in reference/ docs. Duplicated content
+      between SKILL.md and reference/ drifts apart.
+    applies_to: "plugins/*/skills/*/SKILL.md, skills/*/SKILL.md"
+    prompt: >
+      If this file is a SKILL.md: flag if it exceeds ~500 lines, or if
+      substantial content (more than short ≤3-line summaries) is
+      duplicated between it and its reference/ docs. Detail belongs in
+      reference/; SKILL.md keeps decision logic and pointers. Files that
+      are not SKILL.md close with NO APPLICABLE RULES.
+
+  bd-verb-surface:
+    title: Allowed bd verbs match agent duties
+    rationale: >
+      When an agent's bash permissions allow bd commands, the allowed
+      verb set must match its documented ledger duties — no more.
+      QA/critic profiles read and file findings but never close gates;
+      the orchestrator resolves gates but never claims task beads.
+    applies_to: "agents/**"
+    prompt: >
+      For agent profiles with bd command grants in frontmatter, check
+      each allowed verb against the agent's documented duties:
+      implementer/solo profiles may claim, close, and file discovered
+      work; QA/critic profiles may read and file findings but must not
+      claim, close, update, or resolve gates; orchestrators may read and
+      resolve gates but must not claim or close task beads. Flag verbs
+      granted beyond the profile's duties. Convention: verbs outside
+      the profile are left UNSET (denied by the catch-all) rather than
+      explicitly denied one by one — explicit per-verb denies are noise,
+      not violations. Files without bd grants close with NO APPLICABLE
+      RULES.
