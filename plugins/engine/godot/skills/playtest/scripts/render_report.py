@@ -60,8 +60,15 @@ def render(report: dict) -> str:
         fmt("Input responsiveness", True, f"ChaosBot fired {input_count} inputs without hang")
 
     for v in violations:
-        name = v.get("invariant", "invariant") if isinstance(v, dict) else str(v)
-        fmt(name, False, str(v.get("evidence", v)) if isinstance(v, dict) else "")
+        if not isinstance(v, dict):
+            fmt(str(v), False, "")
+            continue
+        # Harness schema (test_player.gd _report_violation): 'rule' + 'detail'.
+        # Older drafts used 'invariant'/'evidence' — read both, prefer harness keys.
+        name = v.get("rule") or v.get("invariant") or "invariant"
+        evidence = v.get("detail") or v.get("evidence") or ""
+        extra = f" (x{v['count']})" if "count" in v else ""
+        fmt(name + extra, False, str(evidence))
 
     lines += ["", f"**Overall: {'FAIL' if violations else 'PASS'}**",
               "", f"**Violations Found:** {len(violations)}"]

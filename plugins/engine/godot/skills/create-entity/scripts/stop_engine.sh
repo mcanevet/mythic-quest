@@ -1,31 +1,31 @@
-#!/bin/bash
-# Stop the spawned Godot engine process WITHOUT killing the MCP server.
-#
-# Why this script exists: agents have historically used pkill directly, and the
-# argv semantics of `pkill -f godot --path` (unquoted) make pkill's effective
-# pattern just "godot" — which matches `npx godot-mcp-runtime` (the MCP server
-# itself), permanently disconnecting all engine MCP tools (no auto-reconnect).
-# This script encapsulates the one safe kill pattern; agents never invoke pkill.
-#
-# Usage: stop_engine.sh          — kill engine, wait for port release
-# Exit codes: 0 = stopped (or nothing running), non-zero = unexpected failure
+#!/usr/bin/env bash
+# Stop a running headless/MCP Godot engine for this project.
+# Safety: PID-file first (.godot-engine.pid); fallback is a NARROW
+# path-bound pattern confined to this project directory — never a broad pkill.
+# Usage: scripts/stop_engine.sh
+set -uo pipefail
 
-set -u
+readonly PROJECT_DIR="${GODOT_PROJECT_DIR:-$PWD}"
+readonly PID_FILE="$PROJECT_DIR/.godot-engine.pid"
 
-# Matches only the spawned engine process: `godot --path <dir> ...`
-# Does NOT match `npx godot-mcp-runtime` (no `--path` in its command line).
-pkill -f 'godot --path' 2>/dev/null
-RC=$?
+stopped=0
 
-if [ $RC -eq 0 ]; then
-  echo "engine process(es) signalled"
-elif [ $RC -eq 1 ]; then
-  echo "no matching engine process found"
-else
-  echo "pkill failed with exit $RC" >&2
-  exit $RC
+if [[ -f "$PID_FILE" ]]; then
+  pid="$(cat "$PID_FILE" 2>/dev/null || true)"
+  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+    # Only kill if the process cmdline references this project dir (path-bound).
+    if ps -p "$pid" -o command= 2>/dev/null | grep -qF "$PROJECT_DIR"; then
+      kill "$pid" 2>/dev/null || true
+      stopped=1
+    fi
+  fi
+  command rm -f "$PID_FILE"
 fi
 
-# Wait for socket teardown (macOS TIME_WAIT recycling) before restart attempts.
-sleep 3
-echo "engine stopped"
+if [[ $stopped -eq 0 ]]; then
+  # Narrow, path-bound fallback: only processes whose command line
+  # mentions BOTH 'godot' and this exact project directory.
+  pkill -f "godot.*$PROJECT_DIR" 2>/dev/null || true
+fi
+
+exit 0

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Validate a Godot project (and optionally a scene) headlessly.
+# Canonical project validation (shared by create-entity, create-level,
+# create-ui skills — wrappers here: ../create-{level,ui}/scripts/validate.sh).
 # Usage: scripts/validate.sh [scene-path]
 #   No argument  -> godot --headless --quit   (imports + boots the project)
 #   Scene path    -> godot --headless <scene> --quit-after 1  (loads the scene)
