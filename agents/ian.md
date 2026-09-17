@@ -97,3 +97,9 @@ report `⛔ BLOCKED: <cause> / Evidence / Action required`. Never retry.
 Transient infra → one bounded retry; still failing → escalate. Wire
 `bd dep add <your-bead> <fix-bead>` so the bead shows ● blocked and
 auto-resumes when the fix closes.
+
+**Pre-close check** (avoid close-refusal round-trips): before `bd gate
+resolve`, confirm all gate children are closed PASS — `bd children <gate-id>`
+first; if any child is open, do NOT retry the resolve or use --force:
+wait for the child or report `⛔ BLOCKED: open children prevent gate
+resolve` with the child IDs.

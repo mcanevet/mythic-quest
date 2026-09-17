@@ -100,3 +100,9 @@ your report — the orchestrator will split it.
   resumes when the fix closes. Mention the link in your report.
 - Each BLOCKED becomes a prevention fix: gotcha entry, scaffold addition,
   or upstream doc/fix bead (`bd create ... --deps discovered-from:<id>`).
+
+**Pre-close check** (avoid close-refusal round-trips): before `bd close`,
+confirm no open children or blocking gates — `bd children <id>` first; if
+anything is open, that refusal is deterministic, not transient: do NOT
+retry or use --force. Either close the children first or report
+`⛔ BLOCKED: open children prevent close` with the child IDs.

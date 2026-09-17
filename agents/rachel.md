@@ -99,3 +99,9 @@ not chase diminishing returns. Compress time: when parameters are known
 from source (e.g., GET_READY lasts 1.5s), run the wait inside one
 `run_script` body instead of wall-clock MCP-call gaps. Cap screenshots
 at 4 per verification session unless a violation demands more.
+
+**Pre-close check** (avoid close-refusal round-trips): before `bd gate
+resolve`, confirm all gate children are closed PASS — `bd children <gate-id>`
+first; if any child is open, do NOT retry the resolve or use --force:
+wait for the child or report `⛔ BLOCKED: open children prevent gate
+resolve` with the child IDs.
