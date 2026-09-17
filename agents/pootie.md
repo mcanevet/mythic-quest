@@ -17,6 +17,12 @@ permission:
     "bd show*": allow
     "bd list*": allow
     "bd prime*": allow
+    "bd update*": allow  # claim assigned beads (bd ready --assignee pootie)
+    "bd create*": allow  # file critiques + discovered experience bugs
+    "bd dep add*": allow  # wire discovered-from edges to consumer-gate
+    "bd gate resolve*": allow  # close consumer-gate (pootie-consumer-acceptance)
+    "bd children*": allow  # wait on consumer-gate children closing PASS
+    "bd search*": allow  # locate gate/children beads
   task: deny
   webfetch: deny
   websearch: deny

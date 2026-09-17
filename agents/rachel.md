@@ -32,6 +32,8 @@ permission:
     "bd note*": allow
     "bd comment*": allow
     "bd q*": allow
+    "bd update*": allow  # claim assigned beads (bd ready --assignee rachel)
+    "bd gate resolve*": allow  # close qa-gate when all children pass
   task: deny
   webfetch: allow
   websearch: allow

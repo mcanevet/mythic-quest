@@ -16,7 +16,9 @@ permission:
     "bd reclaim*": allow     # build: dead worker recovery
     "bd mol pour*": allow    # build: pour game-run formula
     "bd mol current*": allow # build: track progress
-    "bd close*": allow       # build: close release + epic
+    "bd close*": allow       # build: close release + epic only — NOT
+                             # delegated task beads (implementers close
+                             # their own; see verify-closures step 4t4)
   task:
     "*": deny        # build: anti-recursion baseline
     poppy: allow     # build: delegate implementation
@@ -58,10 +60,12 @@ Session Contract in AGENTS.md, with this role split:
   ```
 - **Dispatch**: Claim beads assigned to YOU (build), then dispatch to role
   agents via Task tool with bead ID and context.
-  **Hard cap: 2 beads per delegation** (one-batch maximum). A 4-task batch
-  produced a 229-part marathon session in MythicQuest; larger batches lose
-  incremental closure visibility and risk catastrophic loss on mid-batch
-  failure. Dispatch repeatedly in 2-bead batches as beads close.
+    **Hard cap: 2 beads per delegation** (one-batch maximum). A 4-task batch
+    produced a 229-part marathon session in MythicQuest (see
+    benchmarks/results/2026-09-15-walkthrough6-lumomax-control.md — 23 sessions,
+    1,106 tools, 5h47m); larger batches lose incremental closure visibility
+    and risk catastrophic loss on mid-batch failure. Dispatch repeatedly in
+    2-bead batches as beads close.
   **Report economy**: role agents return verdict lines + report paths only;
   read the full report ONLY on FAIL or when evidence is needed — inline
   full reports accumulate in your context on every turn.
