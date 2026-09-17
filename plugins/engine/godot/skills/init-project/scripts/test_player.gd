@@ -67,6 +67,22 @@ func start_test(scenario: Dictionary) -> Dictionary:
 	}
 	_rng.seed = scenario.get("bot", {}).get("seed", 42)
 	
+	# Genre-agnostic binding check: every game-defined InputMap action must
+	# have at least one bound event (key/button/etc). A defined-but-unbound
+	# action is invisible to real players while STILL responding to
+	# Input.action_press() and synthetic parse_input_event probes — both
+	# verifier paths bypass the binding table, so neither QA nor playtest
+	# can detect it through input injection alone (observed 2026-09-17,
+	# walkthrough7 RallyWall: move_left/move_right defined with no key
+	# events; paddle responded to every synthetic probe, real keyboard dead).
+	for action in _input_actions:
+		if action.begins_with("ui_"):
+			continue
+		var events := InputMap.action_get_events(action)
+		if events.is_empty():
+			_report_violation("unbound_action", "/root/InputMap/%s" % action,
+				"InputMap action '%s' is defined but has NO bound events — real keyboard/gamepad input can never trigger it. Action-press and synthetic-key probes both bypass the binding table, so this bug is undetectable by input injection. Bind at least one event (InputMap.action_add_event or [input] section in project.godot)." % action)
+
 	_input_actions = InputMap.get_actions()
 	_input_actions.erase("ui_accept")
 	_input_actions.erase("ui_select")

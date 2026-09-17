@@ -37,6 +37,9 @@ An entity that exists as a script/scene but is not added to its parent/main scen
 ## Discrete input events
 (key press, click) belong in `_input`/`_unhandled_input` or a connected signal — polling `Input.is_key_pressed` in `_process` for a one-shot event (e.g. ESC pause) silently misses it. See [godot-best-practices.md](godot-best-practices.md) §7.
 
+## Defining an InputMap action REQUIRES binding an event to it
+An action added to `project.godot`'s `[input]` section (or `InputMap.add_action`) with **no events** is invisible to real keyboards/gamepads — but responds perfectly to `Input.action_press()` and synthetic `Input.parse_input_event` probes, because both bypass the binding table. Every probe you run against such an action passes; the game ships dead on real hardware (observed 2026-09-17, walkthrough7 RallyWall: `move_left`/`move_right` unbound — build-time probes AND full QA gauntlet both green, shipped game unplayable). Rule: whenever you define a game input action, in the same task bind at least one physical event to it (`[input]` section with a `KEY_*`/joy event, or `InputMap.action_add_event`). The playtest harness enforces this at `start_test` with an `unbound_action` violation — never ship past one.
+
 ## Never save scene files during a live run
 A live engine session serializes runtime node state (positions, velocities) into the scene file. Stop the project first; if entities were mutated during testing, reset them to default values before any save.
 

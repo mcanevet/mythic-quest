@@ -142,6 +142,8 @@ The report includes these metrics collected every physics tick:
 
 **`:=` inference gotcha (observed 09-07 lumo-max run, benchmarks/results/2026-09-07-rallywall-lumo-max-medium-shipped.md — 14 occurrences, largest compile-error class):** `var x := dict.get("k", default)` fails with `Cannot infer the type of "x" variable because the value doesn't have a set type` (same for `node.call(...)`, `get_meta(...)`, and other Variant-returning calls). Use `var x = ...` (untyped) or an explicit annotation `var x: int = ...` in run_script submissions. This single fix eliminates the most frequent one-step penalty in that run's traces.
 
+**`unbound_action` invariant (auto-checked at `start_test`, genre-agnostic):** every game-defined InputMap action (non-`ui_` builtins) must have at least one bound event. A defined-but-unbound action responds to `Input.action_press()` and synthetic `parse_input_event` probes — both bypass the binding table — so the game looks fully verified while being dead on real hardware. Any `unbound_action` violation means the InputMap needs a binding (`[input]` section in `project.godot` or `InputMap.action_add_event`); it is never a game-code bug. Observed 2026-09-17, walkthrough7 RallyWall: `move_left`/`move_right` defined with no events passed every build probe and QA gauntlet, shipped unplayable.
+
 ---
 
 ### Full Scenario Example
