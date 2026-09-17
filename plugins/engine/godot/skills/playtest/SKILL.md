@@ -22,6 +22,24 @@ description: >-
 
 Five execution modes (fast-verify, scene-verify, functional, vision, critique), each with a distinct evaluator lens. **Always uses `background=true`** (invisible window — deterministic screenshots, no display interference with the agent's own environment).
 
+### Performance mode (perf)
+
+**When:** Pre-ship gate, after functional/vision/critique pass.  
+**Purpose:** Objective performance invariant — detect regressions in frame time, worst-case spikes, and hot functions. Uses godot-mcp-runtime v3.4+ profiler API.
+
+**Workflow**
+1. Ensure engine running (same as common workflow step 2)
+2. Start profiler: `godot-mcp-runtime:start_profiler(projectPath=".")`
+3. Run gameplay scenario (60s recommended): `start_test(scenario={...})`
+4. Stop profiler + capture: `godot-mcp-runtime:stop_profiler(projectPath=".")` → returns `{frameMs, worstFrame, perFunctionBreakdown}`
+5. Assert invariants:
+   - `frameMs < 16.7` (60fps target)
+   - `worstFrame < 50` (no >3x spike)
+   - No single function > 20% of frame time
+6. Report PASS/FAIL with metrics table; on FAIL, screenshot the profiler output
+
+**Integration:** rachel/ian profiles reference perf mode in their QA checklists; benchmarks/README metrics table includes a perf column for each results file.
+
 ### Step 0: MCP Health Check (MANDATORY)
 
 Before any MCP tool call, verify bridge availability:
