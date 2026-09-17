@@ -41,3 +41,9 @@ report `⛔ BLOCKED: <cause> / Evidence / Action required`. Never retry.
 Transient infra → one bounded retry; still failing → escalate. Wire
 `bd dep add <your-bead> <fix-bead>` so the bead shows ● blocked and
 auto-resumes when the fix closes.
+
+**Evidence sufficiency** (turn cap): if after ~40 turns you have a clear
+verdict (PASS/FAIL + root cause), STOP gathering. Do not chase diminishing
+returns. Compress time: when animation timing is known from source, run
+the wait inside one `run_script` body. Cap screenshots at 4 per
+verification session unless a violation demands more.

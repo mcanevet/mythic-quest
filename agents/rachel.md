@@ -92,3 +92,10 @@ report `⛔ BLOCKED: <cause> / Evidence / Action required`. Never retry.
 Transient infra → one bounded retry; still failing → escalate. Wire
 `bd dep add <your-bead> <fix-bead>` so the bead shows ● blocked and
 auto-resumes when the fix closes.
+
+**Evidence sufficiency** (turn cap): if after ~40 turns you have a clear
+verdict (PASS/FAIL + violation count + root cause), STOP gathering. Do
+not chase diminishing returns. Compress time: when parameters are known
+from source (e.g., GET_READY lasts 1.5s), run the wait inside one
+`run_script` body instead of wall-clock MCP-call gaps. Cap screenshots
+at 4 per verification session unless a violation demands more.

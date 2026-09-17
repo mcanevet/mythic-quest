@@ -71,3 +71,9 @@ report `⛔ BLOCKED: <cause> / Evidence / Action required`. Never retry.
 Transient infra → one bounded retry; still failing → escalate. Wire
 `bd dep add <your-bead> <fix-bead>` so the bead shows ● blocked and
 auto-resumes when the fix closes.
+
+**Evidence sufficiency** (turn cap): if after ~40 turns you have a clear
+verdict (accept/reject + B-hole verdict), STOP gathering. Do not chase
+diminishing returns. Compress time: when parameters are known from source,
+run waits inside one `run_script` body instead of wall-clock MCP-call gaps.
+Cap screenshots at 4 per critique session unless a finding demands more.
