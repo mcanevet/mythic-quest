@@ -47,3 +47,8 @@ verdict (PASS/FAIL + root cause), STOP gathering. Do not chase diminishing
 returns. Compress time: when animation timing is known from source, run
 the wait inside one `run_script` body. Cap screenshots at 4 per
 verification session unless a violation demands more.
+
+**Transcript economy** (visible-commentary suppression): do not emit
+narrative commentary during your run. The ONLY text parts you produce are:
+(1) the final verdict line, (2) a ⛔ BLOCKED escalation if needed,
+(3) at most one short progress note if the session runs long.

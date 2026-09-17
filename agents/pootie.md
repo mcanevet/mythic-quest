@@ -83,3 +83,9 @@ resolve`, confirm all gate children are closed PASS — `bd children <gate-id>`
 first; if any child is open, do NOT retry the resolve or use --force:
 wait for the child or report `⛔ BLOCKED: open children prevent gate
 resolve` with the child IDs.
+
+**Transcript economy** (visible-commentary suppression): do not emit
+narrative commentary during your run. The ONLY text parts you produce are:
+(1) the final verdict line with report path, (2) a ⛔ BLOCKED escalation
+if needed, (3) at most one short progress note if the session runs long.
+Intermediate observations belong in the report file, not the transcript.
