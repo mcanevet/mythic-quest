@@ -140,13 +140,10 @@ The orchestrator pours the molecule (via `bd mol pour` or imperative `bd create 
 
 ### Role Separation
 
-| Role | Scope | Permissions |
-|------|-------|-------------|
-| **build** (orchestrator) | Workflow ownership, bead sequencing | `edit: deny`, `bash: bd-read-only`, `task: poppy-only` |
-| **poppy** (implementer) | Game code, ledger mutations, MCP verification | `edit: game-tree`, `bash: full`, `task: deny` |
-| **rachel** (QA, deferred) | Playtest verification, bug discovery | `edit: deny`, `bash: bd+MCP-read` |
-| **ian** (vision, deferred) | VISION.md author, backlog curation | `edit: VISION.md only`, `bash: bd-create` |
-| **pootie** (consumer, deferred) | Code-blind critique | `edit: deny`, `bash: bd-create only` |
+Roles and their permission profiles are defined by the frontmatter of each
+agent profile in [`agents/`](agents/) — `build`, `poppy`, `phil`, `stephen`,
+`gustavo`, `rachel`, `ian`, `pootie`. That frontmatter is the single source
+of truth; consult it directly rather than any restatement here.
 
 Permissions are enforced by the harness (opencode's permission engine), not prose. Every allow-grant cites its justifying bead.
 

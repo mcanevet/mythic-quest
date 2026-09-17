@@ -9,7 +9,12 @@ Creates the minimal Godot 4 project structure and the deterministic testing harn
 
 - `project.godot` — config (config_version=5, app name, viewport) with:
   - `run/main_scene` set (empty placeholder scene or first real scene)
-  - input map: `move_left`, `move_right`, `jump` (keyboard defaults)
+  - input map: **EMPTY by default** (genre-agnostic). The first
+    implementation task defines game actions from VISION.md and binds
+    keys (`[input]` section or `InputMap.action_add_event`). Every defined
+    action MUST have ≥1 bound event — the playtest harness reports
+    `unbound_action` violations otherwise (walkthrough7 RallyWall
+    incident). Only `ui_*` built-ins come pre-bound.
 - `icon.svg` — placeholder icon
 - `.gitignore` — standard Godot ignores (`.godot/`, `*.import`)
 - **TestPlayer harness** — `scripts/test_player.gd` (the autoload-backed
