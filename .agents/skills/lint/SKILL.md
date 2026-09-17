@@ -89,6 +89,12 @@ the comments **before** burning — comments are deleted with the wisp.
   committing. After resolution, purge the wisp.
 - If the run surfaced something worth keeping (e.g., a systemic issue),
   `bd promote <wisp-id>` preserves a digest before purging.
+- **Update the incremental cache** (audit mode only, skip for wisp whose
+  target file list was cached-filtered away): for each judged file, append
+  `{"file": "<path>", "hash": "$(git hash-object <path>)", "result": "clean"|"dirty"}`
+  to `.beads/lint-cache.jsonl` — clean only when the child closed PASS.
+  Prune superseded entries for the same file first (keep the latest line
+  per file). Clean files are skipped by the next audit run.
 
 ## Changing rules
 

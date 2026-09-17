@@ -9,7 +9,38 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
 RULES=".agents/lint/rules.yaml"
+CACHE=".beads/lint-cache.jsonl"
 STAMP="$(date +%Y%m%d-%H%M%S)"
+
+# Incremental cache: skip files whose git blob hash matches the last PASS.
+# Only used in audit mode (dev mode already scopes to changed files).
+cache_hash() {
+  git hash-object "$1" 2>/dev/null || echo "nocache:$1"
+}
+
+filter_cached() {
+  # Reads stdin (file list), writes stdout (uncached files).
+  # Lines whose cached hash equals current hash AND whose last result was
+  # CLEAN are skipped. A dirty cache entry (violations found) never skips.
+  [ -f "$CACHE" ] || { cat; return; }
+  local f h cached
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    h=$(cache_hash "$f")
+    cached=$(jq -r --arg f "$f" --arg h "$h" \
+      'select(.file == $f and .hash == $h and .result == "clean") | .hash' "$CACHE" 2>/dev/null | head -1)
+    if [ -n "$cached" ]; then
+      continue  # unchanged + clean → skip
+    fi
+    printf '%s\n' "$f"
+  done
+}
+
+record_cache() {
+  # Called post-run by the wisp closer; records {file, hash, result} lines.
+  # Kept here for symmetry; actual recording happens when children close.
+  :
+}
 
 discover_files() {
   if [ "$1" = "audit" ]; then
@@ -37,6 +68,11 @@ filter_files() {
 
 # Discover targets -----------------------------------------------------------
 FILTERED="$(discover_files "$MODE" | filter_files)"
+
+# Incremental cache (audit mode only): skip unchanged-clean files
+if [ "$MODE" = "audit" ]; then
+  FILTERED="$(printf '%s\n' "$FILTERED" | filter_cached)"
+fi
 
 # rules.yaml changed => full scope. Checked out here (not in filter_files)
 # because command substitutions run in subshells where variable writes vanish.
