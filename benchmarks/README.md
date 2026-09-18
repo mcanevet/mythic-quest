@@ -28,11 +28,10 @@ primary prompt doesn't reach.
 2. Start opencode from the sandbox dir, note the wall-clock start time.
    **Run under `caffeinate -dimsu` (or equivalent power-assertion).**
    Host sleep is indistinguishable from stalls in the session DB after
-   the fact — a MythicQuest run lost 5.8 of 9.2 wall-clock hours to
-   sleep and the active-time figure had to be reconstructed from
-   tool-activity bursts. Record `pmset -g assertions` output (or system
-   sleep log) alongside the metrics so sleep-time can be subtracted
-   deterministically instead of inferred.
+   the fact — early runs lost hours to sleep and had to reconstruct
+   active time from tool-activity bursts. Record `pmset -g assertions`
+   output (or system sleep log) alongside the metrics so sleep-time can
+   be subtracted deterministically instead of inferred.
 3. Paste the prompt verbatim. Do not edit it, clarify it, or answer
    agent questions beyond the minimum required — consistency is the
    experiment control.

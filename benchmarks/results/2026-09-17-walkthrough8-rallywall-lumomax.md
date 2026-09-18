@@ -15,6 +15,7 @@ never engaged.
 | Metric | Value |
 |---|---|
 | Wall-clock | ~70 min |
+| Tokens | UNAVAILABLE — the harness/DB schema at run time did not retain per-session token totals for this run (schema gained token columns later, per run-11 record). Token comparisons should use wt9/wt10, which carry measured totals. |
 | Sessions | 19 (build 1 + genesis 1 + roles 17) |
 | Tool calls | 323 (bash 130, read 69, edit 54, glob 26, task 18, write 21, grep 5) |
 | Bash denials | 43 (permission probe tax) |

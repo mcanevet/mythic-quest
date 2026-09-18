@@ -36,7 +36,7 @@ The orchestrator caught the discrepancy by cross-checking Rachel's functional-qa
 
 1. **Outcome:** PASS — shipped, all three QA gates green, final product matches vision (neon minimalist reflex snack).
 2. **Speed:** ~1h50m wall, 0 respawns, 0 human interventions — competitive with run 9's 3h32m on a harder, longer prompt set.
-3. **Tokens:** not re-measured post-hoc (DB `part` table lacks token columns); no pathological context growth observed in Rachel/Pootie sessions (turn counts moderate: 36 / ~30).
+3. **Tokens:** UNAVAILABLE — not measured (this record is a post-hoc harness analysis; the DB `part` table lacked token columns at analysis time, and the session's step-finish records are no longer retrievable). Proxy signal only: no pathological context growth observed in Rachel/Pootie sessions (turn counts moderate: 36 / ~30). Token comparisons for this model/variant pair should use run 12 (2026-09-09) or the walkthrough series instead.
 
 ## Dispositions
 

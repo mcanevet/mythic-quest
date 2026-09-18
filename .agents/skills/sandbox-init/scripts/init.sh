@@ -192,11 +192,13 @@ EXPECTED_FILE=$(expected_file)
 # bead wiring, and the dev loop. Skills (genesis, create-*) are content
 # and implementation only. Rendered below the bd-managed instructions
 # so the session treats it as standing orders.
-# NOTE: This CONTRACT heredoc is intentionally duplicated from agents/build.md
-# — it is the progressive-disclosure rendering target for game-build sessions.
-# The sandbox AGENTS.md receives this block; the pipeline repo keeps the source
-# in agents/build.md. No drift risk: the CONTRACT is the canonical rendering
-# template, not a restatement.
+# NOTE: This CONTRACT heredoc is the progressive-disclosure rendering of
+# agents/build.md into sandbox AGENTS.md — agents/build.md is the SOURCE OF
+# TRUTH. Generated content: when editing the contract, change agents/build.md
+# first, then mirror the change here (this script cannot read it at render
+# time because the sandbox layout differs). Drift check: the lint rule
+# single-source-of-truth covers both files; keep the bodies byte-identical
+# where structure permits.
 cat >> "$SANDBOX/$EXPECTED_FILE" <<'CONTRACT'
 
 ## Game-Build Session Contract (orchestrator)

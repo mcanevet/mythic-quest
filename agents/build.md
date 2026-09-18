@@ -80,7 +80,8 @@ Session Contract in AGENTS.md, with this role split:
     project-files + scene-tree tools, refreshed ONCE per dispatch wave):
     current scene/script inventory — file paths, one-line purpose, key
     node paths. Workers use this map instead of re-reading core files to
-    orient (wt10 opencode session traces, 2026-09-18, cf.
+    orient (wt10 opencode session traces, 2026-09-18, evidence
+    preserved in benchmarks/results/2026-09-18-walkthrough10-rallywall-lumomax.md § Session-by-session; cf.
     benchmarks/results/2026-09-18-walkthrough9-rallywall-lumomax.md:
     main.tscn read 6×, ball.gd 4×, main.gd 4× across
     worker sessions; the map costs ~200 tokens and eliminates most
@@ -105,7 +106,9 @@ Session Contract in AGENTS.md, with this role split:
   batches cost ~30-40min recoverable; the one deliberate parallel —
   phil+gustavo on disjoint files — was clean; wt9 (benchmarks/results/2026-09-18-walkthrough9-rallywall-lumomax.md:
   scene ops collided with
-  a live runtime session; wt10 opencode session traces, 2026-09-18: even the disjoint-file poppy batches
+  a live runtime session; wt10 opencode session traces, 2026-09-18
+  (benchmarks/results/2026-09-18-walkthrough10-rallywall-lumomax.md § Session-by-session):
+  even the disjoint-file poppy batches
   serialized because every batch both mutated scenes AND ran the project
   for verification — the runtime lock was the serializer, not the files):
   use a **mutation/verification split**. Mutation beads (create-*,

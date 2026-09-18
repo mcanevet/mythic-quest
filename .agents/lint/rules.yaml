@@ -143,26 +143,31 @@ rules:
     applies_to: "plugins/**, skills/**"
     prompt: >
       This rule evaluates rule QUALITY rather than flagging violations:
-      note (do not flag) content that looks like it encodes a real observed
-      failure (dated incident references, benchmark citations). Flag
-      instruction text that asserts failure modes with no observed basis
-      where the claim is non-obvious — either cite the observation or drop
-      the claim.
+      note (do not flag) content that encodes a real observed failure.
+      Prefer stating the causal mechanism of the failure over bare incident
+      references; a mechanism-stated rule is reusable across runs and
+      engines. Flag instruction text that asserts failure modes with no
+      observed basis where the claim is non-obvious — either state the
+      mechanism or drop the claim.
 
-  citation-resolvable:
-    title: Incident citations must be resolvable
+  failure-mechanism-stated:
+    title: Gotchas state the mechanism of failure
     rationale: >
-      "Observed <date>" citations must be traceable: a dated file in
-      benchmarks/results/, a commit hash, or a "<model> run" qualifier.
-      A bare date with no locatable evidence is provenance theater.
-    applies_to: "plugins/**, skills/**, agents/**, benchmarks/**"
+      For model-maintained repos, the causal mechanism is the knowledge
+      transfer; bare dates or citations carry no information for the model
+      and encourage hoarding of transient evidence. A rule that explains
+      *why* something fails is reusable; a rule that only says *when* it
+      failed is cargo-cult.
+    applies_to: "plugins/**, skills/**"
     prompt: >
-      Scan for incident citations ("observed <date>", "run N", "benchmark
-      results"). Each must carry a resolvable reference: a
-      benchmarks/results/ path, a commit hash, a git-log anchor, or a
-      "<model> run/benchmark" qualifier. Flag bare dates or run numbers
-      with no locatable evidence — keep the lesson, fix the citation.
-      Never cite session DB IDs or traces that only exist on one machine.
+      In gotchas, cautions, and failure protocols, flag assertions that
+      describe a failure mode without stating its causal mechanism
+      (e.g. "observed 2026-09-04" or "run 3" without explaining *why* it
+      fails). Legal: mechanism-stated rules with optional bare-date
+      grounding ("Godot's parser rejects hex strings — observed 2026-09-04").
+      Illegal: bare dates with no mechanism ("fail with hex strings —
+      observed 2026-09-04"). When the mechanism is obvious/engine-standard
+      (e.g. "pkill kills the MCP server"), a bare statement suffices.
 
   no-pkill:
     title: No pkill usage or instruction
@@ -279,21 +284,31 @@ rules:
     rationale: >
       When an agent's bash permissions allow bd commands, the allowed
       verb set must match its documented ledger duties — no more.
-      QA/critic profiles read and file findings but never close gates;
-      the orchestrator resolves gates but never claims task beads.
+      Gate authority model: each specialist (QA, vision, consumer critic)
+      RESOLVES ITS OWN gate — the verdict owner closes the gate so the
+      orchestrator cannot forge it (deployed design, wt-formula
+      [steps.gate]; orchestrator holds `bd gate check` only). What QA
+      profiles must NOT do: close OTHER specialists' gates, resolve
+      release beads, or claim implementation task beads. Implementer
+      profiles may claim, close, and file discovered work; the
+      orchestrator dispatches and grooms but never claims task beads
+      and never forges specialist verdicts.
     applies_to: "agents/**"
     prompt: >
       For agent profiles with bd command grants in frontmatter, check
-      each allowed verb against the agent's documented duties:
-      implementer/solo profiles may claim, close, and file discovered
-      work; QA/critic profiles may read and file findings but must not
-      claim, close, update, or resolve gates; orchestrators may read and
-      resolve gates but must not claim or close task beads. Flag verbs
-      granted beyond the profile's duties. Convention: verbs outside
+      each allowed verb against the agent's documented duties and the
+      gate-authority model: specialists (rachel/ian/pootie) MAY close
+      and resolve their OWN gate beads (verdict ownership) but must
+      not claim implementation task beads or resolve gates owned by
+      other specialists; implementer/solo profiles may claim, close,
+      and file discovered work; the orchestrator may read, groom,
+      reclaim, and run `bd gate check`, but must not claim task beads
+      or resolve specialist gates. Flag verbs granted beyond the
+      profile's duties under this model. Convention: verbs outside
       the profile are left UNSET (denied by the catch-all) rather than
-      explicitly denied one by one — explicit per-verb denies are noise,
-      not violations. Files without bd grants close with NO APPLICABLE
-      RULES.
+      explicitly denied one by one — explicit per-verb denies are
+      noise, not violations. Files without bd grants close with NO
+      APPLICABLE RULES.
 
   executable-instructions:
     title: Instructions are executable by their addressee
@@ -379,6 +394,32 @@ rules:
       wording), and layered contracts where each layer adds
       information. Note but do not flag: genuinely load-bearing
       repetition in a close-reason template vs its workflow step.
+
+  no-bandaid-fixes:
+    title: Fix causes, not symptoms
+    rationale: >
+      A workaround compensating for another repo surface's defect (e.g. a
+      cleanup script for files a skill scaffolds to the wrong path) survives
+      the source fix and becomes dead maintenance. When the upstream cause is
+      fixable here, fix it there and delete the workaround. Observed: a
+      cleanup_stale_files.sh helper was proposed for orphaned entity scenes
+      while the real fix was one convention line in create-entity (wt11 run,
+      2026-09-18, bead mythic-quest-m0u — helper withdrawn before birth).
+    applies_to: "agents/**, plugins/**, skills/**"
+    prompt: >
+      Flag instructions, scripts, or permission grants that exist to
+      compensate for a defect whose cause is fixable within this repo's own
+      surfaces — especially when the compensating mechanism would (and
+      should) become dead after the source fix. Red flags: cleanup helpers
+      for artifacts a skill itself creates, permission grants legitimizing
+      work made unnecessary by an available source fix, detection machinery
+      for failures a convention change would prevent outright. Legal:
+      workarounds for UPSTREAM dependencies (engine, MCP runtime) with
+      lifecycle status and retirement conditions (see
+      upstream-lifecycle-status), and post-hoc cleanup of transition-era
+      orphans created BEFORE a fix landed. When uncertain whether the
+      upstream cause is locally fixable, note it as a question rather than
+      a violation.
 
   agent-frontmatter-schema:
     title: Agent markdown frontmatter matches the harness schema

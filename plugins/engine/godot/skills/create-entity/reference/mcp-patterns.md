@@ -27,10 +27,10 @@ Use **batch operations first**, individual tools for simple cases:
 
 | Context | Format | Example |
 |---------|--------|---------|
-| MCP `scenePath` param | Relative, no `res://` | `"scenes/main.tscn"` |
+| MCP `scenePath` param | Relative, no `res://` | `"entities/player.tscn"` (entity), `"scenes/levels/<name>.tscn"` (level) |
 | MCP `projectPath` param | "." (CWD is project root) | `"."` |
 | Inside `.tscn` ext_resource | Godot `res://` path | `"res://scripts/player.gd"` |
-| Inside `.gd` preload() | Godot `res://` path | `preload("res://scenes/player.tscn")` |
+| Inside `.gd` preload() | Godot `res://` path | `preload("res://entities/player.tscn")` |
 | MCP `parentNodePath`/`nodePath` | Scene-root-relative: `root` for the root node, `root/<Child>` for descendants; bare child names (`"Entity1"`) and `root/<RootName>` also resolve | `"root/Player"` |
 
 **Common mistake:** Root node cannot have `parent="."` — remove it or scene fails to parse.

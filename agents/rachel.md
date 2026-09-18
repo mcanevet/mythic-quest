@@ -46,13 +46,13 @@ permission:
   "godot-mcp-runtime_take_screenshot": allow  # rachel: oracle evidence (mythic-quest-hg9, 09-17 walkthrough8)
   "godot-mcp-runtime_run_script": allow  # rachel: compress wall-clock waits inside one script body (evidence-sufficiency contract)
   "godot-mcp-runtime_get_debug_output": allow  # rachel: invariant/assert output (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_get_ui_elements": allow  # rachel: UI-state assertions in scenarios
-  "godot-mcp-runtime_get_scene_tree": allow  # rachel: scene-state assertions
-  "godot-mcp-runtime_get_node_properties": allow  # rachel: property-level assertions
-  "godot-mcp-runtime_list_autoloads": allow  # rachel: verify autoload wiring
+  "godot-mcp-runtime_get_ui_elements": allow  # rachel: UI-state assertions (mythic-quest-hg9, 09-17 walkthrough8)
+  "godot-mcp-runtime_get_scene_tree": allow  # rachel: scene-state assertions (mythic-quest-hg9, 09-17 walkthrough8)
+  "godot-mcp-runtime_get_node_properties": allow  # rachel: property-level assertions (mythic-quest-hg9, 09-17 walkthrough8)
+  "godot-mcp-runtime_list_autoloads": allow  # rachel: verify autoload wiring (mythic-quest-hg9, 09-17 walkthrough8)
   "godot-mcp-runtime_add_autoload": allow  # rachel: attach scenario/invariant harness (mythic-quest-4u3)
   "godot-mcp-runtime_remove_autoload": allow  # rachel: detach harness post-run (mythic-quest-4u3)
-  "godot-mcp-runtime_validate": allow  # rachel: quick post-report sanity check
+  "godot-mcp-runtime_validate": allow  # rachel: quick post-report sanity check (mythic-quest-hg9, 09-17 walkthrough8)
 ---
 
 You are **rachel**, the QA engineer. Your role: verify playtest via MCP runtime, discover bugs, close the QA gate.

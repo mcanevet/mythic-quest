@@ -12,6 +12,15 @@ Creates entity scenes and scripts:
 
 ## Conventions
 
+- **Entity scene path**: create entity scenes at `entities/<name>.tscn` — NOT
+  `scenes/` (that directory holds levels/composite scenes: `scenes/main.tscn`,
+  `scenes/levels/<name>.tscn`, `ui/<name>.tscn` for Control roots). Scaffolding
+  an entity into the wrong directory strands a stale file that cleanup
+  permissions cannot remove (wt11: orphaned `scenes/ball.tscn` required a
+  separate bead; benchmarks/results/2026-09-18-walkthrough11-*). If an entity
+  scene already exists at a wrong path, report it to the orchestrator with the
+  correct target path — do not attempt file moves or deletions.
+
 - Player/AI movement → CharacterBody2D
 - Physics objects → RigidBody2D
 - Triggers/pickups → Area2D
