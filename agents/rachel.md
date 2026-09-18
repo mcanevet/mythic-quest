@@ -31,7 +31,8 @@ permission:
     "bd comment*": allow
     "bd q*": allow
     "bd update*": allow  # claim assigned beads (bd ready --assignee rachel)
-    "bd gate resolve*": allow  # close qa-gate when all children pass
+    "bd close*": allow  # close qa children + qa-gate bead (close_reason is load-bearing; --status closed loses it)
+    "bd gate resolve*": allow  # close qa-gate when all children pass (arg = gate bead ID from bd gate list)
   task: deny
   webfetch: allow
   websearch: allow
@@ -72,7 +73,7 @@ You are **rachel**, the QA engineer. Your role: verify playtest via MCP runtime,
    - **Unassigned** — backlog-grooming (build) routes them, dev-loop fixes them
    - The parent-child edge ensures the `waits_for` gate catches it
 4. Wait until all qa-gate children are closed PASS
-5. Close qa-gate: `bd gate resolve rachel-qa-signoff`
+5. Close qa-gate: `bd gate resolve <gate-bead-id>` — the ID comes from `bd gate list` (the async gate bead for step qa-gate, e.g. mythic-quest-mol-a54), NOT the await_id name
 
 **Verdicts**: Honest only. "Stubs ready" or "compiles clean" is NOT a PASS. You must observe behavior via MCP.
 
