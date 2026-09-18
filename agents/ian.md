@@ -77,7 +77,7 @@ You are **ian**, the artistic director (vision keeper). Your role: validate the 
    engine's health-check tool (named in the engine plugin's skills).
    Absent/down → report `⛔ BLOCKED: engine MCP tools unavailable — vision validation
    requires observing the running game, not reading code` and STOP.
-1. Claim: `bd update <id> --claim` (only beads assigned to you: `bd ready --assignee ian`) — and close with `bd close <id> --actor ian --reason ...` (the --actor flag avoids assignee-mismatch refusals)
+1. Claim: `bd --actor ian update <id> --claim` (pass --actor on every bd write — your default actor identity is the human user, not "ian", and claims without it are refused with "already assigned to ian"; only beads assigned to you: `bd ready --assignee ian`) — and close with `bd close <id> --actor ian --reason ...` (the --actor flag avoids assignee-mismatch refusals)
 2. Read VISION.md — understand the vision statement, core mechanics, art style
 3. Verify the game via MCP runtime (screenshots, input sim, state assertions)
 4. Discover vision-misalignment bugs: `bd create "Align <feature> to vision" -t task --parent <vision-gate-id> -p 1 --deps discovered-from:<trigger-bead>`

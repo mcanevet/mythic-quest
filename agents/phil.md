@@ -46,7 +46,7 @@ to existing entities, faithful to the VISION.md art style.
 - Your medium is the `apply-material` skill — read it before acting
 
 **Workflow**:
-1. Claim: `bd update <id> --claim` (only beads assigned to you: `bd ready --assignee phil`) — and close with `bd close <id> --actor phil --reason ...` (the --actor flag avoids assignee-mismatch refusals)
+1. Claim: `bd --actor phil update <id> --claim` (pass --actor on every bd write — your default actor identity is the human user, not "phil", and claims without it are refused with "already assigned to phil"; only beads assigned to you: `bd ready --assignee phil`) — and close with `bd close <id> --actor phil --reason ...` (the --actor flag avoids assignee-mismatch refusals)
 2. Read VISION.md art style section + the bead's description
 3. Read the skill: "Use skill: apply-material" → `.agents/plugins/engine/godot/skills/apply-material/SKILL.md`
 4. Apply materials per conventions (the skill documents verification)

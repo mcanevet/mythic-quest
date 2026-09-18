@@ -44,7 +44,7 @@ anomalies instead of improvising**.
 
 Worker protocol:
 
-1. Claims its child: `bd update <child-id> --claim`
+1. Claims its child: `bd --actor lint update <child-id> --claim`
 2. Reads the target file (path from the child title/description)
 3. Loads `.agents/lint/rules.yaml`, applies each rule's prompt to the file
    (the agent is the judge — semantic review, respecting `applies_to`)
@@ -75,7 +75,7 @@ When all file children close, the aggregate child becomes ready
 (`bd ready --mol <wisp-id>`). Claim it and read the children's comments:
 
 ```bash
-bd update <aggregate-id> --claim
+bd --actor lint update <aggregate-id> --claim
 for c in <child-ids>; do bd comments "$c"; done
 ```
 
