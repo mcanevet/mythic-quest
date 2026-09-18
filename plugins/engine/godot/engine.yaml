@@ -25,7 +25,7 @@ shared_files:
 #   publishes bin → dist/index.js but gitignored dist, so
 #   `npx git+...#combo/...` failed with 'command not found', silently
 #   tool-less sessions (root cause of 09-17 walkthrough8's zero MCP
-#   calls and the smoke-mcp BLOCKED reproduction; fixed by committing
+#   calls and a live sandbox BLOCKED reproduction; fixed by committing
 #   the build output to the pin branch). Status: PRs filed/CI-green,
 #   not yet merged into a tagged upstream release. Retirement: when a
 #   tagged upstream release (>= v3.5) ships all four tools AND a
