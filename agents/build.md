@@ -11,13 +11,13 @@ permission:
     "bd blocked*": allow # build: blocker inspection
     "bd dep tree*": allow # build: molecule structure
     "bd create*": allow  # build: pour molecule, spawn raw children
-    "bd update*": allow  # build: assignee changes, grooming
-    "bd gate check*": allow  # build: auto-resolve timer/gh gates
-    "bd reclaim*": allow     # build: dead worker recovery
+    "bd update*": allow  # build: assignee changes, grooming (09-15 walkthrough6: reparent-to-dev-loop step born there)
+    "bd gate check*": allow  # build: auto-resolve timer/gh gates (gates await auto-resolution, not manual resolve)
+    "bd reclaim*": allow     # build: dead worker recovery (worker crash risk: walkthrough6 micro-session deaths)
     "bd mol pour*": allow    # build: pour game-run formula (proto persisted at sandbox-init; mythic-quest-704)
     "bd mol current*": allow # build: track progress
     "bd formula list*": allow # build: verify game-run registered
-    "bd close*": allow       # build: close release + epic only (09-15 walkthrough6) — NOT
+    "bd close*": allow       # build: close release + epic only (09-15 walkthrough6, benchmarks/results/2026-09-15-walkthrough6-lumomax-control.md) — NOT
                              # delegated task beads (implementers close
                              # their own; see verify-closures step 4t4)
   task:
@@ -85,11 +85,11 @@ Session Contract in AGENTS.md, with this role split:
     main.tscn read 6×, ball.gd 4×, main.gd 4× across
     worker sessions; the map costs ~200 tokens and eliminates most
     orientation reads).
-  - **Environment facts block**: bash grants (bd verbs, engine CLI),
-    scene-file edit policy, and engine MCP availability AS PROBED — before
-    the FIRST role dispatch, verify the MCP server yourself via any
-    sanctioned check or trust sandbox-init's verified state; never state
-    "no engine available" without evidence (09-17 walkthrough8,
+  - **Environment facts block**: bash grants (bd verbs only), scene-file edit
+    policy, and engine MCP availability AS PROBED BY THE ROLE AGENTS — before
+    the FIRST role dispatch, trust sandbox-init's verified state; if a role
+    agent reports MCP down, escalate to the human. Never state "no engine
+    available" without evidence (09-17 walkthrough8,
     benchmarks/results/2026-09-17-walkthrough8-rallywall-lumomax.md: a
     false "no engine run possible" premise downgraded ALL verification to
     static review for an entire run while the MCP server was healthy).
