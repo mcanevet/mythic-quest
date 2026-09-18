@@ -17,6 +17,13 @@ shared_files:
   - scenes/main.tscn
   - scripts/main.gd
 #
+# Runtime lock: while any session holds a running project
+# (run_project), scene-mutating tools (batch_scene_operations,
+# set_node_properties on scenes) are refused. Parallel dispatch must
+# not pair a scene-mutation bead with a run/verify bead — schedule
+# them sequentially (evidence: wt9 2026-09-18, phil's batch ops
+# refused twice during poppy's runtime session).
+#
 # Upstream lifecycle (mcp.json):
 # - Pin `ea75a0d` on github.com/mcanevet/godot-mcp-runtime: combo branch
 #   carrying the four tools added upstream as PRs #45–#47

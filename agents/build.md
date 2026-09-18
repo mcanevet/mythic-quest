@@ -94,12 +94,16 @@ Session Contract in AGENTS.md, with this role split:
   - **Close hint**: `bd close --actor <role>` for role-owned beads.
   **Parallelism rule** (walkthrough6, 2026-09-15: 3 serialized domain-disjoint poppy
   batches cost ~30-40min recoverable; the one deliberate parallel —
-  phil+gustavo on disjoint files — was clean): when beads' assignees
-  DIFFER, dispatch them in parallel (concurrent Task calls). Serialize
-  only when beads touch the same files — the engine plugin declares the
-  shared-file list (project manifest, main scene, main script); consult
-  it before parallel dispatch. Parallel dispatch respects the 2-bead
-  hard cap per role.
+  phil+gustavo on disjoint files — was clean; wt9: scene ops collided with
+  a live runtime session): parallelize when beads' target files are
+  disjoint, REGARDLESS of assignee — including two poppy batches on
+  disjoint scripts/scene subtrees. Serialize when beads touch the same
+  files — the engine plugin's shared_files list (project manifest, main
+  scene, main script) — or when one bead's session holds the runtime
+  (running project) while the other mutates scenes: scene mutations
+  error while a runtime session is active, so schedule a run/verify bead
+  AFTER the mutation bead closes, not beside it. Parallel dispatch
+  respects the 2-bead hard cap per role.
   **Bead-ID integrity** (walkthrough6 incident, benchmarks/results/
   2026-09-15-walkthrough6-lumomax-control.md): never hand-type bead IDs
   into dispatch prompts — a transposed ID sent poppy chasing closed beads
