@@ -18,12 +18,18 @@ shared_files:
   - scripts/main.gd
 #
 # Upstream lifecycle (mcp.json):
-# - Pin `combo/mythic-quest-integration` on github.com/mcanevet/godot-mcp-runtime:
-#   combo branch carrying the four tools added upstream as PRs #45–#47
+# - Pin `ea75a0d` on github.com/mcanevet/godot-mcp-runtime: combo branch
+#   carrying the four tools added upstream as PRs #45–#47
 #   (verify_node_connections, validate_scene_structure, click_ui_element)
-#   plus check_health. Status: PRs filed/CI-green, not yet merged into a
-#   tagged upstream release. Retirement: when a tagged upstream release
-#   (>= v3.5) ships all four tools, re-pin to that tag.
+#   plus check_health, WITH dist/ committed (ea75a0d) — the npm package
+#   publishes bin → dist/index.js but gitignored dist, so
+#   `npx git+...#combo/...` failed with 'command not found', silently
+#   tool-less sessions (root cause of 09-17 walkthrough8's zero MCP
+#   calls and the smoke-mcp BLOCKED reproduction; fixed by committing
+#   the build output to the pin branch). Status: PRs filed/CI-green,
+#   not yet merged into a tagged upstream release. Retirement: when a
+#   tagged upstream release (>= v3.5) ships all four tools AND a
+#   working npm package (dist present), re-pin to that tag.
 # - GODOT_MCP_DISABLE_ELICITATION=true: bridges runtime elicitations that
 #   stall headless agent sessions. Status: workaround for an upstream
 #   behavior; retirement: remove when upstream makes non-interactive the

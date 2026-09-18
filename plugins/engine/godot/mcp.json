@@ -1,7 +1,7 @@
 {
   "godot": {
     "command": "npx",
-    "args": ["-y", "git+https://github.com/mcanevet/godot-mcp-runtime.git#combo/mythic-quest-integration"],
+    "args": ["-y", "git+https://github.com/mcanevet/godot-mcp-runtime.git#ea75a0d"],
     "env": { "GODOT_MCP_DISABLE_ELICITATION": "true" }
   }
 }

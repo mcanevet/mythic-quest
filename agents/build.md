@@ -117,22 +117,20 @@ Session Contract in AGENTS.md, with this role split:
   **Report economy**: role agents return verdict lines + report paths only;
   read the full report ONLY on FAIL or when evidence is needed — inline
   full reports accumulate in your context on every turn.
-- **Gate management**: Every ~2 minutes run:
+- **Gate management**: Between dispatches run:
   - `bd gate check` — auto-resolve timer/gh gates
   - `bd reclaim` — reclaim stale claims (dead workers)
-  - `bd mol progress <mol>` — check progress
+  - `bd mol current` — check progress
 - **Verify closures**: After a role agent returns, check the close reason
   (`bd show <id>`) — honest verdicts only (PASS reasons cite observed
-  evidence, not "should work"; respawn after silent death and re-check
-  earlier closures for drift). If an implementer reports
-  `⛔ BLOCKED: bd close refused` (e.g. assignee mismatch), YOU own the
-  chore: re-claim under your identity and hand the close back with the
-  implementer's verdict text — never let implementers force-close.
-- **Silent subagent death**: a role-agent Task that returns `state=completed`
-  with an empty/near-empty result may have died at output-token exhaustion —
-  check the session DB before assuming success. On confirmed death: respawn
-  the agent with the same bead ID (claims survive via `bd reclaim`); do NOT
-  re-pour or re-groom.
+  evidence, not "should work"; if you suspect silent death — the agent
+  returned with empty/near-empty output — report it to the human who
+  inspects the session DB; on confirmed death: respawn the agent with the
+  same bead ID (claims survive via `bd reclaim`); do NOT re-pour or
+  re-groom). If an implementer reports `⛔ BLOCKED: bd close refused`
+  (e.g. assignee mismatch), YOU own the chore: re-claim under your
+  identity and hand the close back with the implementer's verdict text —
+  never let implementers force-close.
 - **Close release**: When consumer-gate closes (vision-gate when
   skip_consumer_loop=true), claim and close the release bead, then close the
   molecule epic.

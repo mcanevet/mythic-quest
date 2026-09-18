@@ -193,9 +193,9 @@ multi-loop workflow:
      (`skills/genesis/SKILL.md`) — produces VISION.md and spawns raw task
      children under the `raw-backlog` step.
    - If no molecule epic exists (`bd list --type epic` is empty): pour the
-     game-run formula:
+     pre-registered game-run proto (sandbox-init persisted it — no cook
+     step needed):
      ```bash
-     bd cook .beads/formulas/game-run.formula.toml > /tmp/proto.json
      bd mol pour game-run --var game_title="<from VISION.md>"
      ```
      The formula creates the skeleton: genesis → raw-backlog →
@@ -221,10 +221,10 @@ multi-loop workflow:
    - Claim beads assigned to you (build): `bd ready --json`
    - Dispatch to role agents via Task tool with bead ID and context
    - After each agent returns: verify the close reason (`bd show <id>`)
-   - Gate supervision every ~2 minutes:
+   - Gate supervision between dispatches:
      - `bd gate check` — auto-resolve timer/gh gates
      - `bd reclaim` — reclaim stale claims (dead workers)
-     - `bd mol progress` — check molecule progress
+     - `bd mol current` — check molecule progress
 
 4. **Gate resolution** — human gates close manually:
    - **qa-gate**: rachel verifies all children PASS → `bd gate resolve rachel-qa-signoff`

@@ -294,3 +294,88 @@ rules:
       explicitly denied one by one — explicit per-verb denies are noise,
       not violations. Files without bd grants close with NO APPLICABLE
       RULES.
+
+  executable-instructions:
+    title: Instructions are executable by their addressee
+    rationale: >
+      An instruction that requires a capability its addressee lacks
+      (tools denied by frontmatter, actions only a human or another
+      process can perform) is dead prose: it is either ignored — eroding
+      trust in every other instruction — or produces improvised
+      workarounds. Observed: an orchestrator with deny-all bash except
+      bd verbs was told to "check the session DB" (pipeline-dev repo
+      audit, 2026-09-18, wisp mythic-quest-wisp-7sh6).
+    applies_to: "agents/**, plugins/**, skills/**"
+    prompt: >
+      For each imperative instruction in the file, check that the
+      addressee (the agent this profile/skill addresses) can execute it
+      with the capabilities it plausibly holds — cross-reference the
+      file's own frontmatter permission denies where present. Flag:
+      (a) instructions requiring tools or commands the same file's
+      frontmatter denies or omits; (b) instructions to observe state
+      only a human or the host harness can observe (e.g. querying
+      databases outside the project, reading another process's logs),
+      unless the instruction explicitly says "report to the human".
+      Timed/clock-based instructions ("every ~2 minutes", "wait one
+      hour") addressed to synchronous agents are also violations —
+      agents act turn-by-turn, so cadence must be expressed as
+      "between dispatches" or "per iteration". Legal: instructions
+      conditional on tool availability ("if you cannot X, report
+      BLOCKED").
+
+  no-dead-fallback-paths:
+    title: Degraded-mode paths are reachable or deleted
+    rationale: >
+      Fallback and degraded-mode branches that other standing rules
+      make unreachable are dead weight and drift-bait: they read as a
+      sanctioned option an agent may never lawfully take. Observed:
+      a QA profile gained "static review acceptable when the
+      orchestrator acknowledges degraded mode" while the orchestrator
+      profile simultaneously banned offering degraded mode — an
+      unreachable branch (pipeline-dev repo audit, 2026-09-18 — fixed
+      same day, bead mythic-quest-hg9).
+    applies_to: "agents/**, plugins/**, skills/**"
+    prompt: >
+      Flag instructions that authorize a degraded, fallback, or
+      exception mode gated on a condition another instruction
+      (in this file or a referenced counterpart — e.g. an orchestrator
+      profile paired with a specialist profile) forbids the counterparty
+      from triggering. Also flag exception paths whose triggering
+      condition names an actor that can never meet it ("when the human
+      approves X" inside a flow the human never sees). Do NOT flag the
+      structured BLOCKED escape hatch (report-and-stop is always
+      reachable), nor domain splits with stated reasons. When uncertain
+      whether the counterpart file forbids the trigger, note it as a
+      question rather than a violation.
+
+  proportionate-protocol:
+    title: Failure protocols are proportionate to their evidence
+    rationale: >
+      Defensive machinery must scale with observed recurrence: a
+      single-incident failure earns a one-line rule plus escalation,
+      not a multi-branch diagnostic tree. Over-calibrated protocols
+      (distinct causal diagnoses for one symptom, multi-clause
+      reporting requirements, repeated restatements of the same
+      requirement) cost context on every read and mislead when the
+      assumed cause is wrong. Observed: a health-check contract demanded
+      the agent distinguish server death from a toolset race — the
+      actual cause was neither (broken npx package; see
+      benchmarks/results/2026-09-17-walkthrough8-rallywall-lumomax.md
+      and upstream dist fix commit ea75a0d).
+    applies_to: "agents/**, plugins/**, skills/**"
+    prompt: >
+      Evaluate failure-handling and verification text for
+      OVER-calibration: (a) instructions to diagnose or distinguish
+      CAUSES of a failure (not just detect and report it) where the
+      diagnosis could be wrong or belongs to the human — reporting the
+      symptom and stopping is usually sufficient; (b) the same
+      requirement restated multiple times within a file where one
+      statement suffices (flag only exact-duplicate intent, not
+      complementary aspects like probe-then-verify-then-close-report
+      each saying something new); (c) multi-clause report templates
+      (more than ~3 required elements) for routine failures. Legal:
+      cause-distinguishing text where the file cites an observation
+      that the distinction changed the correct ACTION (not just the
+      wording), and layered contracts where each layer adds
+      information. Note but do not flag: genuinely load-bearing
+      repetition in a close-reason template vs its workflow step.

@@ -71,10 +71,9 @@ bead (and context) from the orchestrator and you make it real:
    engine's health-check tool (see the engine plugin's skills — the probe
    and verification tools are named there). If it is ABSENT from your
    toolset or reports the bridge down, report
-   `⛔ BLOCKED: engine MCP tools unavailable (<what you probed>)` — do NOT
-   proceed with static-only implementation and do not close PASS on code
-   review. If the probe succeeds, runtime verification is REQUIRED for
-   every close.
+   `⛔ BLOCKED: engine MCP tools unavailable` — do NOT proceed with
+   static-only implementation. Runtime verification is required for every
+   close (see step 4).
 2. Read the matching skill BEFORE acting — context-discovery order:
    - **Bead description** first (acceptance criteria = task scope — do not invent beyond it)
    - **VISION.md** sections referenced by the bead's labels
@@ -88,12 +87,11 @@ bead (and context) from the orchestrator and you make it real:
    (the bead is not done without it — QA verifies against that file).
 4. Verify observed behavior, not just absence of errors: prefer the
    engine's runtime verification tools (named in the engine plugin's
-   skills); fall back to headless CLI. Never close PASS
-   on "stubs ready" or "compiles clean" grounds, and never close PASS on
-   inline code review alone — a close reason must cite observed runtime
-   behavior (what you ran, what you saw). If runtime verification was
-   impossible (engine tools absent — blocked in step 1b), your close reason
-   must say `FAIL (blocked: no runtime evidence)` rather than claiming PASS.
+   skills); fall back to headless CLI. A close reason must cite observed
+   runtime behavior (what you ran, what you saw) — never "stubs ready",
+   "compiles clean", or inline code review alone. If runtime verification
+   was impossible (blocked in step 1b), close with
+   `FAIL (blocked: no runtime evidence)`.
 5. Close honestly:
    `bd close <id> --reason "PASS: <observed behavior>"` or
    `--reason "FAIL: <what failed>"`. Verdicts in close reasons, no report

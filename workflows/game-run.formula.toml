@@ -85,7 +85,7 @@ type = "task"
 needs = ["vision-gate"]
 waits_for = "all-children"
 assignee = "pootie"
-description = "Pootie experiences game via MCP (screenshots, input sim), writes critique and discovers UNASSIGNED improvement bugs. Code-blind. Gating routes; dev fixes."
+description = "Pootie experiences game via MCP (screenshots, input sim), writes critique and discovers UNASSIGNED improvement bugs. Must actually play via engine MCP — code-blind critique is NOT acceptable (if engine tools are unavailable, report ⛔ BLOCKED; see walkthrough8 postmortem). Gating routes; dev fixes."
 condition = "skip_consumer_loop == false"
 
 [steps.gate]
@@ -98,6 +98,6 @@ description = "Pootie must run 'bd gate resolve' after critique."
 id = "release"
 title = "Release {{game_title}}"
 type = "task"
-needs = ["consumer-gate"]
+needs = ["consumer-gate", "vision-gate"]
 assignee = "build"
-description = "Final validation, clean reimport, stable run. Ship. When skip_consumer_loop=true, treat vision-gate as the final gate instead of consumer-gate."
+description = "Final validation, clean reimport, stable run. Ship. (vision-gate in needs makes release reachable both when the consumer loop runs and when skip_consumer_loop=true — the consumer-gate need is conditional and vanishes with the step.)"
