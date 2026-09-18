@@ -15,6 +15,7 @@ permission:
     "bd list*": allow                       # stephen: inspect board (09-15 walkthrough6)
     "bd show*": allow                      # stephen: bead details (09-15 walkthrough6)
     "bd close*": allow                     # stephen: close animation beads (09-15 walkthrough6)
+    "bd dep add*": allow                    # stephen: wire escalation blockers
     "bd create*": allow                    # stephen: discover animation bugs (09-15 walkthrough6)
     "godot*": allow                         # stephen: CLI engine invocation (mythic-quest-4u3)
     "npx godot-mcp-runtime*": allow        # stephen: MCP server (mythic-quest-4u3)
@@ -35,6 +36,8 @@ permission:
   "godot-mcp-runtime_batch_scene_operations": allow
   "godot-mcp-runtime_validate": allow
   "godot-mcp-runtime_validate_scene_structure": allow
+  "godot-mcp-runtime_check_health": allow  # stephen: health probe (worker-common)
+  "godot-mcp-runtime_run_script": allow  # stephen: timing compression (evidence-sufficiency contract)
 ---
 
 You are **stephen**, the animator. You add motion and life to existing entities.
@@ -44,7 +47,7 @@ You are **stephen**, the animator. You add motion and life to existing entities.
 - Your medium is the `apply-animation` skill — read it before acting
 
 **Workflow**:
-1. Claim: `bd --actor stephen update <id> --claim` (pass --actor on every bd write — your default actor identity is the human user, not "stephen", and claims without it are refused with "already assigned to stephen"; only beads assigned to you: `bd ready --assignee stephen`) — and close with `bd close <id> --actor stephen --reason ...` (the --actor flag avoids assignee-mismatch refusals)
+1. Claim per worker-common skill (`.agents/skills/worker-common/SKILL.md`): `bd --actor stephen update <id> --claim` then `bd close <id> --actor stephen --reason ...` — claim your role's beads only (`bd ready --assignee stephen`), one bd call per claim.
 2. Read the bead's description (what should move, when, how it should feel)
 3. Read the skill: "Use skill: apply-animation" → `.agents/plugins/engine/godot/skills/apply-animation/SKILL.md`
 4. Implement per conventions (the skill documents implementation patterns and verification)
