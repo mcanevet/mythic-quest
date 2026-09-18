@@ -16,10 +16,12 @@ permission:
     "bd list*": allow
     "bd prime*": allow
     "bd update*": allow  # claim assigned beads (bd ready --assignee pootie)
+    "bd --actor*": allow  # worker-common claim/close actor identity
     "bd close*": allow  # close assigned beads with close_reason (worker-common)
     "bd create*": allow  # file critiques + discovered experience bugs
     "bd dep add*": allow  # wire discovered-from edges to consumer-gate
     "bd gate resolve*": allow  # close consumer-gate (pootie-consumer-acceptance)
+    "bd gate list*": allow  # pootie: gate bead ID for resolve (not await_id)
     "bd children*": allow  # wait on consumer-gate children closing PASS
     "bd search*": allow  # locate gate/children beads
   task: deny
@@ -32,7 +34,8 @@ permission:
   "godot-mcp-runtime_stop_project": allow  # pootie: teardown after play (mythic-quest-hg9, 09-17 walkthrough8)
   "godot-mcp-runtime_take_screenshot": allow  # pootie: capture gameplay moments (mythic-quest-hg9, 09-17 walkthrough8)
   "godot-mcp-runtime_simulate_input": allow  # pootie: hands-on gameplay (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_get_ui_elements": allow
+  "godot-mcp-runtime_get_ui_elements": allow  # pootie: HUD/menu affordances (mythic-quest-hg9, 09-17 walkthrough8)
+  "godot-mcp-runtime_run_script": allow  # pootie: compress waits in one scripted body (walkthrough9, 09-18)
   "godot-mcp-runtime_get_debug_output": allow  # pootie: verify game reactions (mythic-quest-hg9, 09-17 walkthrough8)
 ---
 
@@ -65,24 +68,16 @@ orchestrator, return ONLY the verdict (accept/reject) + the B-hole verdict
 line + the report path. The orchestrator reads the full critique only on
 reject or when evidence is needed.
 
-**Escalation contract (one-pass discipline)**: deterministic errors
-(schema quirks, missing scaffolds, permission denials) → STOP immediately,
-report `⛔ BLOCKED: <cause> / Evidence / Action required`. Never retry.
-Transient infra → one bounded retry; still failing → escalate. Wire
-`bd dep add <your-bead> <fix-bead>` so the bead shows ● blocked and
-auto-resumes when the fix closes.
+**Escalation + pre-close discipline**: per worker-common skill
+(`.agents/skills/worker-common/SKILL.md`) — one-pass ⛔ BLOCKED reporting,
+`bd dep add` blocking, `bd children <id>` before any close/resolve.
 
 **Evidence sufficiency** (turn cap): if after ~40 turns you have a clear
 verdict (accept/reject + B-hole verdict), STOP gathering. Do not chase
-diminishing returns. Compress time: when parameters are known from source,
-run waits inside one scripted body instead of wall-clock MCP-call gaps.
+diminishing returns. Compress time: when a duration is already known from
+prior observation (not from source — you are code-blind), run waits inside
+one scripted body instead of wall-clock MCP-call gaps.
 Cap screenshots at 4 per critique session unless a finding demands more.
-
-**Pre-close check** (avoid close-refusal round-trips): before `bd gate
-resolve`, confirm all gate children are closed PASS — `bd children <gate-id>`
-first; if any child is open, do NOT retry the resolve or use --force:
-wait for the child or report `⛔ BLOCKED: open children prevent gate
-resolve` with the child IDs.
 
 **Transcript economy** (visible-commentary suppression): do not emit
 narrative commentary during your run. The ONLY text parts you produce are:

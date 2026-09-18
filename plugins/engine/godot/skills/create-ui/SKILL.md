@@ -20,6 +20,14 @@ Creates UI scenes with Control-node hierarchy and a script:
 - Text via `Label`, never baked into textures
 - Identify nodes by groups or exported NodePaths, not `.name` lookups
 
+## Property values (common gotchas)
+
+- **Label font sizing**: `Label` nodes do NOT have a `font_size` property. Use
+  `theme_override_font_sizes/font_size` instead. Example:
+  `{ "property": "theme_override_font_sizes/font_size", "value": 16 }`
+- **Button pressed state**: use `button_pressed` (not `pressed`) when setting
+  the initial state programmatically.
+
 **Sanctioned-paths-only**: mutate scene files exclusively through MCP tools; direct `.tscn` edits are not permitted — report `⛔ BLOCKED: tool cannot express <operation>` if a needed operation is unavailable. See create-entity SKILL.md for the full rule.
 
 ## Done when

@@ -29,33 +29,35 @@ permission:
     "**/skills/**": deny
   bash:
     "*": deny
-    "*scripts/*.sh*": allow
-    "*scripts/*.py*": allow
-    "bd ready --json*": allow
-    "bd show --json*": allow
-    "bd list*": allow
-    "bd search*": allow
-    "bd query*": allow
-    "bd children*": allow
-    "bd dep tree*": allow
-    "bd dep list*": allow
-    "bd prime*": allow
-    "bd update*": allow
-    "bd unclaim*": allow
-    "bd close --force*": deny
+    "*scripts/*.sh*": allow  # poppy: run project helper scripts (setup, validate)
+    "*scripts/*.py*": allow  # poppy: run python helpers (generate levels, process assets)
+    "bd ready --json*": allow  # find work; also supports --assignee filtering
+    "bd ready*": allow  # bd ready --assignee poppy (worker-common claim step)
+    "bd show --json*": allow  # read bead details before claiming
+    "bd list*": allow  # survey role beads
+    "bd search*": allow  # locate beads by keyword
+    "bd query*": allow  # targeted ledger queries
+    "bd children*": allow  # pre-close check (worker-common)
+    "bd dep tree*": allow  # read blocking structure
+    "bd dep list*": allow  # read dependencies
+    "bd prime*": allow  # context load
+    "bd update*": allow  # claim assigned beads
+    "bd --actor*": allow  # worker-common claim/close actor identity
+    "bd unclaim*": allow  # release a mis-claimed bead
+    "bd close --force*": deny  # never bypass close refusals (deterministic errors escalate instead)
     "bd close*": allow
-    "bd note*": allow
-    "bd comment*": allow
-    "bd create*": allow
+    "bd note*": allow  # session notes
+    "bd comment*": allow  # report on beads
+    "bd create*": allow  # discovered-from work
     "bd dep add*": allow
-    "bd dep remove*": allow
-    "bd history*": allow
-    "bd q*": allow
+    "bd dep remove*": allow  # undo a wrong escalation wire
+    "bd history*": allow  # trace a bead's prior sessions
+    "bd q*": allow  # quick targeted queries
   task: deny
   skill: allow
   webfetch: allow
   websearch: allow
-  "godot-mcp-runtime_*": allow
+  "godot-mcp-runtime_*": allow  # poppy: primary implementer — broad engine access (09-15 walkthrough6)
   "godot-mcp-runtime_launch_editor": deny
 ---
 
@@ -78,7 +80,7 @@ bead (and context) from the orchestrator and you make it real:
    (the bead is not done without it — QA verifies against that file).
 4. Verify observed behavior, not just absence of errors: prefer the
    engine's runtime verification tools (named in the engine plugin's
-   skills); fall back to headless CLI. A close reason must cite observed
+   skills). A close reason must cite observed
    runtime behavior (what you ran, what you saw) — never "stubs ready",
    "compiles clean", or inline code review alone. If runtime verification
    was impossible (blocked in step 1b), close with
@@ -104,20 +106,6 @@ bead (and context) from the orchestrator and you make it real:
 You cannot spawn subagents. If a bead is bigger than one sitting, say so in
 your report — the orchestrator will split it.
 
-**Escalation contract (one-pass discipline)**:
-- Deterministic errors (schema quirks, missing scaffolds, permission
-  denials) → STOP immediately, report
-  `⛔ BLOCKED: <cause> / Evidence / Action required`. Never retry.
-- Transient infra (transport timeout, bridge glitch) → one bounded retry;
-  still failing → escalate via `⛔ BLOCKED`.
-- Blocking on a fix: create the prevention-fix bead (or find it), wire
-  `bd dep add <your-bead> <fix-bead>` — your bead auto-shows ● blocked and
-  resumes when the fix closes. Mention the link in your report.
-- Each BLOCKED becomes a prevention fix: gotcha entry, scaffold addition,
-  or upstream doc/fix bead (`bd create ... --deps discovered-from:<id>`).
-
-**Pre-close check** (avoid close-refusal round-trips): before `bd close`,
-confirm no open children or blocking gates — `bd children <id>` first; if
-anything is open, that refusal is deterministic, not transient: do NOT
-retry or use --force. Either close the children first or report
-`⛔ BLOCKED: open children prevent close` with the child IDs.
+**Escalation + pre-close discipline**: per worker-common skill
+(`.agents/skills/worker-common/SKILL.md`) — one-pass ⛔ BLOCKED reporting,
+`bd dep add` blocking, `bd children <id>` before any close/resolve.

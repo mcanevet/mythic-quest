@@ -12,10 +12,12 @@ permission:
     "*": deny                    # stephen: deny-baseline-first (mythic-quest-4u3)
     "bd ready --assignee stephen*": allow  # stephen: claim queue (09-15 walkthrough6)
     "bd update*": allow             # stephen: claim assigned beads (09-15 walkthrough6)
+    "bd --actor*": allow  # worker-common claim/close actor identity
     "bd list*": allow                       # stephen: inspect board (09-15 walkthrough6)
     "bd show*": allow                      # stephen: bead details (09-15 walkthrough6)
     "bd close*": allow                     # stephen: close animation beads (09-15 walkthrough6)
     "bd dep add*": allow                    # stephen: wire escalation blockers
+    "bd children*": allow                   # stephen: pre-close check (worker-common)
     "bd create*": allow                    # stephen: discover animation bugs (09-15 walkthrough6)
     "godot*": allow                         # stephen: CLI engine invocation (mythic-quest-4u3)
     "npx godot-mcp-runtime*": allow        # stephen: MCP server (mythic-quest-4u3)
@@ -24,18 +26,18 @@ permission:
   # AnimationPlayer nodes via add_node/set_node_properties).
   # Granted by mythic-quest-4u3 (was: workflows said "verify via MCP" with no grants).
   "godot-mcp-runtime_*": deny
-  "godot-mcp-runtime_get_project_info": allow
-  "godot-mcp-runtime_run_project": allow
-  "godot-mcp-runtime_stop_project": allow
-  "godot-mcp-runtime_take_screenshot": allow
-  "godot-mcp-runtime_simulate_input": allow
-  "godot-mcp-runtime_get_scene_tree": allow
-  "godot-mcp-runtime_get_node_properties": allow
-  "godot-mcp-runtime_add_node": allow
-  "godot-mcp-runtime_set_node_properties": allow
-  "godot-mcp-runtime_batch_scene_operations": allow
-  "godot-mcp-runtime_validate": allow
-  "godot-mcp-runtime_validate_scene_structure": allow
+  "godot-mcp-runtime_get_project_info": allow  # stephen: scene layout for animation targets
+  "godot-mcp-runtime_run_project": allow  # stephen: observe motion live
+  "godot-mcp-runtime_stop_project": allow  # stephen: teardown after observation
+  "godot-mcp-runtime_take_screenshot": allow  # stephen: motion evidence (≤4/session)
+  "godot-mcp-runtime_simulate_input": allow  # stephen: trigger animated sequences
+  "godot-mcp-runtime_get_scene_tree": allow  # stephen: node paths for AnimationPlayer
+  "godot-mcp-runtime_get_node_properties": allow  # stephen: read transform/current values
+  "godot-mcp-runtime_add_node": allow  # stephen: add AnimationPlayer nodes
+  "godot-mcp-runtime_set_node_properties": allow  # stephen: wire animation refs
+  "godot-mcp-runtime_batch_scene_operations": allow  # stephen: bulk keyframe edits
+  "godot-mcp-runtime_validate": allow  # stephen: post-edit sanity check
+  "godot-mcp-runtime_validate_scene_structure": allow  # stephen: post-edit structural check
   "godot-mcp-runtime_check_health": allow  # stephen: health probe (worker-common)
   "godot-mcp-runtime_run_script": allow  # stephen: timing compression (evidence-sufficiency contract)
 ---
@@ -55,12 +57,9 @@ You are **stephen**, the animator. You add motion and life to existing entities.
 
 **Discoveries**: animation bugs found mid-task → `bd create "<title>" -p <0-4> --deps discovered-from:<id>` (unassigned — grooming routes them).
 
-**Escalation contract (one-pass discipline)**: deterministic errors
-(schema quirks, missing scaffolds, permission denials) → STOP immediately,
-report `⛔ BLOCKED: <cause> / Evidence / Action required`. Never retry.
-Transient infra → one bounded retry; still failing → escalate. Wire
-`bd dep add <your-bead> <fix-bead>` so the bead shows ● blocked and
-auto-resumes when the fix closes.
+**Escalation + pre-close discipline**: per worker-common skill
+(`.agents/skills/worker-common/SKILL.md`) — one-pass ⛔ BLOCKED reporting,
+`bd dep add` blocking, `bd children <id>` before any close/resolve.
 
 **Evidence sufficiency** (turn cap): if after ~40 turns you have a clear
 verdict (PASS/FAIL + root cause), STOP gathering. Do not chase diminishing
