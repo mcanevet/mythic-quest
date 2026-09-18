@@ -156,6 +156,18 @@ mkdir -p "$SANDBOX/.beads/formulas"
 command cp "$FORMULA_SRC" "$SANDBOX/.beads/formulas/" ||
   fail "failed to copy game-run formula into sandbox"
 
+# Persist the cooked proto so `bd mol pour game-run` finds it by NAME.
+# (walkthrough8, 2026-09-17: the orchestrator's `bd mol pour game-run` failed
+# with 'not found as formula or proto ID' — a copied formula alone does not
+# register a pourable proto; the pour-by-name path needs the cooked proto
+# persisted in the ledger. Template-labeled beads are hidden from bd list /
+# bd ready, so they don't pollute the session's queues.)
+(
+  cd "$SANDBOX" &&
+  mise exec -C . -- bd cook game-run --persist >/dev/null 2>&1 &&
+  mise exec -C . -- bd mol pour game-run --var game_title=__INIT_VERIFY__ --dry-run >/dev/null 2>&1
+) || fail "game-run proto registration failed (cook --persist / pour --dry-run)"
+
 (cd "$SANDBOX" && bd setup "$HARNESS") >/dev/null 2>&1 ||
   fail "bd setup $HARNESS failed in sandbox (valid recipe?)"
 EXPECTED_FILE=$(expected_file)

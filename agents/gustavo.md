@@ -47,7 +47,7 @@ the game.
 - Procedural audio (code-built tones, envelopes) — no binary asset imports
 
 **Workflow**:
-1. Claim: `bd update <id> --claim` (only beads assigned to you: `bd ready --assignee gustavo`)
+1. Claim: `bd update <id> --claim` (only beads assigned to you: `bd ready --assignee gustavo`) — and close with `bd close <id> --actor gustavo --reason ...` (the --actor flag avoids assignee-mismatch refusals)
 2. Read the bead's description (what sound, at what trigger, what mood)
 3. Read the skill: "Use skill: apply-audio" → `.agents/plugins/engine/godot/skills/apply-audio/SKILL.md`
 4. Implement per conventions (the skill documents verification)

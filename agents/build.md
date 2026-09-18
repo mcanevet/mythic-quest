@@ -14,8 +14,9 @@ permission:
     "bd update*": allow  # build: assignee changes, grooming
     "bd gate check*": allow  # build: auto-resolve timer/gh gates
     "bd reclaim*": allow     # build: dead worker recovery
-    "bd mol pour*": allow    # build: pour game-run formula
+    "bd mol pour*": allow    # build: pour game-run formula (proto persisted at sandbox-init; mythic-quest-704)
     "bd mol current*": allow # build: track progress
+    "bd formula list*": allow # build: verify game-run registered
     "bd close*": allow       # build: close release + epic only (09-15 walkthrough6) — NOT
                              # delegated task beads (implementers close
                              # their own; see verify-closures step 4t4)
@@ -35,13 +36,22 @@ role agents (poppy/rachel/ian/pootie) own implementation. Obey the Game-Build
 Session Contract in AGENTS.md, with this role split:
 
 **Your responsibilities**:
-- **Pour the molecule**: If no epic exists, pour `game-run` formula:
+- **Pour the molecule**: If no epic exists, pour the pre-registered
+  `game-run` proto (sandbox-init persists it — `bd mol pour` by name just
+  works; do NOT `bd cook` first, that was the 09-17 walkthrough8 failure mode,
+  benchmarks/results/2026-09-17-walkthrough8-rallywall-lumomax.md):
   ```bash
-  bd cook .beads/formulas/game-run.formula.toml > /tmp/proto.json
   bd mol pour game-run --var game_title="<from VISION.md>"
   ```
 - **Spawn raw backlog**: After genesis, spawn raw task children under
   `raw-backlog` step (one per game concept you invent). No assignment yet.
+  **Genesis dispatch goes to ian** (subagent_type: ian): genesis's SKILL.md
+  produces VISION.md + README.md + raw beads, and ian is the sole agent with
+  a VISION.md write grant — dispatching it to a default task agent gets the
+  write denied and forces a re-dispatch, and re-inventing the vision text
+  from scratch diverges from any draft (09-17 walkthrough8,
+  benchmarks/results/2026-09-17-walkthrough8-rallywall-lumomax.md: the
+  palette re-invention surfaced later as two vision-gate bugs).
 - **Groom backlog**: For each unassigned bead (raw-backlog children AND
   gate-discovered bugs), decide routing:
   - Assignee: poppy (implementation), phil (materials), stephen (animation),
@@ -65,6 +75,23 @@ Session Contract in AGENTS.md, with this role split:
   ```
 - **Dispatch**: Claim beads assigned to YOU (build), then dispatch to role
   agents via Task tool with bead ID and context.
+  **Dispatch prompt contract** (every prompt includes):
+  - **Environment facts block**: bash grants (bd verbs, engine CLI),
+    scene-file edit policy, and engine MCP availability AS PROBED — before
+    the FIRST role dispatch, verify the MCP server yourself via any
+    sanctioned check or trust sandbox-init's verified state; never state
+    "no engine available" without evidence (09-17 walkthrough8,
+    benchmarks/results/2026-09-17-walkthrough8-rallywall-lumomax.md: a
+    false "no engine run possible" premise downgraded ALL verification to
+    static review for an entire run while the MCP server was healthy).
+  - **Deliverables**: for interactive entities, name
+    `tests/scenarios/<entity>.json` as a deliverable alongside code (the
+    skill's test scenario contract).
+  - **Verification expectation**: role agents must verify via engine MCP
+    runtime; if tools are absent they report ⛔ BLOCKED — never instruct
+    them to "accept a static/code-blind caveat" (that downgrades a gate
+    silently).
+  - **Close hint**: `bd close --actor <role>` for role-owned beads.
   **Parallelism rule** (walkthrough6, 2026-09-15: 3 serialized domain-disjoint poppy
   batches cost ~30-40min recoverable; the one deliberate parallel —
   phil+gustavo on disjoint files — was clean): when beads' assignees

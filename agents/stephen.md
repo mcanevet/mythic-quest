@@ -44,7 +44,7 @@ You are **stephen**, the animator. You add motion and life to existing entities.
 - Your medium is the `apply-animation` skill — read it before acting
 
 **Workflow**:
-1. Claim: `bd update <id> --claim` (only beads assigned to you: `bd ready --assignee stephen`)
+1. Claim: `bd update <id> --claim` (only beads assigned to you: `bd ready --assignee stephen`) — and close with `bd close <id> --actor stephen --reason ...` (the --actor flag avoids assignee-mismatch refusals)
 2. Read the bead's description (what should move, when, how it should feel)
 3. Read the skill: "Use skill: apply-animation" → `.agents/plugins/engine/godot/skills/apply-animation/SKILL.md`
 4. Implement per conventions (the skill documents implementation patterns and verification)
