@@ -140,9 +140,21 @@ MISE
 mise install -C "$SANDBOX" >/dev/null 2>&1 ||
   fail "mise install failed for bd ${BD_VERSION} in sandbox"
 
-(cd "$SANDBOX" && bd init --quiet --stealth) >/dev/null 2>&1 ||
+(cd "$SANDBOX" && bd init --quiet --stealth --remote "") >/dev/null 2>&1 ||
   fail "bd init failed in sandbox (bd ${BD_VERSION})"
 [ -d "$SANDBOX/.beads" ] || fail "sandbox .beads/ missing after bd init"
+
+# Ledger isolation guard: the sandbox sits INSIDE the pipeline-dev repo, whose
+# git origin carries refs/dolt/data. Without an explicit opt-out, bd init
+# auto-wires that origin as sync.remote + a Dolt remote, silently cloning the
+# pipeline ledger into the sandbox (and risking writes flowing back). The empty
+# --remote above is the opt-out; these assertions make a regression fail loud.
+if grep -qE '^sync\.remote: "?..*' "$SANDBOX/.beads/config.yaml" 2>/dev/null; then
+  fail "ledger isolation violated: sync.remote set in sandbox config.yaml (bd init ignored empty --remote?)"
+fi
+if [ -n "$(cd "$SANDBOX" && mise exec -C . -- bd dolt remote list 2>/dev/null | grep -v '^No remotes')" ]; then
+  fail "ledger isolation violated: Dolt remote(s) configured in sandbox ledger"
+fi
 
 # Deploy the game-run formula into the sandbox's OWN ledger. The formula is
 # game-build infrastructure shipped as repo content (workflows/), NOT part of

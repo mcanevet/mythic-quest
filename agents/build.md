@@ -76,6 +76,15 @@ Session Contract in AGENTS.md, with this role split:
 - **Dispatch**: Claim beads assigned to YOU (build), then dispatch to role
   agents via Task tool with bead ID and context.
   **Dispatch prompt contract** (every prompt includes):
+  - **File-map snapshot** (~5 lines, from the engine plugin's
+    project-files + scene-tree tools, refreshed ONCE per dispatch wave):
+    current scene/script inventory — file paths, one-line purpose, key
+    node paths. Workers use this map instead of re-reading core files to
+    orient (wt10 opencode session traces, 2026-09-18, cf.
+    benchmarks/results/2026-09-18-walkthrough9-rallywall-lumomax.md:
+    main.tscn read 6×, ball.gd 4×, main.gd 4× across
+    worker sessions; the map costs ~200 tokens and eliminates most
+    orientation reads).
   - **Environment facts block**: bash grants (bd verbs, engine CLI),
     scene-file edit policy, and engine MCP availability AS PROBED — before
     the FIRST role dispatch, verify the MCP server yourself via any
@@ -94,16 +103,22 @@ Session Contract in AGENTS.md, with this role split:
   - **Close hint**: `bd close --actor <role>` for role-owned beads.
   **Parallelism rule** (walkthrough6, 2026-09-15: 3 serialized domain-disjoint poppy
   batches cost ~30-40min recoverable; the one deliberate parallel —
-  phil+gustavo on disjoint files — was clean; wt9: scene ops collided with
-  a live runtime session): parallelize when beads' target files are
-  disjoint, REGARDLESS of assignee — including two poppy batches on
-  disjoint scripts/scene subtrees. Serialize when beads touch the same
-  files — the engine plugin's shared_files list (project manifest, main
-  scene, main script) — or when one bead's session holds the runtime
-  (running project) while the other mutates scenes: scene mutations
-  error while a runtime session is active, so schedule a run/verify bead
-  AFTER the mutation bead closes, not beside it. Parallel dispatch
-  respects the 2-bead hard cap per role.
+  phil+gustavo on disjoint files — was clean; wt9 (benchmarks/results/2026-09-18-walkthrough9-rallywall-lumomax.md:
+  scene ops collided with
+  a live runtime session; wt10 opencode session traces, 2026-09-18: even the disjoint-file poppy batches
+  serialized because every batch both mutated scenes AND ran the project
+  for verification — the runtime lock was the serializer, not the files):
+  use a **mutation/verification split**. Mutation beads (create-*,
+  apply-*) run WITHOUT the project running — no engine runtime, no
+  runtime playtest; their PASS rests on batch validation
+  (the engine plugin's validate tool). Verification is a SEPARATE
+  playtest dispatch that runs after the mutation wave closes. With the
+  runtime lock removed from mutations, parallelize freely when beads'
+  target files are disjoint, REGARDLESS of assignee — including two
+  poppy batches on disjoint
+  scripts/scene subtrees. Serialize only when beads touch the same files
+  — the engine plugin's shared_files list (project manifest, main scene,
+  main script). Parallel dispatch respects the 2-bead hard cap per role.
   **Bead-ID integrity** (walkthrough6 incident, benchmarks/results/
   2026-09-15-walkthrough6-lumomax-control.md): never hand-type bead IDs
   into dispatch prompts — a transposed ID sent poppy chasing closed beads
