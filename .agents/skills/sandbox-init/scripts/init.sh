@@ -58,6 +58,7 @@ warn() { printf 'init.sh: WARN: %s\n' "$1" >&2; }
   fail "engine required: init.sh <harness> <godot|...> [sandbox-name]"
 
 PLUGIN_DIR="$REPO_ROOT/plugins/engine/$ENGINE"
+REL_PLUGIN_SKILLS=".agents/plugins/engine/$ENGINE/skills"
 [ -d "$PLUGIN_DIR/skills" ] ||
   fail "unknown engine plugin: $PLUGIN_DIR/skills missing (available: $(ls "$REPO_ROOT/plugins/engine" 2>/dev/null | tr '\n' ' '))"
 
@@ -299,6 +300,17 @@ if [ -f "$MCP_JSON" ] && command -v jq >/dev/null 2>&1; then
           --arg SERVER "$SERVER" "$SANDBOX/opencode.json" > "$SANDBOX/opencode.json.tmp" &&
           mv "$SANDBOX/opencode.json.tmp" "$SANDBOX/opencode.json" ||
           warn "opencode MCP render failed for $SERVER"
+        # Engine plugin skills (.agents/plugins/engine/<engine>/skills) are not
+        # scanned by the harness skill tool by default; register the folder via
+        # skills.paths so `skill <name>` resolves without symlinks/copies.
+        # (walkthrough9: gustavo's `skill apply-audio` failed with "not found"
+        # and cost a turn before falling back to reading the file.)
+        [ -d "$PLUGIN_DIR/skills" ] &&
+          jq '.skills.paths = ((.skills.paths // []) + [$pluginSkills])' \
+            --arg pluginSkills "$REL_PLUGIN_SKILLS" "$SANDBOX/opencode.json" \
+            > "$SANDBOX/opencode.json.tmp" &&
+          mv "$SANDBOX/opencode.json.tmp" "$SANDBOX/opencode.json" ||
+          warn "opencode skills.path registration failed for $SERVER"
         ;;
       claude)
         # Claude Code: .mcp.json at project root, top-level server entries
