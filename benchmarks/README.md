@@ -41,6 +41,29 @@ primary prompt doesn't reach.
    to record subagent spawns, stalls, retries.
 5. On completion, record the metrics below.
 
+### Monitoring rules (read outputs, not intents)
+
+Lessons from walkthrough9, where a systemic failure (every `bd update
+--claim` refused due to actor mismatch) went undetected live because the
+monitor watched tool *inputs* and agent *prose* while the evidence sat in
+tool *outputs*:
+
+- **Read `state.output`, not just `state.input`** for every state-changing
+  command (`bd create/update/close --claim`, `git`, writes). Agent prose
+  saying "proceeding" is rationalization, not evidence of success — a
+  refused command followed by "treating the claim as held — proceeding"
+  is a defect signature, not coping.
+- **Verify state materialized**: if the workflow says claims put beads
+  `in_progress`, spot-check `bd list` shows ◐ during dispatch windows. Zero
+  ◐ across an entire run = systemic claim failure, investigate immediately.
+- **Scan for error-shaped outputs**: any `Error updating`, `refused`,
+  `denied`, `failed` in tool outputs deserves a triage note even if the
+  run ultimately succeeds — silent workarounds (working a bead without
+  claiming it, hand-editing what a tool should have written) compound
+  into unmeasured drift.
+- Prefer one targeted query ("dump outputs for all `--claim` calls") over
+  theorizing from prose when a counterintuitive state appears.
+
 ## Metrics to record (efficiency + outcome axes)
 
 | Metric | Source |
