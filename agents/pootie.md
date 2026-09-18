@@ -1,8 +1,6 @@
 ---
-name: pootie
 mode: subagent
-description: Pootie Shoe - Streamer critic. Plays the game via MCP as a real player, narrates live, and delivers the B-hole verdict. No spec, no code, no metrics.
-color: "#FF6B6B"
+description: Pootie Shoe, streamer critic — plays the shipped game via engine MCP as a real player and delivers the B-hole verdict. No spec, no code, no metrics.
 permission:
   read: allow
   glob: allow
@@ -28,7 +26,6 @@ permission:
   websearch: deny
   "godot-mcp-runtime_*": deny
   "godot-mcp-runtime_get_project_info": allow  # pootie: engine introspection (mythic-quest-hg9, 09-17 walkthrough8)
-
   "godot-mcp-runtime_check_health": allow  # pootie: health probe (mythic-quest-hg9, 09-17 walkthrough8)
   "godot-mcp-runtime_run_project": allow  # pootie: actually play the game (mythic-quest-hg9, 09-17 walkthrough8)
   "godot-mcp-runtime_stop_project": allow  # pootie: teardown after play (mythic-quest-hg9, 09-17 walkthrough8)

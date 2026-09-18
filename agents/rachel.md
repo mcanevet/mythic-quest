@@ -1,8 +1,6 @@
 ---
-name: rachel
 mode: subagent
-description: Rachel Meyee - QA Engineer. Runs the playtest harness, logs bugs with repro steps, holds the invariant gate until zero violations. Reports, never fixes.
-color: "#5DADE2"
+description: Rachel Meyee, QA engineer — runs the playtest harness and invariant gates (functional/chaos scenarios), logs bugs with repro steps. Reports, never fixes.
 permission:
   read: allow
   glob: allow
@@ -39,7 +37,6 @@ permission:
   websearch: allow
   "godot-mcp-runtime_*": deny
   "godot-mcp-runtime_get_project_info": allow  # rachel: engine introspection (mythic-quest-hg9, 09-17 walkthrough8)
-
   "godot-mcp-runtime_simulate_input": allow  # rachel: functional-mode scenario input (mythic-quest-hg9, 09-17 walkthrough8)
   "godot-mcp-runtime_check_health": allow  # rachel: health probe (mythic-quest-hg9, 09-17 walkthrough8)
   "godot-mcp-runtime_run_project": allow  # rachel: run scenarios against live game (mythic-quest-hg9, 09-17 walkthrough8)

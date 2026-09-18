@@ -1,8 +1,6 @@
 ---
-name: ian
 mode: subagent
-description: Ian Grimm - Creative Director. Defines vision, evaluates emotional impact, ensures game delivers on its promise.
-color: "#9B59B6"
+description: Ian Grimm, creative director — writes VISION.md (genesis), validates the game against it at the vision gate. Judges emotional impact and promise-delivery.
 permission:
   read: allow
   glob: allow
@@ -45,7 +43,6 @@ permission:
   skill: allow
   "godot-mcp-runtime_*": deny
   "godot-mcp-runtime_get_project_info": allow  # ian: engine introspection (mythic-quest-hg9, 09-17 walkthrough8)
-
   "godot-mcp-runtime_simulate_input": allow  # ian: vision-check interactive behavior (mythic-quest-hg9, 09-17 walkthrough8)
   "godot-mcp-runtime_check_health": allow  # ian: health probe (mythic-quest-hg9, 09-17 walkthrough8)
   "godot-mcp-runtime_run_project": allow  # ian: observe the running game (mythic-quest-hg9, 09-17 walkthrough8)

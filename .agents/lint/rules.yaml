@@ -379,3 +379,26 @@ rules:
       wording), and layered contracts where each layer adds
       information. Note but do not flag: genuinely load-bearing
       repetition in a close-reason template vs its workflow step.
+
+  agent-frontmatter-schema:
+    title: Agent markdown frontmatter matches the harness schema
+    rationale: >
+      Agent .md frontmatter validates against the harness (opencode)
+      agent schema; unknown keys are NOT errors — they pass through to
+      the model provider as options, so junk keys ship silently as
+      provider params. `name` is not a frontmatter key in markdown agent
+      files (identity derives from the filename); `color` is cosmetic
+      noise this repo omits. Observed: four profiles carried
+      `name: <role>` (silently forwarded to providers) and hex colors
+      (pipeline-dev repo, 2026-09-18, commit preceding b7429fd).
+    applies_to: "agents/**"
+    prompt: >
+      For agent markdown files, the frontmatter may contain ONLY these
+      keys: description, mode (primary|subagent|all), model, variant,
+      temperature, top_p, permission, disable, hidden, steps, options,
+      and recognized passthrough model-option keys (e.g. reasoningEffort).
+      Flag (a) any other key — especially `name` (derives from filename)
+      or `color` (cosmetic; repo convention omits it); (b) a missing
+      description (it drives Task-tool selection); (c) a missing mode —
+      the repo convention sets it explicitly on every agent. Files that
+      are not agent markdown close with NO APPLICABLE RULES.
