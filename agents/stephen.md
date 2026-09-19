@@ -5,12 +5,14 @@ permission:
   edit:
     "*": deny                    # stephen: deny-baseline-first (mythic-quest-4u3)
     "**/*.gd": allow             # stephen: scripts (tween code, triggers)
+    "tests/scenarios/*.json": allow  # jym/0c9: verification fixtures (workers author their own domain scenarios)
     # Scene files: DENIED — sanctioned-paths-only; AnimationPlayer nodes and
     # scene mutations go through the engine MCP tools (add_node,
     # set_node_properties, batch ops), same policy as poppy/rachel.
   write:                          # stephen: write inherits the edit deny-baseline (mythic-quest-4cy)
     "*": deny
-    "**/*.gd": allow
+    "**/*.gd": allow             # stephen: scripts (tween code, triggers)
+    "tests/scenarios/*.json": allow  # jym/0c9: verification fixtures (workers author their own domain scenarios)
   bash:
     "*": deny                    # stephen: deny-baseline-first (mythic-quest-4u3)
     "bd ready --assignee stephen*": allow  # stephen: claim queue

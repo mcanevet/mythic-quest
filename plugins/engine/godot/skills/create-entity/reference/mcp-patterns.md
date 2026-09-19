@@ -158,3 +158,18 @@ Why this must be mechanical, not judgment: the per-call error message ("Is the g
 - Before `run_project`: Call `godot-mcp-runtime:validate()` on all .tscn/.gd files
 - After failure: Call `godot-mcp-runtime:get_debug_output()` before any retry
 - If no debug output: Call `godot-mcp-runtime:list_autoloads` to check for broken autoloads
+
+**Transient `run_script` submissions leak errors into the debug stream (anc):**
+Two failure classes from dynamically submitted gdscript:// scripts:
+- **Hallucinated identifiers** — the model invents a helper (`p2b not
+  declared`) or a constant name. Before submitting a probe that references
+  identifiers or constants, verify they exist — a trivial probe
+  (`print(OS.has_method("..."))`, or check constants via a one-liner) costs
+  one round-trip; a failed guess costs the same plus pollutes the stream.
+- **Wrong-API scripts (Godot 3→4 renames)** — e.g. `get_debug_stdout` /
+  `NOTIFICATION_WM_CLOSE_REQUEST` variants that don't exist in the target
+  engine major version. Validate against the engine version the runtime
+  reports, not remembered API knowledge.
+Both produce SCRIPT ERRORs that persist in `get_debug_output` after the
+submission dies. When triaging debug output, correlate with timestamps —
+errors from dead submissions must not be attributed to later probes.

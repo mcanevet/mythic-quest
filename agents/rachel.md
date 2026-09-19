@@ -11,9 +11,11 @@ permission:
   edit:
     "*": deny
     "reports/**": allow
+    "tests/scenarios/*.json": allow  # 0c9: QA authors her own scenario fixtures — without this the functional gauntlet silently runs degraded
   write:            # rachel: write inherits the edit deny-baseline (mythic-quest-4cy)
     "*": deny
     "reports/**": allow
+    "tests/scenarios/*.json": allow
   bash:
     "*": deny
     "*scripts/*.sh*": allow  # rachel: run validate/playtest helpers

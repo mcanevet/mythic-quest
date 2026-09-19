@@ -5,6 +5,7 @@ permission:
   edit:
     "*": deny                    # gustavo: deny-baseline-first (mythic-quest-4u3)
     "**/*.gd": allow             # gustavo: audio wiring/generators
+    "tests/scenarios/*.json": allow  # jym/0c9: verification fixtures (workers author their own domain scenarios)
     "scripts/audio.gd": allow    # gustavo: shared audio autoload
     "**/*.tres": allow           # gustavo: bus layouts
     # Scene files: DENIED — sanctioned-paths-only; AudioStreamPlayer nodes
@@ -12,7 +13,8 @@ permission:
     # same policy as poppy/rachel.
   write:                          # gustavo: write inherits the edit deny-baseline (mythic-quest-4cy)
     "*": deny
-    "**/*.gd": allow
+    "**/*.gd": allow             # gustavo: audio wiring/generators
+    "tests/scenarios/*.json": allow  # jym/0c9: verification fixtures (workers author their own domain scenarios)
     "scripts/audio.gd": allow
     "**/*.tres": allow
   bash:

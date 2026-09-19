@@ -19,6 +19,21 @@ Applies visual materials to existing entities:
 - Never break physics/collision while dressing visuals (materials are cosmetic layers)
 - Verify visuals render via MCP `take_screenshot` — not just "property set"
 
+## Gotchas
+
+- **Geometry props are unwritable via `batch_scene_operations`** — the batch
+  tool serializes array-typed properties (e.g. `Polygon2D.polygon`,
+  `PackedVector2Array`) as all-zero arrays while reporting
+  `success: true` (mythic-quest-9aw). Two sanctioned escapes: set geometry
+  at creation time via the create-scene definitions, or report
+  `⛔ BLOCKED: batch tool cannot faithfully write <prop>` and route the
+  geometry change to poppy. NEVER improvise `godot_create_scene`
+  replacement scenes — that strands cruft files (observed:
+  `entities/paddle_fixed.tscn` in wt11).
+- **Read back after touching geometry-adjacent props** — zeroed polygons
+  are the tell (`get_node_properties` shows all-zero arrays). A successful
+  batch write is not evidence the geometry survived.
+
 ## Done when
 
 MCP screenshot shows the entity visibly styled per the bead's description, with no script errors in `get_debug_output`.

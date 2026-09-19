@@ -6,6 +6,7 @@ permission:
     "*": deny                    # phil: deny-baseline-first (mythic-quest-4u3)
     "shaders/**": allow          # phil: shader files
     "**/*.gd": allow             # phil: scripts (palette autoloads, material wiring)
+    "tests/scenarios/*.json": allow  # jym/0c9: verification fixtures (workers author their own domain scenarios)
     "scripts/palette.gd": allow  # phil: shared palette autoload
     # Scene files: DENIED — sanctioned-paths-only; all scene/material
     # mutations go through the engine MCP tools (set_node_properties, …),
@@ -13,7 +14,8 @@ permission:
   write:                          # phil: write inherits the edit deny-baseline (mythic-quest-4cy)
     "*": deny
     "shaders/**": allow
-    "**/*.gd": allow
+    "**/*.gd": allow             # phil: scripts (palette autoloads, material wiring)
+    "tests/scenarios/*.json": allow  # jym/0c9: verification fixtures (workers author their own domain scenarios)
     "scripts/palette.gd": allow
   bash:
     "*": deny                    # phil: deny-baseline-first (mythic-quest-4u3)

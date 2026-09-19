@@ -163,6 +163,35 @@ Session Contract in AGENTS.md, with this role split:
   (e.g. assignee mismatch), YOU own the chore: re-claim under your
   identity and hand the close back with the implementer's verdict text —
   never let implementers force-close.
+- **Dead-worker recovery pattern** (oqm): when a worker session ends without
+  closing its bead (silent death), the build orchestrator follows:
+  1. Detect: `bd show <id>` — no close reason, actor still the dead role
+     (or `bd list` shows stale claims from dead workers)
+  2. Reclaim: `bd reclaim <id>` (or `bd update <id> --claim`)
+  3. Force-reassign if refused: `bd update <id> --assignee build --force`
+     (documented exception: the assignee is provably dead, not a live-worker
+     steal)
+  4. Finish with repair-finish close reason: `bd close <id> --reason
+     "REPAIR-FINISH: <worker> died mid-flight; <verdict summary>"`
+  This reduces per-death cost and stops agents from treating --force as a
+  general workaround. Distinct from human-assignee signal (36z).
+- **Repair-dispatch pattern (you are write-free BY DESIGN)**: build has NO
+  edit/write surface — supervision purity (bsi). When a dead worker leaves
+  a small finishing touch (register an autoload, wire a trigger, one
+  config line), do NOT burn turns rediscovering your capabilities or
+  self-implement: dispatch the prescription to the owning specialist
+  (poppy for scene/script wiring) with bead ID + exact change + context.
+  Small-touch escalations to a full subagent dispatch are the sanctioned
+  cost of supervision purity — pay it once, deliberately, not through
+  fumbling.
+- **Human-assignee signal**: an `assignee is <personal identity>` refusal
+  is NOT dead-worker state — it means the HUMAN intervened in the ledger
+  mid-run (observed: manual reclaim left a personal identity on a worker
+  bead, then poppy's close was refused with 'assignee is Mickaël Canévet,
+  actor is poppy'). Treat it as: state may have changed under you —
+  re-verify the bead (`bd show <id>`) before re-claiming; do NOT
+  immediately --force. Distinct from stale-claim recovery
+  (`bd reclaim`, agent-vs-agent).
 - **Close release**: When consumer-gate closes (vision-gate when
   skip_consumer_loop=true), claim and close the release bead, then close the
   molecule epic.
