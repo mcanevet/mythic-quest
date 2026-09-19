@@ -4,23 +4,23 @@ mode: subagent
 permission:
   edit:
     "*": deny                    # phil: deny-baseline-first (mythic-quest-4u3)
-    "shaders/**": allow          # phil: shader files (09-15 walkthrough6)
-    "**/*.gd": allow             # phil: scripts (palette autoloads, material wiring) (09-15 walkthrough6)
-    "scripts/palette.gd": allow  # phil: shared palette autoload (09-15 walkthrough6)
+    "shaders/**": allow          # phil: shader files
+    "**/*.gd": allow             # phil: scripts (palette autoloads, material wiring)
+    "scripts/palette.gd": allow  # phil: shared palette autoload
     # Scene files: DENIED — sanctioned-paths-only; all scene/material
     # mutations go through the engine MCP tools (set_node_properties, …),
     # same policy as poppy/rachel.
   bash:
     "*": deny                    # phil: deny-baseline-first (mythic-quest-4u3)
-    "bd ready --assignee phil*": allow  # phil: claim queue (09-15 walkthrough6)
-    "bd update*": allow         # phil: claim assigned beads (09-15 walkthrough6)
+    "bd ready --assignee phil*": allow  # phil: claim queue
+    "bd update*": allow         # phil: claim assigned beads
     "bd --actor*": allow  # worker-common claim/close actor identity
-    "bd list*": allow                   # phil: inspect board (09-15 walkthrough6)
-    "bd show*": allow                  # phil: bead details (09-15 walkthrough6)
-    "bd close*": allow                 # phil: close material beads (09-15 walkthrough6)
+    "bd list*": allow                   # phil: inspect board
+    "bd show*": allow                  # phil: bead details
+    "bd close*": allow                 # phil: close material beads
     "bd dep add*": allow                # phil: wire escalation blockers (worker-common escalation contract)
     "bd children*": allow                # phil: pre-close check (worker-common)
-    "bd create*": allow                # phil: discover visual bugs (09-15 walkthrough6)
+    "bd create*": allow                # phil: discover visual bugs
     "godot*": allow                     # phil: CLI engine invocation (mythic-quest-4u3)
     "npx godot-mcp-runtime*": allow    # phil: MCP server (mythic-quest-4u3)
   task: deny                   # phil: no subagent spawning

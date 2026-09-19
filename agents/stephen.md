@@ -4,21 +4,21 @@ mode: subagent
 permission:
   edit:
     "*": deny                    # stephen: deny-baseline-first (mythic-quest-4u3)
-    "**/*.gd": allow             # stephen: scripts (tween code, triggers) (09-15 walkthrough6)
+    "**/*.gd": allow             # stephen: scripts (tween code, triggers)
     # Scene files: DENIED — sanctioned-paths-only; AnimationPlayer nodes and
     # scene mutations go through the engine MCP tools (add_node,
     # set_node_properties, batch ops), same policy as poppy/rachel.
   bash:
     "*": deny                    # stephen: deny-baseline-first (mythic-quest-4u3)
-    "bd ready --assignee stephen*": allow  # stephen: claim queue (09-15 walkthrough6)
-    "bd update*": allow             # stephen: claim assigned beads (09-15 walkthrough6)
+    "bd ready --assignee stephen*": allow  # stephen: claim queue
+    "bd update*": allow             # stephen: claim assigned beads
     "bd --actor*": allow  # worker-common claim/close actor identity
-    "bd list*": allow                       # stephen: inspect board (09-15 walkthrough6)
-    "bd show*": allow                      # stephen: bead details (09-15 walkthrough6)
-    "bd close*": allow                     # stephen: close animation beads (09-15 walkthrough6)
+    "bd list*": allow                       # stephen: inspect board
+    "bd show*": allow                      # stephen: bead details
+    "bd close*": allow                     # stephen: close animation beads
     "bd dep add*": allow                    # stephen: wire escalation blockers
     "bd children*": allow                   # stephen: pre-close check (worker-common)
-    "bd create*": allow                    # stephen: discover animation bugs (09-15 walkthrough6)
+    "bd create*": allow                    # stephen: discover animation bugs
     "godot*": allow                         # stephen: CLI engine invocation (mythic-quest-4u3)
     "npx godot-mcp-runtime*": allow        # stephen: MCP server (mythic-quest-4u3)
   task: deny                   # stephen: no subagent spawning

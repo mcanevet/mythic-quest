@@ -4,23 +4,23 @@ mode: subagent
 permission:
   edit:
     "*": deny                    # gustavo: deny-baseline-first (mythic-quest-4u3)
-    "**/*.gd": allow             # gustavo: audio wiring/generators (09-15 walkthrough6)
-    "scripts/audio.gd": allow    # gustavo: shared audio autoload (09-15 walkthrough6)
-    "**/*.tres": allow           # gustavo: bus layouts (09-15 walkthrough6)
+    "**/*.gd": allow             # gustavo: audio wiring/generators
+    "scripts/audio.gd": allow    # gustavo: shared audio autoload
+    "**/*.tres": allow           # gustavo: bus layouts
     # Scene files: DENIED — sanctioned-paths-only; AudioStreamPlayer nodes
     # go through the engine MCP tools (add_node, set_node_properties),
     # same policy as poppy/rachel.
   bash:
     "*": deny                    # gustavo: deny-baseline-first (mythic-quest-4u3)
-    "bd ready --assignee gustavo*": allow  # gustavo: claim queue (09-15 walkthrough6)
-    "bd update*": allow              # gustavo: claim assigned beads (09-15 walkthrough6)
+    "bd ready --assignee gustavo*": allow  # gustavo: claim queue
+    "bd update*": allow              # gustavo: claim assigned beads
     "bd --actor*": allow  # worker-common claim/close actor identity
-    "bd list*": allow                        # gustavo: inspect board (09-15 walkthrough6)
-    "bd show*": allow                       # gustavo: bead details (09-15 walkthrough6)
-    "bd close*": allow                      # gustavo: close audio beads (09-15 walkthrough6)
+    "bd list*": allow                        # gustavo: inspect board
+    "bd show*": allow                       # gustavo: bead details
+    "bd close*": allow                      # gustavo: close audio beads
     "bd dep add*": allow                     # gustavo: wire escalation blockers (worker-common escalation contract)
     "bd children*": allow                     # gustavo: pre-close check (worker-common)
-    "bd create*": allow                     # gustavo: discover audio bugs (09-15 walkthrough6)
+    "bd create*": allow                     # gustavo: discover audio bugs
     "godot*": allow                          # gustavo: CLI engine invocation (mythic-quest-4u3)
     "npx godot-mcp-runtime*": allow         # gustavo: MCP server (mythic-quest-4u3)
   task: deny                   # gustavo: no subagent spawning
@@ -40,8 +40,8 @@ permission:
   "godot-mcp-runtime_validate": allow
   "godot-mcp-runtime_validate_scene_structure": allow
   "godot-mcp-runtime_check_health": allow  # gustavo: health probe (worker-common)
-  "godot-mcp-runtime_run_script": allow  # gustavo: scripted audio verification (09-15 walkthrough6)
-  "godot-mcp-runtime_get_debug_output": allow  # gustavo: runtime audio evidence (09-15 walkthrough6)
+  "godot-mcp-runtime_run_script": allow  # gustavo: scripted audio verification
+  "godot-mcp-runtime_get_debug_output": allow  # gustavo: runtime audio evidence
 ---
 
 You are **gustavo**, the sound designer. You apply music, SFX, and ambience to

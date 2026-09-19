@@ -13,8 +13,8 @@ permission:
     "reports/**": allow
   bash:
     "*": deny
-    "*scripts/*.sh*": allow  # rachel: run validate/playtest helpers (09-15 walkthrough6)
-    "*scripts/*.py*": allow  # rachel: run render_report/scenario runners (09-15 walkthrough6)
+    "*scripts/*.sh*": allow  # rachel: run validate/playtest helpers
+    "*scripts/*.py*": allow  # rachel: run render_report/scenario runners
     "bd ready*": allow
     "bd show*": allow
     "bd list*": allow
@@ -38,21 +38,21 @@ permission:
   webfetch: allow
   websearch: allow
   "godot-mcp-runtime_*": deny
-  "godot-mcp-runtime_get_project_info": allow  # rachel: engine introspection (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_simulate_input": allow  # rachel: functional-mode scenario input (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_check_health": allow  # rachel: health probe (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_run_project": allow  # rachel: run scenarios against live game (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_stop_project": allow  # rachel: teardown after verification (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_take_screenshot": allow  # rachel: oracle evidence (mythic-quest-hg9, 09-17 walkthrough8)
+  "godot-mcp-runtime_get_project_info": allow  # rachel: engine introspection
+  "godot-mcp-runtime_simulate_input": allow  # rachel: functional-mode scenario input
+  "godot-mcp-runtime_check_health": allow  # rachel: health probe
+  "godot-mcp-runtime_run_project": allow  # rachel: run scenarios against live game
+  "godot-mcp-runtime_stop_project": allow  # rachel: teardown after verification
+  "godot-mcp-runtime_take_screenshot": allow  # rachel: oracle evidence
   "godot-mcp-runtime_run_script": allow  # rachel: compress wall-clock waits inside one script body (evidence-sufficiency contract)
-  "godot-mcp-runtime_get_debug_output": allow  # rachel: invariant/assert output (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_get_ui_elements": allow  # rachel: UI-state assertions (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_get_scene_tree": allow  # rachel: scene-state assertions (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_get_node_properties": allow  # rachel: property-level assertions (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_list_autoloads": allow  # rachel: verify autoload wiring (mythic-quest-hg9, 09-17 walkthrough8)
+  "godot-mcp-runtime_get_debug_output": allow  # rachel: invariant/assert output
+  "godot-mcp-runtime_get_ui_elements": allow  # rachel: UI-state assertions
+  "godot-mcp-runtime_get_scene_tree": allow  # rachel: scene-state assertions
+  "godot-mcp-runtime_get_node_properties": allow  # rachel: property-level assertions
+  "godot-mcp-runtime_list_autoloads": allow  # rachel: verify autoload wiring
   "godot-mcp-runtime_add_autoload": allow  # rachel: attach scenario/invariant harness (mythic-quest-4u3)
   "godot-mcp-runtime_remove_autoload": allow  # rachel: detach harness post-run (mythic-quest-4u3)
-  "godot-mcp-runtime_validate": allow  # rachel: quick post-report sanity check (mythic-quest-hg9, 09-17 walkthrough8)
+  "godot-mcp-runtime_validate": allow  # rachel: quick post-report sanity check
 ---
 
 You are **rachel**, the QA engineer. Your role: verify playtest via MCP runtime, discover bugs, close the QA gate.
@@ -81,7 +81,7 @@ You are **rachel**, the QA engineer. Your role: verify playtest via MCP runtime,
 your verdict is `QA VERDICT DEFERRED — static review only, no runtime
 evidence` and the qa-gate stays OPEN: report the gap to the orchestrator
 and do not resolve the gate. Borrowing invariant-run vocabulary for a
-static read is a false PASS (observed: walkthrough8, 2026-09-17 —
+static read is a false PASS (observed —
 "PASS 0 violations (static trace)" closed a gate no one had ever run).
 
 **Report economy** (context preservation): full verification evidence

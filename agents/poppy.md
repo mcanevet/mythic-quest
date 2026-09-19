@@ -57,7 +57,7 @@ permission:
   skill: allow
   webfetch: allow
   websearch: allow
-  "godot-mcp-runtime_*": allow  # poppy: primary implementer — broad engine access (09-15 walkthrough6)
+  "godot-mcp-runtime_*": allow  # poppy: primary implementer — broad engine access
   "godot-mcp-runtime_launch_editor": deny
 ---
 

@@ -18,7 +18,7 @@ name. Every bd write that identifies an actor must pass the flag:
 
 Without `--actor`, claims on beads assigned to your role are refused with
 "already assigned to \<role\>", and beads never enter in_progress
-(observed: walkthrough9 — wt9 run 09-18 — 23 claim refusals across roles
+(observed: 23 claim refusals across roles
 before the flag was adopted).
 
 - Claim beads assigned to your role only: `bd ready --assignee <role>`
@@ -35,8 +35,7 @@ Report `⛔ BLOCKED: engine MCP tools unavailable` and STOP.
 
 Do NOT diagnose the cause (server death vs toolset race — diagnosis
 belongs to the human). Do NOT silently downgrade to static/code-only
-work: runtime evidence is required for every close (observed: walkthrough8
-false-PASS laundering — wt8 run 09-17).
+work: runtime evidence is required for every close (observed: false-PASS laundering).
 
 ## Escalation contract (one-pass discipline)
 
@@ -65,7 +64,7 @@ Either close the children first or report
 - If a step cannot produce runtime evidence, say so explicitly rather
   than substituting static analysis.
 
-## Context economy (measured waste, wt9 run 09-18 and wt10 opencode session traces)
+## Context economy (measured waste, from session traces)
 
 - **Read a file once, fully.** Shifted-offset re-reads of the same file
   burned 5× reads on one scene in a single session. If the file changed
@@ -81,9 +80,8 @@ Either close the children first or report
   file-map snapshot (paths, purposes, key node paths). Use it for
   orientation; only read a file when you will EDIT it or need its exact
   contents — not to learn what exists.
-- **Testing-patterns cheat sheet** (wt10 trace analysis; read-cost
-  methodology measured in the wt9 run 09-18: wt10 traces measured 2
-  full 22k-char reads of the same reference):
+- **Testing-patterns cheat sheet** (observed waste: 2 full 22k-char reads
+  of the same reference in one worker session):
   - **Bot types**: chaos (random inputs), pursuit (follows target), replay
     (replays recorded path), nav_agent (pathfinding)
   - **Built-in invariants**: `no_fatal_errors`, `nodes_finite`,
@@ -97,10 +95,8 @@ Either close the children first or report
   - Full reference: the engine plugin's testing-patterns doc
     (`plugins/engine/<engine>/skills/init-project/reference/testing-patterns.md`
     — locate it under the mounted engine plugin)
-- **Batch-debug: one run per fix round** (wt10 opencode session traces,
-  2026-09-18; same-session tool-call telemetry as the wt9 benchmark
-  file: 18
-  script-run calls in a single session, each failure re-feeding a tall
+- **Batch-debug: one run per fix round** (same-session tool-call telemetry
+  measured: 18 script-run calls in a single session, each failure re-feeding a tall
   context stack). Write one test script that asserts ALL outstanding
   behaviors, run it once, fix every failure it reports, then re-run the
   same script. Never loop edit→run→edit→run on individual assertions —

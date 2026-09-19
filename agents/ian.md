@@ -44,21 +44,21 @@ permission:
   task: deny
   skill: allow
   "godot-mcp-runtime_*": deny
-  "godot-mcp-runtime_get_project_info": allow  # ian: engine introspection (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_simulate_input": allow  # ian: vision-check interactive behavior (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_check_health": allow  # ian: health probe (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_run_project": allow  # ian: observe the running game (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_stop_project": allow  # ian: teardown after observation (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_take_screenshot": allow  # ian: visual fidelity check (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_run_script": allow  # ian: scripted observation (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_get_debug_output": allow  # ian: runtime behavior evidence (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_get_ui_elements": allow  # ian: UI-state observation (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_get_scene_tree": allow  # ian: node-count/structure evidence (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_get_node_properties": allow  # ian: read runtime values (mythic-quest-hg9, 09-17 walkthrough8)
-  "godot-mcp-runtime_list_autoloads": allow  # ian: enumerate singletons (mythic-quest-hg9, 09-17 walkthrough8)
+  "godot-mcp-runtime_get_project_info": allow  # ian: engine introspection
+  "godot-mcp-runtime_simulate_input": allow  # ian: vision-check interactive behavior
+  "godot-mcp-runtime_check_health": allow  # ian: health probe
+  "godot-mcp-runtime_run_project": allow  # ian: observe the running game
+  "godot-mcp-runtime_stop_project": allow  # ian: teardown after observation
+  "godot-mcp-runtime_take_screenshot": allow  # ian: visual fidelity check
+  "godot-mcp-runtime_run_script": allow  # ian: scripted observation
+  "godot-mcp-runtime_get_debug_output": allow  # ian: runtime behavior evidence
+  "godot-mcp-runtime_get_ui_elements": allow  # ian: UI-state observation
+  "godot-mcp-runtime_get_scene_tree": allow  # ian: node-count/structure evidence
+  "godot-mcp-runtime_get_node_properties": allow  # ian: read runtime values
+  "godot-mcp-runtime_list_autoloads": allow  # ian: enumerate singletons
   "godot-mcp-runtime_add_autoload": allow  # ian: attach profiling autoload (mythic-quest-4u3)
   "godot-mcp-runtime_remove_autoload": allow  # ian: detach profiling autoload post-measurement (mythic-quest-4u3)
-  "godot-mcp-runtime_validate": allow  # ian: post-fix sanity check (mythic-quest-hg9, 09-17 walkthrough8)
+  "godot-mcp-runtime_validate": allow  # ian: post-fix sanity check
   webfetch: allow
   websearch: allow
 ---

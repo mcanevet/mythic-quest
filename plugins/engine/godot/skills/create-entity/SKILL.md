@@ -16,8 +16,8 @@ Creates entity scenes and scripts:
   `scenes/` (that directory holds levels/composite scenes: `scenes/main.tscn`,
   `scenes/levels/<name>.tscn`, `ui/<name>.tscn` for Control roots). Scaffolding
   an entity into the wrong directory strands a stale file that cleanup
-  permissions cannot remove (wt11: orphaned `scenes/ball.tscn` required a
-  separate bead; wt11 run 09-18). If an entity
+  permissions cannot remove (observed once: an orphaned `scenes/ball.tscn` required a
+  separate cleanup bead). If an entity
   scene already exists at a wrong path, report it to the orchestrator with the
   correct target path — do not attempt file moves or deletions.
 
@@ -38,7 +38,7 @@ Creates entity scenes and scripts:
 
 ## Gotchas
 
-Empirically observed godot-mcp-runtime schema quirks (lumomax control run, wt6 control run 09-15). The full annotated failure list with evidence citations lives in [reference/gotchas.md](reference/gotchas.md). Verify each before closing a task:
+Empirically observed godot-mcp-runtime schema quirks. The full annotated failure list with evidence citations lives in [reference/gotchas.md](reference/gotchas.md). Verify each before closing a task:
 
 - **Colors**: pass `{r, g, b, a}` objects with floats 0–1, not hex strings. `"#1b2a41"` fails; use `{r: 27/255, g: 42/255, b: 65/255, a: 1}`.
 - **Scripts**: pass plain `res://` path strings (e.g. `"res://scripts/station.gd"`), not nested objects.
@@ -46,14 +46,13 @@ Empirically observed godot-mcp-runtime schema quirks (lumomax control run, wt6 c
 - **Polygon2D**: the `polygon` property takes an array of `{x, y}` points.
 - **Overlap queries**: `Area2D.get_overlapping_bodies()` won't detect non-physics placeholder nodes; iterate children instead when entities are `Node2D` placeholders.
 - **Batch scene operations**: malformed or loosely-formatted JSON payloads fail; keep JSON compact and canonical.
-- **Running engine overwrites scene files**: a live `run_project`/playtest serializes runtime state back into `.tscn` files, clobbering concurrent edits. MANDATORY: call `godot_stop_project` BEFORE any scene-file edit (create/edit/save), and only restart the engine after the edit round completes. Evidence: wt6 control run 09-15.
-- **`:=` type inference in run_script**: `var x := dict.get("k", d)` fails with "cannot infer the type" — use untyped `var x = ...` or explicit `var x: int = ...` in dynamically submitted scripts (lumomax control run, wt6 control run 09-15; also the largest compile-error class in the lumo-max rallywall run, 14 occurrences — 09-07 lumo-max run).
+- **Running engine overwrites scene files**: a live `run_project`/playtest serializes runtime state back into `.tscn` files, clobbering concurrent edits. MANDATORY: call `godot_stop_project` BEFORE any scene-file edit (create/edit/save), and only restart the engine after the edit round completes.
+- **`:=` type inference in run_script**: `var x := dict.get("k", d)` fails with "cannot infer the type" — use untyped `var x = ...` or explicit `var x: int = ...` in dynamically submitted scripts (also the largest compile-error class observed in a full run: 14 occurrences).
 - **Batch-validation economics**: when verifying multiple entities, run one
   `validate.sh` per logical unit (not per file). Godot's headless boot
   caches imports; repeated boots waste 15–30s each with zero added value.
-  Group validations by scene dependency (observed: 09-07 rallywall run,
-  09-07 lumo-max run — 14
-  occurrences of type-inference parse errors).
+  Group validations by scene dependency (observed: 14 type-inference parse
+  errors concentrated in one batch-validation run).
 
 **Signal wiring**: use `verify_node_connections` instead of manual 4-point
 checks (upstream status: released on the pinned combo branch
