@@ -10,6 +10,11 @@ permission:
     # Scene files: DENIED — sanctioned-paths-only; AudioStreamPlayer nodes
     # go through the engine MCP tools (add_node, set_node_properties),
     # same policy as poppy/rachel.
+  write:                          # gustavo: write inherits the edit deny-baseline (mythic-quest-4cy)
+    "*": deny
+    "**/*.gd": allow
+    "scripts/audio.gd": allow
+    "**/*.tres": allow
   bash:
     "*": deny                    # gustavo: deny-baseline-first (mythic-quest-4u3)
     "bd ready --assignee gustavo*": allow  # gustavo: claim queue
@@ -20,6 +25,9 @@ permission:
     "bd close*": allow                      # gustavo: close audio beads
     "bd dep add*": allow                     # gustavo: wire escalation blockers (worker-common escalation contract)
     "bd children*": allow                     # gustavo: pre-close check (worker-common)
+    "jq *": allow   # gustavo: read-only bd JSON shaping; safe downstream pipe
+    "head *": allow # gustavo: read-only output trimming; safe downstream pipe
+    "grep *": allow # gustavo: read-only output filtering; safe downstream pipe
     "bd create*": allow                     # gustavo: discover audio bugs
     "godot*": allow                          # gustavo: CLI engine invocation (mythic-quest-4u3)
     "npx godot-mcp-runtime*": allow         # gustavo: MCP server (mythic-quest-4u3)

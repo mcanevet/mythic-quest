@@ -16,10 +16,22 @@ permission:
     "**/.opencode/**": deny
     "skills/**": deny
     "**/skills/**": deny
+  write:            # ian: write inherits the edit deny-baseline (mythic-quest-4cy)
+    "*": deny
+    "reports/vision-*.md": allow
+    "VISION.md": allow
+    "README.md": allow
+    ".opencode/**": deny
+    "**/.opencode/**": deny
+    "skills/**": deny
+    "**/skills/**": deny
   bash:
     "*": deny
     "*scripts/*.sh*": allow  # ian: run profiling helpers (mythic-quest-4u3)
     "*scripts/*.py*": allow  # ian: run measurement scripts (mythic-quest-4u3)
+    "jq *": allow   # ian: read-only bd JSON shaping; safe downstream pipe
+    "head *": allow # ian: read-only output trimming; safe downstream pipe
+    "grep *": allow # ian: read-only output filtering; safe downstream pipe
     "bd ready*": allow
     "bd update*": allow  # ian: claim assigned beads
     "bd --actor*": allow  # worker-common claim/close actor identity

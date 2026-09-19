@@ -11,10 +11,16 @@ permission:
   edit:
     "*": deny
     "reports/**": allow
+  write:            # rachel: write inherits the edit deny-baseline (mythic-quest-4cy)
+    "*": deny
+    "reports/**": allow
   bash:
     "*": deny
     "*scripts/*.sh*": allow  # rachel: run validate/playtest helpers
     "*scripts/*.py*": allow  # rachel: run render_report/scenario runners
+    "jq *": allow   # rachel: read-only bd JSON shaping; safe downstream pipe
+    "head *": allow # rachel: read-only output trimming; safe downstream pipe
+    "grep *": allow # rachel: read-only output filtering; safe downstream pipe
     "bd ready*": allow
     "bd show*": allow
     "bd list*": allow
@@ -72,6 +78,12 @@ You are **rachel**, the QA engineer. Your role: verify playtest via MCP runtime,
    - The parent-child edge ensures the `waits_for` gate catches it
 4. Poll qa-gate children (`bd children <qa-gate-id>`) between your own verification passes — one poll after finishing each child verification, not a busy-loop — until all are closed PASS; if several consecutive polls show no progress on a child, report it to the orchestrator instead of waiting indefinitely
 5. Close qa-gate: `bd gate resolve <gate-bead-id>` — the ID comes from `bd gate list` (the async gate bead for step qa-gate, e.g. mythic-quest-mol-a54), NOT the await_id name
+
+**Re-verify sessions (fix rounds)**: when the dispatch carries a warm-start
+header (prior report path + delta), do NOT rebuild from zero — read the
+prior report first, re-verify only the delta plus one regression sweep of
+prior-green scenarios, and reserve the full gauntlet for deltas that touch
+boot/wiring (autoloads, `_ready`, main scene composition).
 
 **Verdicts**: Honest only. "Stubs ready" or "compiles clean" is NOT a PASS. You must observe behavior via MCP.
 

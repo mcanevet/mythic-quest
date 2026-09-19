@@ -8,6 +8,9 @@ permission:
     # Scene files: DENIED — sanctioned-paths-only; AnimationPlayer nodes and
     # scene mutations go through the engine MCP tools (add_node,
     # set_node_properties, batch ops), same policy as poppy/rachel.
+  write:                          # stephen: write inherits the edit deny-baseline (mythic-quest-4cy)
+    "*": deny
+    "**/*.gd": allow
   bash:
     "*": deny                    # stephen: deny-baseline-first (mythic-quest-4u3)
     "bd ready --assignee stephen*": allow  # stephen: claim queue
@@ -18,6 +21,9 @@ permission:
     "bd close*": allow                     # stephen: close animation beads
     "bd dep add*": allow                    # stephen: wire escalation blockers
     "bd children*": allow                   # stephen: pre-close check (worker-common)
+    "jq *": allow   # stephen: read-only bd JSON shaping; safe downstream pipe
+    "head *": allow # stephen: read-only output trimming; safe downstream pipe
+    "grep *": allow # stephen: read-only output filtering; safe downstream pipe
     "bd create*": allow                    # stephen: discover animation bugs
     "godot*": allow                         # stephen: CLI engine invocation (mythic-quest-4u3)
     "npx godot-mcp-runtime*": allow        # stephen: MCP server (mythic-quest-4u3)

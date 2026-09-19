@@ -104,13 +104,18 @@ trap 'rm -f "$PLAN"' EXIT
   printf '{\n  "commit_message": "Lint-%s %s",\n  "nodes": [\n' "$MODE" "$STAMP"
   printf '    {"key": "epic", "title": "Lint-%s %s", "type": "epic", "ephemeral": true}' "$MODE" "$STAMP"
   i=0
+  AGG_DEPS=""
   while IFS= read -r f; do
     [ -z "$f" ] && continue
     i=$((i+1))
-    printf ',\n    {"key": "f%d", "title": "Lint %s", "type": "task", "parent_key": "epic", "ephemeral": true, "description": "Apply all rules in %s to %s", "deps": [{"type": "blocks", "target": "agg"}]}' \
+    # Edge semantics: a "deps" entry lives on the DEPENDENT. Children carry
+    # no deps; the aggregate depends on all of them (fan-in).
+    AGG_DEPS="${AGG_DEPS}{\"type\": \"blocks\", \"target\": \"f${i}\"}, "
+    printf ',\n    {"key": "f%d", "title": "Lint %s", "type": "task", "parent_key": "epic", "ephemeral": true, "description": "Apply all rules in %s to %s"}' \
       "$i" "$f" "$RULES" "$f"
   done <<< "$FILTERED"
-  printf ',\n    {"key": "agg", "title": "Aggregate lint findings", "type": "task", "parent_key": "epic", "ephemeral": true, "description": "Read children comments and render findings table"}\n'
+  AGG_DEPS="${AGG_DEPS%, }"
+  printf ',\n    {"key": "agg", "title": "Aggregate lint findings", "type": "task", "parent_key": "epic", "ephemeral": true, "description": "Read children comments and render findings table", "deps": [%s]}\n' "$AGG_DEPS"
   printf '  ],\n  "edges": []\n}\n'
 } > "$PLAN"
 

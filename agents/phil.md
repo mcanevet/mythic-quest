@@ -10,6 +10,11 @@ permission:
     # Scene files: DENIED — sanctioned-paths-only; all scene/material
     # mutations go through the engine MCP tools (set_node_properties, …),
     # same policy as poppy/rachel.
+  write:                          # phil: write inherits the edit deny-baseline (mythic-quest-4cy)
+    "*": deny
+    "shaders/**": allow
+    "**/*.gd": allow
+    "scripts/palette.gd": allow
   bash:
     "*": deny                    # phil: deny-baseline-first (mythic-quest-4u3)
     "bd ready --assignee phil*": allow  # phil: claim queue
@@ -20,6 +25,9 @@ permission:
     "bd close*": allow                 # phil: close material beads
     "bd dep add*": allow                # phil: wire escalation blockers (worker-common escalation contract)
     "bd children*": allow                # phil: pre-close check (worker-common)
+    "jq *": allow   # phil: read-only bd JSON shaping; safe downstream pipe
+    "head *": allow # phil: read-only output trimming; safe downstream pipe
+    "grep *": allow # phil: read-only output filtering; safe downstream pipe
     "bd create*": allow                # phil: discover visual bugs
     "godot*": allow                     # phil: CLI engine invocation (mythic-quest-4u3)
     "npx godot-mcp-runtime*": allow    # phil: MCP server (mythic-quest-4u3)

@@ -9,6 +9,9 @@ permission:
   edit:
     "*": deny
     "reports/**": allow
+  write:            # pootie: write inherits the edit deny-baseline (mythic-quest-4cy)
+    "*": deny
+    "reports/**": allow
   bash:
     "*": deny
     "bd ready*": allow
@@ -18,6 +21,9 @@ permission:
     "bd update*": allow  # claim assigned beads (bd ready --assignee pootie)
     "bd --actor*": allow  # worker-common claim/close actor identity
     "bd close*": allow  # close assigned beads with close_reason (worker-common)
+    "jq *": allow   # pootie: read-only bd JSON shaping; safe downstream pipe
+    "head *": allow # pootie: read-only output trimming; safe downstream pipe
+    "grep *": allow # pootie: read-only output filtering; safe downstream pipe
     "bd create*": allow  # file critiques + discovered experience bugs
     "bd dep add*": allow  # wire discovered-from edges to consumer-gate
     "bd gate resolve*": allow  # close consumer-gate (pootie-consumer-acceptance)

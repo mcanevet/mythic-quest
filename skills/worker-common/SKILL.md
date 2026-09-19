@@ -58,6 +58,46 @@ refusal is deterministic, not transient: do NOT retry or use --force.
 Either close the children first or report
 `⛔ BLOCKED: open children prevent close` with the child IDs.
 
+## Self-created strays (one move, no deliberation)
+
+A file YOU mistakenly created (wrong path, aborted scaffold, duplicated
+intermediate) is handled by exactly one move: **file an unassigned
+cleanup bead** naming the stray path and continue with the real task.
+Do not attempt deletion yourself, do not weigh rule interpretations —
+one decision, zero deliberation turns (a worker once burned 10+
+reasoning turns deciding whether deleting its own stray violated the
+sanctioned-paths rule before landing on this exact move).
+
+## bd flag surface (stop guessing flags)
+
+Exact supported forms used in this workflow — anything else is an
+unknown flag and a wasted turn:
+
+- Labels: `bd update <id> --set-labels a,b` (replace),
+  `bd update <id> --add-label <label>` (singular add)
+- Comment: `bd comment <id> <<'EOF' ... EOF` (heredoc; there is no
+  `--comment` flag anywhere)
+- Description update: `bd update <id> -d "<text>"` (not `--note`,
+  not `--message`)
+- Claim: `bd --actor <role> update <id> --claim`
+
+## Shaping bd JSON output (use jq, not python)
+
+`bd` emits machine-readable JSON with `--json`. Filter and format it with
+**jq**, never inline python one-liners:
+
+```bash
+bd list --json | jq -r '.[] | [.id, .status, .title] | @tsv'
+bd show <id> --json | jq '.priority'
+bd list --json | jq '[.[] | select(.status=="open")] | length'
+```
+
+Piped bash commands are permission-checked **per pipeline segment**
+(opencode splits the command into segments and matches each against the
+allow rules independently). `jq`, `head`, and `grep` are granted as
+downstream segments; `python3 -c`, `awk`, `sed` are not — a `bd … |
+python3 -c …` pipe is denied as a whole and wastes the turn.
+
 ## Reporting
 
 - Verdicts cite observed runtime behavior, never intentions.

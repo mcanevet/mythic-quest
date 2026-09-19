@@ -27,10 +27,34 @@ permission:
     "**/.opencode/**": deny
     "skills/**": deny
     "**/skills/**": deny
+  write:            # poppy: write inherits the edit deny-baseline (mythic-quest-4cy) —
+                    # an unrestricted write tool nullifies the edit stencil
+    "*": deny
+    "README.md": allow
+    "reports/**": allow
+    "**/*.gd": allow
+    "**/*.gdshader": allow
+    "project.godot": allow
+    "**/project.godot": allow
+    "**/*.json": allow
+    "*.svg": allow
+    "**/*.svg": allow
+    "*.import": allow
+    "**/*.import": allow
+    ".gitignore": allow
+    "**/.gitignore": allow
+    "**/*.tscn": deny
+    ".opencode/**": deny
+    "**/.opencode/**": deny
+    "skills/**": deny
+    "**/skills/**": deny
   bash:
     "*": deny
     "*scripts/*.sh*": allow  # poppy: run project helper scripts (setup, validate)
     "*scripts/*.py*": allow  # poppy: run python helpers (generate levels, process assets)
+    "jq *": allow   # poppy: read-only bd JSON shaping; safe downstream pipe
+    "head *": allow # poppy: read-only output trimming; safe downstream pipe
+    "grep *": allow # poppy: read-only output filtering; safe downstream pipe
     "bd ready --json*": allow  # find work; also supports --assignee filtering
     "bd ready*": allow  # bd ready --assignee poppy (worker-common claim step)
     "bd show --json*": allow  # read bead details before claiming

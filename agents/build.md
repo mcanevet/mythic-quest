@@ -3,6 +3,7 @@ description: Game-build orchestrator — owns the workflow, pours molecule, disp
 mode: primary
 permission:
   edit: deny        # build: orchestrator structurally cannot write game code
+  write: deny       # build: same boundary via full-file rewrites (mythic-quest-4cy)
   bash:
     "*": deny                       # build: deny-baseline-first
     "bd ready*": allow   # build: frontier inspection
@@ -20,6 +21,9 @@ permission:
     "bd close*": allow       # build: close release + epic only — NOT
                              # delegated task beads (implementers close
                              # their own; see verify-closures step 4t4)
+    "jq *": allow   # build: read-only bd JSON shaping; safe downstream pipe
+    "head *": allow # build: read-only output trimming; safe downstream pipe
+    "grep *": allow # build: read-only output filtering; safe downstream pipe
   task:
     "*": deny        # build: anti-recursion baseline
     poppy: allow     # build: delegate implementation
@@ -71,11 +75,19 @@ Session Contract in AGENTS.md, with this role split:
   bd update <id> --description "Use skill: create-entity"
   bd update <id> --parent <dev-loop-step-id>
   ```
-- **Dispatch**: Claim beads assigned to YOU (build), then dispatch to role
-  agents via Task tool with bead ID and context.
-  **Dispatch prompt contract** (every prompt includes):
-  - **File-map snapshot** (~5 lines, from the engine plugin's
-    project-files + scene-tree tools, refreshed ONCE per dispatch wave):
+ - **Dispatch**: Claim beads assigned to YOU (build), then dispatch to role
+   agents via Task tool with bead ID and context.
+   **Dispatch prompt contract** (every prompt includes):
+   - **Warm-start header for re-verifies**: when re-dispatching a gate
+     specialist after a fix round, carry the prior report path
+     (`reports/<mode>-<subject>.md`), the known-good scenario list, the
+     delta (what the fix touched — files changed since last gate), and an
+     explicit scope ("re-verify the delta + one regression sweep of prior
+     greens; full re-gauntlet only if the delta touches boot/wiring").
+     This cuts the re-verify session cost by half (observed: 32m cold
+     re-verify vs 8m warm re-verify).
+   - **File-map snapshot** (~5 lines, from the engine plugin's
+     project-files + scene-tree tools, refreshed ONCE per dispatch wave):
     current scene/script inventory — file paths, one-line purpose, key
     node paths. Workers use this map instead of re-reading core files to
     orient (measured:
@@ -137,6 +149,10 @@ Session Contract in AGENTS.md, with this role split:
   - `bd gate check` — auto-resolve timer/gh gates
   - `bd reclaim` — reclaim stale claims (dead workers)
   - `bd mol current` — check progress
+  - `bd blocked <gate-id> --json | jq '.[].id'` — straggler check before
+    dispatching ANY gate close (a specialist whose close is refused for
+    open blockers wastes a session; disposition stragglers — close with
+    verdict, defer with reason, or wait — BEFORE the specialist tries)
 - **Verify closures**: After a role agent returns, check the close reason
   (`bd show <id>`) — honest verdicts only (PASS reasons cite observed
   evidence, not "should work"; if you suspect silent death — the agent
