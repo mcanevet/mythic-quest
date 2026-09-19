@@ -17,7 +17,7 @@ permission:
     "bd mol pour*": allow    # build: pour game-run formula (proto persisted at sandbox-init; mythic-quest-704)
     "bd mol current*": allow # build: track progress
     "bd formula list*": allow # build: verify game-run registered
-    "bd close*": allow       # build: close release + epic only (09-15 walkthrough6, benchmarks/results/2026-09-15-walkthrough6-lumomax-control.md) — NOT
+    "bd close*": allow       # build: close release + epic only (wt6 control run 09-15) — NOT
                              # delegated task beads (implementers close
                              # their own; see verify-closures step 4t4)
   task:
@@ -39,7 +39,7 @@ Session Contract in AGENTS.md, with this role split:
 - **Pour the molecule**: If no epic exists, pour the pre-registered
   `game-run` proto (sandbox-init persists it — `bd mol pour` by name just
   works; do NOT `bd cook` first, that was the 09-17 walkthrough8 failure mode,
-  benchmarks/results/2026-09-17-walkthrough8-rallywall-lumomax.md):
+  wt8 run 09-17):
   ```bash
   bd mol pour game-run --var game_title="<from VISION.md>"
   ```
@@ -50,7 +50,7 @@ Session Contract in AGENTS.md, with this role split:
   a VISION.md write grant — dispatching it to a default task agent gets the
   write denied and forces a re-dispatch, and re-inventing the vision text
   from scratch diverges from any draft (09-17 walkthrough8,
-  benchmarks/results/2026-09-17-walkthrough8-rallywall-lumomax.md: the
+  wt8 run 09-17: the
   palette re-invention surfaced later as two vision-gate bugs).
 - **Groom backlog**: For each unassigned bead (raw-backlog children AND
   gate-discovered bugs), decide routing:
@@ -81,8 +81,8 @@ Session Contract in AGENTS.md, with this role split:
     current scene/script inventory — file paths, one-line purpose, key
     node paths. Workers use this map instead of re-reading core files to
     orient (wt10 opencode session traces, 2026-09-18, evidence
-    preserved in benchmarks/results/2026-09-18-walkthrough10-rallywall-lumomax.md § Session-by-session; cf.
-    benchmarks/results/2026-09-18-walkthrough9-rallywall-lumomax.md:
+    preserved in wt10 run 09-18 § Session-by-session; cf.
+    wt9 run 09-18:
     main.tscn read 6×, ball.gd 4×, main.gd 4× across
     worker sessions; the map costs ~200 tokens and eliminates most
     orientation reads).
@@ -91,7 +91,7 @@ Session Contract in AGENTS.md, with this role split:
     the FIRST role dispatch, trust sandbox-init's verified state; if a role
     agent reports MCP down, escalate to the human. Never state "no engine
     available" without evidence (09-17 walkthrough8,
-    benchmarks/results/2026-09-17-walkthrough8-rallywall-lumomax.md: a
+    wt8 run 09-17: a
     false "no engine run possible" premise downgraded ALL verification to
     static review for an entire run while the MCP server was healthy).
   - **Deliverables**: for interactive entities, name
@@ -104,10 +104,10 @@ Session Contract in AGENTS.md, with this role split:
   - **Close hint**: `bd close --actor <role>` for role-owned beads.
   **Parallelism rule** (walkthrough6, 2026-09-15: 3 serialized domain-disjoint poppy
   batches cost ~30-40min recoverable; the one deliberate parallel —
-  phil+gustavo on disjoint files — was clean; wt9 (benchmarks/results/2026-09-18-walkthrough9-rallywall-lumomax.md:
+  phil+gustavo on disjoint files — was clean; wt9 run 09-18:
   scene ops collided with
   a live runtime session; wt10 opencode session traces, 2026-09-18
-  (benchmarks/results/2026-09-18-walkthrough10-rallywall-lumomax.md § Session-by-session):
+  (wt10 run 09-18 § Session-by-session):
   even the disjoint-file poppy batches
   serialized because every batch both mutated scenes AND ran the project
   for verification — the runtime lock was the serializer, not the files):
@@ -122,8 +122,8 @@ Session Contract in AGENTS.md, with this role split:
   scripts/scene subtrees. Serialize only when beads touch the same files
   — the engine plugin's shared_files list (project manifest, main scene,
   main script). Parallel dispatch respects the 2-bead hard cap per role.
-  **Bead-ID integrity** (walkthrough6 incident, benchmarks/results/
-  2026-09-15-walkthrough6-lumomax-control.md): never hand-type bead IDs
+  **Bead-ID integrity** (walkthrough6 incident, wt6 control run 09-15):
+  never hand-type bead IDs
   into dispatch prompts — a transposed ID sent poppy chasing closed beads
   (~17min lost). Copy IDs verbatim from `bd ready`/`bd show` output in the
   same turn you dispatch, or reference them structurally ("fix all open
@@ -132,7 +132,7 @@ Session Contract in AGENTS.md, with this role split:
   copy from fresh output, STOP and re-derive it.
     **Hard cap: 2 beads per delegation** (one-batch maximum). A 4-task batch
     produced a 229-part marathon session in MythicQuest (see
-    benchmarks/results/2026-09-15-walkthrough6-lumomax-control.md — 23 sessions,
+    wt6 control run 09-15 — 23 sessions,
     1,106 tools, 5h47m); larger batches lose incremental closure visibility
     and risk catastrophic loss on mid-batch failure. Dispatch repeatedly in
     2-bead batches as beads close.
