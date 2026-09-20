@@ -187,22 +187,43 @@ Session Contract in AGENTS.md, with this role split:
   playtest dispatch that runs after the mutation wave closes. With the
   runtime lock removed from mutations, parallelize freely when beads'
   target files are disjoint, REGARDLESS of assignee — including two
-  poppy batches on disjoint
-  scripts/scene subtrees. Serialize only when beads touch the same files
-  — the engine plugin's shared_files list (project manifest, main scene,
-  main script). Parallel dispatch respects the 2-bead hard cap per role.
-  **DISPATCH CONCURRENTLY, not serially** — a wave of aesthetic
-  specialists dispatched one-at-a-time wastes the whole point of the
-  split (observed: phil→stephen→gustavo ran serially at ~15.5m though
-  phil's edit set was fully disjoint from both; phil+gustavo concurrent
-  in an earlier run was clean). Default per-role ownership (for the
-  disjointness check — verify against the actual bead, don't trust the
-  default blindly): shader/material/visual roles own shaders and
-  cosmetic scene props; audio roles own audio scripts + autoload; juice/
-  animation roles own animation scripts. Two roles that both hook the
-  same game script (common: both patch <game-state>.gd for their hook)
-  must be serialized — check the hook-target list, not vibes. When
-  disjoint, fire all dispatches in ONE turn (parallel Task calls).
+   poppy batches on disjoint
+   scripts/scene subtrees. Serialize only when beads touch the same files
+   — the engine plugin's shared_files list (project manifest, main scene,
+   main script). Parallel dispatch respects the 2-bead hard cap per role.
+
+  ### Wave loop (the operational algorithm — every turn of your life)
+
+  wt14 measurement: 22/22 dispatches were full blocking awaits; build
+  spent 247.8m in >60s gaps with zero activity. Rules alone did not fix
+  it — the fix is this loop shape. Each iteration is ONE turn:
+
+  1. `bd ready --mol <mol-id> --json` + `bd swarm status <mol-id>` —
+     the frontier (one turn).
+  2. Partition ready beads into PARALLEL groups by file-disjointness
+     (project map + per-role ownership defaults; same file ⇒ same group).
+     Respect the 2-bead-per-role cap.
+  3. Fire ALL groups' dispatches as parallel Task calls in ONE turn.
+     Do NOT wait for any single worker — the harness returns when each
+     child finishes.
+  4. While workers run: do NOT sleep-poll. Groom the next wave (labels
+     via `bd batch`, reparents, prompt drafting), run gate housekeeping
+     (`bd gate check`, `bd reclaim`), prep warm-start headers for re-
+     verifies. If NOTHING is actionable, end your turn — the harness
+     will resume you when a child completes; never busy-wait in bash.
+  5. On each worker return: verify its close reason, then loop back to 1.
+
+  Anti-pattern (the exact wt14 failure): dispatch one worker → block
+  inside the Task await → wake → dispatch next. The await is dead time;
+  the only acceptable serialization is a file-dependency in the DAG.
+
+  Default per-role file ownership (for the disjointness check — verify
+  against the actual bead, don't trust the default blindly):
+  shader/material/visual roles own shaders and cosmetic scene props;
+  audio roles own audio scripts + autoload; juice/animation roles own
+  animation scripts. Two roles that both hook the same game script
+  (common: both patch <game-state>.gd for their hook) must be
+  serialized — check the hook-target list, not vibes.
   **Bead-ID integrity** (observed incident):
   never hand-type bead IDs
   into dispatch prompts — a transposed ID sent poppy chasing closed beads
