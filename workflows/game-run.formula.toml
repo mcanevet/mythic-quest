@@ -42,7 +42,7 @@ description = "For each raw child: (1) decide assignee (poppy/rachel/ian/pootie)
 id = "dev-loop"
 title = "Implement features"
 type = "task"
-needs = ["backlog-grooming", "qa-repair-grooming", "vision-repair-grooming", "consumer-repair-grooming"]
+needs = ["backlog-grooming"]
 assignee = "poppy"
 waits_for = "all-children"
 description = "Poppy claims beads assigned to poppy. Each bead dispatch includes 'Use skill: <skill-name>'. Inline playtest verification via MCP runtime. Discoveries spawn children here. Dispatch discipline (2-bead cap, batched grooming via 'bd batch', frontier pull via 'bd ready --mol'/'bd swarm status', concurrent dispatch on disjoint files, verbatim ID copying) lives authoritatively in the build profile."
@@ -62,21 +62,12 @@ type = "human"
 id = "rachel-qa-signoff"
 description = "Rachel must run 'bd gate resolve' after all qa-gate children are closed PASS."
 
-# Phase 3.5: QA Repair Grooming (build routes discovered bugs back to dev)
-[[steps]]
-id = "qa-repair-grooming"
-title = "Route QA-discovered bugs to dev"
-type = "task"
-needs = ["qa-gate"]
-assignee = "build"
-description = "After QA closes, reparent any bug children found by QA under dev-loop, assign to poppy (or appropriate agent), and set priority. This re-opens dev-loop for the repair wave."
-
 # Phase 4: Vision Validation (ian)
 [[steps]]
 id = "vision-gate"
 title = "Vision validation (Ian)"
 type = "task"
-needs = ["qa-repair-grooming"]  # After QA repair, or directly after qa-gate if no bugs
+needs = ["qa-gate"]
 waits_for = "all-children"
 assignee = "ian"
 description = "Ian validates against VISION.md. Writes critiques and discovers UNASSIGNED misalignment bugs as children. Gate closes only when clean."
@@ -86,21 +77,12 @@ type = "human"
 id = "ian-vision-review"
 description = "Ian must run 'bd gate resolve' after validation."
 
-# Phase 4.5: Vision Repair Grooming (build routes discovered bugs back to dev)
-[[steps]]
-id = "vision-repair-grooming"
-title = "Route vision-discovered bugs to dev"
-type = "task"
-needs = ["vision-gate"]
-assignee = "build"
-description = "After vision closes, reparent any bug children found by vision under dev-loop, assign to appropriate agent, and set priority. This re-opens dev-loop for the repair wave."
-
 # Phase 5: Consumer Critique (pootie)
 [[steps]]
 id = "consumer-gate"
 title = "Consumer acceptance (Pootie)"
 type = "task"
-needs = ["vision-repair-grooming"]  # After vision repair, or directly after vision-gate if no bugs
+needs = ["vision-gate"]
 waits_for = "all-children"
 assignee = "pootie"
 description = "Pootie experiences game via MCP (screenshots, input sim), writes critique and discovers UNASSIGNED improvement bugs. Must actually play via engine MCP — code-blind critique is NOT acceptable (if engine tools are unavailable, report ⛔ BLOCKED; see walkthrough8 postmortem). Gating routes; dev fixes."
@@ -110,15 +92,6 @@ condition = "skip_consumer_loop == false"
 type = "human"
 id = "pootie-consumer-acceptance"
 description = "Pootie must run 'bd gate resolve' after critique."
-
-# Phase 5.5: Consumer Repair Grooming (build routes discovered bugs back to dev)
-[[steps]]
-id = "consumer-repair-grooming"
-title = "Route consumer-discovered bugs to dev"
-type = "task"
-needs = ["consumer-gate"]
-assignee = "build"
-description = "After consumer closes, reparent any bug children found by consumer under dev-loop, assign to appropriate agent, and set priority. This re-opens dev-loop for the final repair wave."
 
 # Phase 6: Release
 [[steps]]
