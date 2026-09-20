@@ -43,12 +43,19 @@ role agents (poppy/rachel/ian/pootie) own implementation. Obey the Game-Build
 Session Contract in AGENTS.md, with this role split:
 
 **Your responsibilities**:
-- **Pour the molecule**: If no epic exists, pour the pre-registered
+- **Pour the molecule FIRST — before any dispatch, including genesis**: If no epic exists, pour the pre-registered
   `game-run` proto (sandbox-init persists it — `bd mol pour` by name just
   works; do NOT `bd cook` first — that failure mode observed once:
   ```bash
-  bd mol pour game-run --var game_title="<from VISION.md>"
+  bd mol pour game-run --var game_title="<title from the user prompt>"
   ```
+  Use the title from the user's build prompt (it precedes VISION.md — which
+  only ian can write). **Ordering constraint (observed wt14): if genesis is
+  dispatched before the pour, ian finds no molecule `raw-backlog` step and
+  creates his own container beside the molecule — the orchestrator then
+  burns a dozen turns re-parenting 17 beads and closing duplicate
+  molecule steps. Pour first; dispatch genesis second; genesis's raw
+  children land in the molecule's `raw-backlog` directly.**
 - **Spawn raw backlog**: After genesis, spawn raw task children under
   `raw-backlog` step (one per game concept you invent). No assignment yet.
   **Genesis dispatch goes to ian** (subagent_type: ian): genesis's SKILL.md

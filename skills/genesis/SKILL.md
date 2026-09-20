@@ -45,6 +45,16 @@ Copy `reference/readme-skeleton.md` to `README.md` at the project root, substitu
 
 ### Step 3: Spawn raw task beads
 
+Locate the `raw-backlog` step BEFORE creating anything:
+```bash
+bd list --json | jq -r '.[] | select(.title=="Raw backlog (unassigned)") | .id'
+```
+**If no `raw-backlog` step exists, STOP** — the orchestrator has not poured
+the molecule yet. Report back "molecule not poured; cannot attach raw
+backlog" instead of creating your own container (observed wt14: a
+self-created container forked the tree and forced a 17-bead re-parenting
+detour).
+
 For each task, create an unassigned child of the `raw-backlog` step:
 
 ```bash
