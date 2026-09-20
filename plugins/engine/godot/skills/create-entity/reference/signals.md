@@ -1,10 +1,13 @@
 # Signal Wiring Verification Procedure
 
 **Upstream status:** preferred path is `godot-mcp-runtime:validate` with
-`checks: [{type: "signals", nodePath?: "..."}]` — verifies connections and
-handler existence in one headless call (our PR #54, merged upstream with
-follow-ups). This manual procedure is the fallback when the pinned runtime
-predates `checks`.
+`checks: [{type: "signals", nodePath?: "..."}]` — verifies connections
+and handler existence in one headless call (our PR #54, merged upstream
+with follow-ups; since upstream v3.8.0 it also catches typos in private
+handlers — `_hanlde_press` pointing nowhere is reported on any persisted
+connection). Steps 2-3 of the manual check below still apply at runtime
+(static validation can't prove a handler *works*), but step 1's manual
+connection-listing is redundant with `validate`.
 
 ## Connection Method Selection
 
