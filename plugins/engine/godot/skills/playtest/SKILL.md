@@ -77,6 +77,38 @@ The framework uses genre-agnostic bots (chaos, pursuit, replay, nav_agent) and i
 
 **Scenario-Based Execution** (replaces old simulate_input loop):
 
+**ENGINE REUSE MANDATE** (wt14: 57 boots, ~30m wasted; this is the #1
+avoidable cost): when the SAME task/session continues with another
+verification of the same project — e.g. fast-verify followed by
+scene-verify, or back-to-back scenarios on one scene — KEEP THE ENGINE
+RUNNING across those verifications. Do NOT stop_project between them.
+On the next verification, skip step 1's re-registration and step 2's
+run_project entirely (the autoload is already registered; start_test
+resets all scenario state itself). Engine reuse eliminates a full boot
++ bridge handshake per extra verification (~15-30s wall + one
+get_debug_output health cycle each; measured ~2 boots per task, 29
+boots in one run). Mandatory restart overrides — a kept engine MUST be
+stopped and relaunched when ANY of these hold:
+  - Any `.gd`/`.tscn`/`.godot` project file changed since the engine
+    started (script-staleness rule: Godot caches compiled bytecode; the
+    live process reports stale errors at phantom line numbers)
+    - **Scenario JSON files (`tests/scenarios/*.json`) are NOT
+      staleness-relevant**: they are loaded from disk at `start_test`
+      time inside your `run_script` call (a fresh `load()` each run),
+      not cached at engine boot. Editing a scenario config does NOT
+      require an engine restart. (To read a scenario JSON inside
+      `run_script` you must `load("res://tests/scenarios/x.json")`
+      with a literal path — dynamic/non-literal paths are blocked by
+      the bridge's safety policy.)
+  - A different `scene` parameter is needed
+  - The next step is a DIFFERENT task's verification — the running
+    engine must never leak across `task()` boundaries; teardown
+    always happens before returning to the orchestrator
+  - The engine has crashed or an unrecovered error occurred
+When in doubt whether a file changed: diff mtimes or just restart — a
+rebooted engine costs seconds; a stale-bytecode false verdict costs a
+REWORK cycle.
+
 1. **Ensure harness autoload:** `godot-mcp-runtime:list_autoloads(projectPath=".")` → if `TestPlayer` is not registered, call `godot-mcp-runtime:add_autoload(projectPath=".", autoloadName="TestPlayer", autoloadPath="scripts/test_player.gd")`. The harness script is created by `init-project` (Step 3b) but deliberately NOT registered there. This start is idempotent — a cold start (re)registers it here, and teardown unregisters it (step 5), so the harness never survives a session. A KEPT engine (step 5 reuse) keeps the registration — check with `list_autoloads` and skip straight to `run_script` when the engine is already up and files unchanged.
 
 2. **Launch with retry:** `godot-mcp-runtime:run_project(scene=scene, background=true)` → `start_test(scenario)` (Godot autoload) → Godot runs autonomously at 60Hz → final report via `await tp.await_test_done()` inside the SAME `run_script` call → structured JSON report (see _Waiting for a scenario_ under fast-verify: one awaited call, never sleep-poll). Exception: vision mode deliberately uses the running window for spot screenshots between calls; critique mode additionally drives input interactively (the critic plays).
@@ -85,13 +117,13 @@ The framework uses genre-agnostic bots (chaos, pursuit, replay, nav_agent) and i
 
 4. **Generate formatted report:** pipe the JSON report file through `./scripts/render_report.py <report.json>` (exit 1 if violations present).
 
-5. **Finish — teardown, or KEEP-RUNNING across consecutive verifications:** Default is `godot-mcp-runtime:stop_project()` + `godot-mcp-runtime:remove_autoload(autoloadName="TestPlayer")` so test infrastructure never ships. **Exception (engine reuse):** when the SAME task/session continues with another verification of the same project — e.g. fast-verify followed by scene-verify, or back-to-back scenarios on one scene — KEEP the engine running instead of tearing down: skip step 5's `stop_project`, and on the next verification skip step 1's re-registration and step 2's `run_project` entirely (the autoload is already registered; `start_test` resets all scenario state itself). Engine reuse eliminates a full boot + bridge handshake per extra verification (~15-30s wall + one `get_debug_output` health cycle each; measured ~2 boots per task, 29 boots in one run). **Mandatory restart overrides — a kept engine MUST be stopped and relaunched when ANY of these hold:**
-   - **Any `.gd`/`.tscn`/`.godot` project file changed since the engine started** (script-staleness rule: Godot caches compiled bytecode; the live process reports stale errors at phantom line numbers — see the warning below)
-     - **Scenario JSON files (`tests/scenarios/*.json`) are NOT staleness-relevant**: they are loaded from disk at `start_test` time inside your `run_script` call (a fresh `load()` each run), not cached at engine boot. Editing a scenario config does NOT require an engine restart. The restart rule covers `.gd`/`.tscn`/`.godot` only. (Note: to read a scenario JSON inside `run_script` you must `load("res://tests/scenarios/x.json")` with a literal path — dynamic/non-literal paths are blocked by the bridge's safety policy.)
-   - A different `scene` parameter is needed
-   - The next step is a DIFFERENT task's verification (teardown always happens before returning to the orchestrator — the running engine must never leak across `task()` boundaries; the Finish-at-return rule stands)
-   - The engine has crashed or an unrecovered error occurred
-   When in doubt whether a file changed: diff mtimes or just restart — a rebooted engine costs seconds; a stale-bytecode false verdict costs a REWORK cycle.
+5. **Finish — teardown (unless engine reuse applies):** Default is
+   `godot-mcp-runtime:stop_project()` +
+   `godot-mcp-runtime:remove_autoload(autoloadName="TestPlayer")` so test
+   infrastructure never ships. Exception: if the SAME task/session will
+   continue with another verification of the same project, SKIP THIS
+   STEP entirely — see the ENGINE REUSE MANDATE block above for when
+   reuse is mandated vs when a restart is required.
 
 > **Gotchas and edge cases live in [reference/gotchas.md](reference/gotchas.md)** — read them BEFORE your first `run_project` retry, before any run_script debug loop, before triaging a violation, and before any critique-mode "unresponsive controls" verdict. They cover: run-recovery procedure (never blind-retry), engine-unresponsive signature + 5-min budget cap, never-pkill rule, background-frame throttling and state-advance traps, synthetic-input blind spots (event handlers, InputMap binding table), script-staleness under a live engine, probe budget + artifact ledger + compact probe returns, screenshots-vs-state-reads, and empirical-first triage.
 
