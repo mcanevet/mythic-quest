@@ -25,14 +25,18 @@ shared_files:
 # refused twice during poppy's runtime session).
 #
 # Upstream lifecycle (mcp.json):
-# - Pin `3e847f2` on github.com/Erodenn/godot-mcp-runtime: all our PRs
+# - Pin `f582ade` on github.com/Erodenn/godot-mcp-runtime: all our PRs
 #   merged into upstream main (packed-array coercion #52; validate
 #   checks #54 + follow-ups; check_health #48 then superseded by the
 #   check_project rename; click_ui_element #47 superseded by Erodenn's
-#   simulate_input redesign). dist/ builds on install from source
+#   simulate_input redesign; shader_parameter virtual props #58).
+#   dist/ builds on install from source
 #   (prepare script, ea75a0d-era fix retained upstream); npx smoke
-#   tested 2026-09-20. Not yet a tagged release (npm 3.7.1 predates
-#   the merges) — retirement: when upstream tags >= v3.8 including
+#   tested 2026-09-20. Includes maintainer release-review fixes
+#   (typed Array[T] silent-drop guard, batch-validate guards,
+#   check_project exit reporting). Not yet a tagged release (npm
+#   3.7.1 predates the merges) — retirement: when upstream tags
+#   >= v3.8 including
 #   these commits, re-pin to the tag or npm version.
 # - Upstream main also hardened the stop path (session auto-clear on
 #   engine exit; stop_project on a dead process now SUCCEEDS with
