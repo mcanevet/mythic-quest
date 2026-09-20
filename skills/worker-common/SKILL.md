@@ -83,6 +83,17 @@ surrounding lines, edit once. Each refusal re-feeds the whole context
 stack, so a 1-second grep pays for itself the first time it fires
 (wt13: 4 refused edits across poppy/stephen sessions).
 
+## Self-verify before close (fixers especially)
+
+A bead whose fix isn't validated before close WILL bounce back as a
+re-verify session — cold-start plus re-derived context, ~10m wall each
+(wt13: 6 such round-trips, ~60m total). Before closing a fix/repair
+bead: run **delta-verify** (playtest SKILL.md, "Delta-verify") — a
+minimal 15-30s scenario covering only the invariants your fix touches.
+Full gauntlet runs belong to the qa-gate owner, not to you. If you
+cannot delta-verify (no engine access, blocked dependency), say so in
+the close reason — don't claim it silently.
+
 ## Self-created strays (one move, no deliberation)
 
 A file YOU mistakenly created (wrong path, aborted scaffold, duplicated

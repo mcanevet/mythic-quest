@@ -220,4 +220,6 @@ These run **once per game** (after all tasks complete), not per task — not bef
 
 Full workflows, scenario configs, and report templates: [reference/full-modes.md](reference/full-modes.md).
 
+**Delta-verify (post-fix spot-check):** When re-verifying a *single* fix (bead title contains "fix" or "repair"), extract the affected invariant names from the bead description or the fix's commit message, then run a **minimal scenario** targeting only those invariants (15-30s duration, 3-5 invariants max). Do NOT re-run the full functional gauntlet — that's the qa-gate owner's job (rachel) on the *final* release chain. Delta-verify eliminates the verify→fix→re-verify round-trip (wt13: 60m wasted across 6 sessions).
+
 **Rate-limitation gotcha:** start_test invariants are checked for `duration_s` of gameplay — do not confuse run_script probe timeouts (MCP client-side) with the scenario clock. As of godot-mcp-runtime v3.2.4, long in-engine waits in `run_script` bodies are safe (server heartbeats keep the request alive) — see `../create-entity/reference/mcp-patterns.md`.
