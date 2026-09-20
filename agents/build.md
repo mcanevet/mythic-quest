@@ -92,13 +92,22 @@ Session Contract in AGENTS.md, with this role split:
      greens; full re-gauntlet only if the delta touches boot/wiring").
      This cuts the re-verify session cost by half (observed: 32m cold
      re-verify vs 8m warm re-verify).
-   - **File-map snapshot** (~5 lines, from the engine plugin's
-     project-files + scene-tree tools, refreshed ONCE per dispatch wave):
-    current scene/script inventory — file paths, one-line purpose, key
-    node paths. Workers use this map instead of re-reading core files to
-    orient (measured in one run: core scene and script files each
-    re-read 4-6x across worker sessions; the map costs ~200 tokens and
-    eliminates most orientation reads).
+   - **File-map snapshot** (~5 lines, refreshed ONCE per dispatch wave):
+     list every entity script + scene path + key node names (from VISION.md
+     and the creation waves you authored). Append one summary line per
+     wave as you dispatch. Generic shape (substitute the CURRENT
+     project's files):
+     ```
+     # Project map (dispatched by build) — consult before reading core files
+     - <game-state>.gd (autoload, global signals/state entry point)
+     - <root-scene> (root scene), <root-script> (boot logic)
+     - <entity-a>.<script-ext> / <entity-a>.<scene-ext> (player entity)
+     - <entity-b>.<script-ext> / <entity-b>.<scene-ext> (controller)
+     - <test-harness-script> (test harness, not a game file)
+     ```
+     Workers use this map instead of re-reading core files (observed: core
+     files each read 4-6x across sessions; map costs ~200 tokens, eliminates
+     most orientation reads).
   - **Environment facts block**: bash grants (bd verbs only), scene-file edit
     policy, and engine MCP availability AS PROBED BY THE ROLE AGENTS — before
     the FIRST role dispatch, trust sandbox-init's verified state; if a role
