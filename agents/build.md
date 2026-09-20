@@ -147,14 +147,24 @@ Session Contract in AGENTS.md, with this role split:
      ```
      # Project map (dispatched by build) — consult before reading core files
      - <game-state>.gd (autoload, global signals/state entry point)
+       signals: score_changed(int), lives_changed(int), game_over(bool)
+       key methods: add_score(n), lose_life()
      - <root-scene> (root scene), <root-script> (boot logic)
      - <entity-a>.<script-ext> / <entity-a>.<scene-ext> (player entity)
+       exports: speed(float); key methods: _handle_input()
      - <entity-b>.<script-ext> / <entity-b>.<scene-ext> (controller)
      - <test-harness-script> (test harness, not a game file)
      ```
      Workers use this map instead of re-reading core files (observed: core
      files each read 4-6x across sessions; map costs ~200 tokens, eliminates
-     most orientation reads).
+     most orientation reads). Include each file's PUBLIC SURFACE — signals
+     declared, exported vars, key method signatures — because that is
+     precisely what workers re-read files to learn (wt14: ball.gd read by
+     5 agents, game.gd by 4, mostly for signal/method discovery). A map
+     line without the API summary does not prevent the read; the API
+     summary IS the point. Refresh the map incrementally as waves land:
+     append new entities when you dispatch their wave, update signal
+     lines when a worker reports adding one.
   - **Environment facts block**: bash grants (bd verbs only), scene-file edit
     policy, and engine MCP availability AS PROBED BY THE ROLE AGENTS — before
     the FIRST role dispatch, trust sandbox-init's verified state; if a role

@@ -107,7 +107,11 @@ jq projection recipes, and the granted pipeline-segment list live in
 - **Search before reading**: one grep beats reading whole files to find
   a symbol.
 - **Trust the dispatch file-map**: orientation comes from the dispatch
-  prompt; read only files you will EDIT or need exact contents of.
+  prompt; read only files you will EDIT or need exact contents of. The
+  map includes each file's public surface (signals, exports, method
+  signatures) — that IS the API documentation; do not read a file merely
+  to discover what the map already states (wt14: ball.gd read by 5
+  agents, mostly for signal discovery the map could have carried).
 - **Batch-debug**: one run script asserting ALL outstanding behaviors
   per fix round — never edit→run→edit→run on single assertions
   (input tokens grow quadratically with turns; 30 turns ≈ 400-550k).
