@@ -146,8 +146,10 @@ can't do.
   `godot_stop_project` failure rate; per-skill payload census (>10kB/load
   = split candidate); cross-session file-read overlap (≥3 agents read the
   same file = dispatch prompts lack a project map); per-session token
-  decomposition (input, cache-read, peak-step context — peak in the tens
-  of k = context pollution, bead tek); wave-parallelism matrix (edit-set
+  decomposition (input, cache-read, peak AND median step context —
+  peak≫median means monotonic context growth across the session, the
+  pollution signature of bead tek; peak≈median×2-3 is normal accumulation);
+  wave-parallelism matrix (edit-set
   disjointness between agents — disjoint pairs could have run concurrently,
   overlapping pairs justify serialization; bead hbm).
 

@@ -101,6 +101,15 @@ bd show <id> --json | jq '.priority'
 bd list --json | jq '[.[] | select(.status=="open")] | length'
 ```
 
+**Always project, never dump.** Raw `bd list --json` / `bd show --json`
+output is large (full descriptions, timestamps, deps — 66kB accumulated
+across one run's sessions) and every byte persists in context for the
+rest of the session. A jq projection is one keystroke-cheaper per call:
+default to `jq -r '.[] | [.id,.status,.title] | @tsv'` shapes for lists,
+and for `show` extract only the fields you need (`.description`,
+`.status`, `.[].title` for arrays). `bd ready --json` counts too —
+project it unless you need full descriptions.
+
 Piped bash commands are permission-checked **per pipeline segment**
 (opencode splits the command into segments and matches each against the
 allow rules independently). `jq`, `head`, and `grep` are granted as

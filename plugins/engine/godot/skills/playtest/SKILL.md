@@ -21,7 +21,7 @@ description: >-
 
 ## What I do
 
-Five execution modes (fast-verify, scene-verify, functional, vision, critique), each with a distinct evaluator lens. **Always uses `background=true`** (invisible window — deterministic screenshots, no display interference with the agent's own environment).
+Six execution modes (perf, fast-verify, scene-verify, functional, vision, critique), each with a distinct evaluator lens. **Always uses `background=true`** (invisible window — deterministic screenshots, no display interference with the agent's own environment).
 
 ### Performance mode (perf)
 
@@ -142,6 +142,10 @@ func execute(scene_tree: SceneTree) -> Variant:
     # does not parse ("Assignment is not allowed inside an expression").
     var report = await tp.await_test_done(duration + 30)
     return {"success": true, "report": report}
+    # Compact-return discipline: probe/report scripts return minimal
+    # {key: value} summaries — e.g. return {"violations": len(report.violations), "sample": first_violation_summary},
+    # never the full report dict or scene-tree dumps. Big returns persist in
+    # context for the REST of the session (observed: 17kB single probe outputs).
 ```
 
 **NEVER poll a running scenario across separate tool calls** — no `bash sleep` between `get_test_report()` checks. Sleep-polling was observed burning 2+ hours and 100+ model steps on a single 15s scenario: every wake-up re-sends the whole diagnostic context for a one-line status check, the engine idles (macOS background-throttles idle frames to 10-12s each, so a 15s sim can stretch past every reasonable deadline), and the loop can outlive the session's usefulness. The awaited form holds the call open so the engine services the scenario, and the client-side 60s transport cap is not a factor for calls with progress heartbeats (godot-mcp-runtime ≥ v3.2.4). Caveat: holding the call open prevents idle-throttling but does NOT guarantee full-rate frames — frame advance inside an awaited script under background throttle remains irregular, which is one more reason timing questions belong in TestPlayer scenarios, not manual awaits (see `reference/live-engine-driving.md`). A `bash sleep` wait is permission-denied — and improvising a different idle-wait is the same violation in another coat. If `await_test_done()` is missing from the deployed TestPlayer (version mismatch after a `init-project` upgrade), that is a harness defect: report `⛔ BLOCKED: await_test_done() unavailable on deployed TestPlayer — re-install scripts/test_player.gd via init-project`, do not improvise an alternative wait loop.

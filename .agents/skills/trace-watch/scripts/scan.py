@@ -257,6 +257,7 @@ def latency_report(sub):
         bd_admin = dispatches = 0
         tokin = tok_cr = 0
         top_step = 0
+        step_ctx = []
         db = sqlite3.connect(DB)
         for (tc, tu, raw) in db.execute(
             "SELECT time_created, time_updated, data FROM part "
@@ -311,6 +312,8 @@ def latency_report(sub):
                 tk = d.get("tokens") or {}
                 tokin += tk.get("input", 0)
                 top_step = max(top_step, tk.get("input", 0))
+                if tk.get("input"):
+                    step_ctx.append(tk["input"])
                 tok_cr += (tk.get("cache") or {}).get("read", 0)
         if created:
             if agent not in span:
@@ -325,8 +328,9 @@ def latency_report(sub):
         bd_note = ""
         if dispatches or bd_admin:
             bd_note = f"  bd-admin={bd_admin} dispatch={dispatches}"
+        med_step = sorted(step_ctx)[len(step_ctx)//2] if step_ctx else 0
         tok_note = (
-            f"  in={tokin/1000:6.0f}k peak={top_step//1000:3d}k cr={tok_cr/1000:4.0f}k"
+            f"  in={tokin/1000:6.0f}k peak={top_step//1000:3d}k med={med_step//1000:3d}k cr={tok_cr/1000:4.0f}k"
             if tokin else ""
         )
         print(
