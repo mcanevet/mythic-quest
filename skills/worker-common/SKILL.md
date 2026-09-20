@@ -93,6 +93,17 @@ Before submitting ANY `godot_run_script` probe, check three things
    parameter, local, or class member — no undefined `root`, `game`,
    `score` shortcuts from memory.
 
+## macOS sandbox-extension noise (benign, wt14: 48 spurious denials)
+
+`stop_project` and `get_debug_output` sometimes return stderr containing
+`_process failed for ... Godot.app: 1 (Operation not permitted)` — a
+macOS sandbox-extension cleanup artifact AFTER successful process
+termination. The tool itself returns `completed` with `alreadyExited:
+false` (success). If you see this message, **do not retry** — it's
+harmless noise, not a failure. The denial happens at the opencode
+platform layer, not the tool. Report it to the human if it blocks
+progress; the fix belongs in opencode's result classification.
+
 ## Self-verify before close (fixers especially)
 
 An unvalidated fix bounces back as a re-verify session — cold start +
