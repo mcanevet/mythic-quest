@@ -443,3 +443,33 @@ rules:
       description (it drives Task-tool selection); (c) a missing mode —
       the repo convention sets it explicitly on every agent. Files that
       are not agent markdown close with NO APPLICABLE RULES.
+
+  dispatch-as-bd-native:
+    title: Orchestration instructions must use bd-native primitives, not bash loops
+    rationale: >
+      Dispatch loops hand-written in bash reimplement what bd (beads)
+      provides natively: --assignee routing, ready detection, molecule
+      completion. Observed in wt12/wt13 (2026-09-20): the build dispatcher
+      emitted 16 `bd update --set-labels` and 16 `bd update --assignee`
+      calls per run (~130s of serial bookkeeping) — the same routing
+      could be declared once in the formula — and 96%/76% of its wall
+      time sat blocked inside synchronous task awaits that
+      fire-and-monitor dispatch (bd ready --mol polling) would overlap.
+      Trace detection is codified in trace-watch lens E
+      (orchestrator anti-patterns); this rule catches the static side:
+      profiles and formulas that prescribe the loop pattern.
+    applies_to: "agents/**, skills/**, workflows/**"
+    prompt: >
+      Flag orchestration instructions that prescribe bash-level dispatch
+      loops where bd offers a native primitive. Red flags: per-bead
+      `for ...; do bd update` loops for routing or labeling (should be
+      formula-level pre-routing or a single wave operation); sleep-based
+      or repeated identical `bd show/list/ready` polling (bd ready --mol
+      IS the wait primitive); instructions telling a dispatcher to await
+      each subagent synchronously before preparing the next dispatch when
+      the dispatches are independent (fire-and-monitor: dispatch, then
+      poll bd for readiness, overlapping preparation with child work).
+      Legal: serial awaits where a true dependency chain exists (scaffold
+      before entities), and one-off `bd update --assignee` calls for
+      repairs or dynamic routing decisions. When a prescribed loop is
+      dependency-justified, note it as legal rather than a violation.

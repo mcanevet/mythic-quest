@@ -13,10 +13,13 @@ permission:
     "bd dep tree*": allow # build: molecule structure
     "bd create*": allow  # build: pour molecule, spawn raw children
     "bd update*": allow  # build: assignee changes, grooming
+    "bd batch*": allow   # build: collapse routing waves into ONE transaction (bd-native batch; replaces serial update loops)
+    "bd swarm*": allow   # build: computed swarm status (active/ready/blocked in one call; replaces bd show/list/children polling chains)
     "bd gate check*": allow  # build: auto-resolve timer/gh gates (gates await auto-resolution, not manual resolve)
     "bd reclaim*": allow     # build: dead worker recovery (worker crash risk: observed micro-session deaths)
     "bd mol pour*": allow    # build: pour game-run formula (proto persisted at sandbox-init; mythic-quest-704)
     "bd mol current*": allow # build: track progress
+    "bd mol progress*": allow # build: completion rate/ETA in one call
     "bd formula list*": allow # build: verify game-run registered
     "bd close*": allow       # build: close release + epic only — NOT
                              # delegated task beads (implementers close
@@ -54,35 +57,59 @@ Session Contract in AGENTS.md, with this role split:
   write denied and forces a re-dispatch, and re-inventing the vision text
   from scratch diverges from any draft (observed: the
   palette re-invention surfaced later as two vision-gate bugs).
-- **Groom backlog**: For each unassigned bead (raw-backlog children AND
-  gate-discovered bugs), decide routing:
-  - Assignee: poppy (implementation), phil (materials), stephen (animation),
-    gustavo (audio), rachel (QA), ian (vision), pootie (consumer)
-  - Label: `skill:<skill-name>` (create-entity, create-ui, create-level,
-    apply-material, apply-animation, apply-audio, playtest)
-  - Description: add "Use skill: <skill-name>"
-  - **Selection discipline** (legacy backlog-grooming rules): dispatch order
-    is **first-ready by (priority, creation)** — highest priority, oldest
-    first. No skipping ahead to "interesting" beads, no reordering by
-    convenience; optimizers broke dependency assumptions in legacy runs.
-    The 2-bead cap per role governs concurrency, not ordering.
-  - **Reparent to dev-loop**: gates use `waits_for = "all-children"` on the
-    dev-loop step — children parked under raw-backlog are INVISIBLE to the
-    gates. When grooming a bead, ALWAYS reparent it to the dev-loop step:
+ - **Groom backlog** (ONE batched call per wave, never serial per-bead
+   updates — measured wt13: 16 `--set-labels` + 16 `--assignee` calls,
+   ~130s of serial bookkeeping that `bd batch` collapses into one
+   transaction and one commit): for each unassigned bead (raw-backlog
+   children AND gate-discovered bugs), decide routing:
+   - Assignee: poppy (implementation), phil (materials), stephen (animation),
+     gustavo (audio), rachel (QA), ian (vision), pootie (consumer)
+   - Label: `skill:<skill-name>` (create-entity, create-ui, create-level,
+     apply-material, apply-animation, apply-audio, playtest)
+   - Description (in the dispatch prompt, not per-bead updates — batch
+     can't set descriptions, so route the skill verbally)
+   - **Selection discipline**: dispatch order is **first-ready by
+     (priority, creation)** — highest priority, oldest first. No skipping
+     ahead to "interesting" beads, no reordering by convenience; optimizers
+     broke dependency assumptions in legacy runs. The 2-bead cap per role
+     governs concurrency, not ordering.
+    - **Reparent to dev-loop**: gates use `waits_for = "all-children"` on
+      the dev-loop step — children parked under raw-backlog are INVISIBLE
+      to the gates. `bd batch` cannot reparent (upstream limitation:
+      batch grammar has no parent key — retire this workaround if bd
+      adds `update <id> parent=<pid>`); issue the reparent as its own
+      `bd update <id> --parent <dev-loop-step-id>`, and do the rest in
+      the batch:
   ```bash
-  bd update <id> --assignee poppy
-  bd update <id> --set-labels "skill:create-entity"
-  bd update <id> --description "Use skill: create-entity"
-  bd update <id> --parent <dev-loop-step-id>
+  printf 'update <id1> assignee=poppy\nupdate <id2> assignee=rachel\n' | bd batch
+  bd update <id1> --parent <dev-loop-step-id>   # reparent only (batch can't)
   ```
- - **Dispatch**: Route beads to role agents via Task tool with bead ID and
-   context. Do NOT claim beads you are delegating — a dispatcher-held claim
-   blocks the worker from claiming (observed: every wt12 role session
-   fought "already claimed: already assigned to \"build\"" and burned 2+
-   recovery turns; ian lost 5). Routing = `bd update <id> --assignee <role>`
-   (+ labels, description, reparent); claiming is the WORKER's first action
-   per worker-common. Claim only beads YOU will work yourself (your own
-   gates, release, orchestration chores).
+  `bd batch` supports: `close`, `update <id> status=|priority=|assignee=|title=`,
+  `create`, `dep add/remove` — one transaction, one commit, all-or-nothing.
+ - **Dispatch (frontier model — the molecule's DAG, not a serial await
+   chain, decides what runs)**: route beads to role agents via the Task
+   tool. Between waves, the loop is bd-native:
+  ```bash
+  bd ready --mol <mol-id> --json | jq -r '.[].id'   # the frontier
+  bd swarm status <mol-id>                          # active/ready/blocked in ONE call
+  ```
+  Do NOT claim beads you are delegating — a dispatcher-held claim blocks
+  the worker from claiming (observed: every wt12 role session fought
+  "already claimed: already assigned to \"build\"" and burned 2+ recovery
+  turns; ian lost 5). Routing = `bd batch` (assignee waves); claiming is
+  the WORKER's first action per worker-common. Claim only beads YOU will
+   work yourself (your own gates, release, orchestration chores).
+   **Never await one dispatch before preparing the next** (measured wt12:
+   96% of build's wall time sat blocked inside synchronous task awaits,
+   wt13: 76% — the dispatcher was the single biggest cost center). While
+   a worker runs, your job is: groom the NEXT wave from `bd ready`, prep
+   its dispatch prompts, run `bd gate check` / `bd reclaim` housekeeping,
+   verify returned workers' closures. The harness Task call returns when
+   the child finishes — so batch the independent dispatches of a wave
+   into ONE turn (parallel Task calls), and use the await time of wave N
+   to prepare wave N+1. True dependency chains (scaffold before entities)
+   serialize naturally via `bd ready` — the DAG is the gatekeeper, not your
+   memory of "what comes next".
    **Dispatch prompt contract** (every prompt includes):
    - **Warm-start header for re-verifies**: when re-dispatching a gate
      specialist after a fix round, carry the prior report path
@@ -175,8 +202,11 @@ Session Contract in AGENTS.md, with this role split:
   full reports accumulate in your context on every turn.
 - **Gate management**: Between dispatches run:
   - `bd gate check` — auto-resolve timer/gh gates
-  - `bd reclaim` — reclaim stale claims (dead workers)
-  - `bd mol current` — check progress
+  - `bd reclaim` — reclaim stale claims (dead workers; workers heartbeat
+    their claims, so a silent death shows up here automatically)
+  - `bd swarm status <mol-id>` — active workers / ready / blocked in ONE
+    computed call (replaces bd show+bd list+bd children polling chains —
+    measured wt13: ~10 status reads per wave)
   - `bd blocked <gate-id> --json | jq '.[].id'` — straggler check before
     dispatching ANY gate close (a specialist whose close is refused for
     open blockers wastes a session; disposition stragglers — close with
@@ -227,7 +257,8 @@ Session Contract in AGENTS.md, with this role split:
   skip_consumer_loop=true), claim and close the release bead, then close the
   molecule epic.
 - **Completion trigger** (legacy log-result rule): the run is NOT done when
-  the last dispatch returns — poll `bd list` until `open,in_progress` is
+  the last dispatch returns — between dispatches, check
+  `bd swarm status <mol-id>` (or `bd list`) until open/in_progress is
   empty (stale claims from dead workers hide here; `bd reclaim` first).
   Empty board → final playtest delegation (rachel, functional mode) is
   already green (it's the qa-gate), so proceed to release. Anything still

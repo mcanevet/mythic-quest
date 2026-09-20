@@ -151,7 +151,10 @@ can't do.
   pollution signature of bead tek; peak≈median×2-3 is normal accumulation);
   wave-parallelism matrix (edit-set
   disjointness between agents — disjoint pairs could have run concurrently,
-  overlapping pairs justify serialization; bead hbm).
+  overlapping pairs justify serialization; bead hbm); orchestration lenses
+  A/E (blocking-await share, bd-native substitution patterns) and B
+  (dispatcher idle-on-child gaps) — full definitions and thresholds in
+  [reference/orchestration-lenses.md](reference/orchestration-lenses.md).
 
 ### Deterministic vs semantic
 

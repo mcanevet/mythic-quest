@@ -247,6 +247,10 @@ def latency_report(sub):
     stop_fail = [0, 0]  # total stop_project fails/total
     edit_sets = defaultdict(set)  # agent -> set of files edited
     span = {}  # agent -> (start, end) merged for parallelism check
+    # orchestration lenses (A: blocking await, B: idle-window attribution)
+    tool_log = defaultdict(list)  # sid -> [(tc, tu, tool, agent)]
+    task_log = defaultdict(list)  # sid -> [(tc, tu, description)]
+    sess_agent = {}  # sid -> agent
     for sid, agent, title, ts in sessions:
         created = updated = None
         tool_time = reasoning_s = 0.0
@@ -278,6 +282,12 @@ def latency_report(sub):
                 out = str(st.get("output") or "")
                 err = str(st.get("error") or "")
                 tool_time += max(0, (tu or tc) - tc) / 1000
+                sess_agent[sid] = agent
+                tool_log[sid].append((tc, tu or tc, tool, agent))
+                if tool == "task":
+                    task_log[sid].append(
+                        (tc, tu or tc, str(inp.get("description") or inp.get("prompt") or "")[:60])
+                    )
                 if last_t is not None:
                     gaps.append((tc - last_t) / 1000)
                 last_t = tc
@@ -375,6 +385,136 @@ def latency_report(sub):
         print("  overlapping editors (serialization justified):")
         for a, b, files in clash:
             print(f"  {a:8} ∩ {b:8} — {', '.join(files)}")
+    orchestration_report(tool_log, task_log, sess_agent, sub)
+
+
+def orchestration_report(tool_log, task_log, sess_agent, sub):
+    """Lens A — blocking awaits: a task/delegation call spanning most of the
+    caller's wall-clock with no interleaved activity means the dispatcher
+    sat dead while a worker ran (fire-and-monitor could overlap it).
+    Lens B — idle-window attribution: gaps in a session's tool stream that
+    overlap another session's active period are WAITING-ON-CHILD time."""
+    print("\n## Orchestrator blocking awaits (task call spans caller wall,")
+    print("   no interleaved activity — dispatcher dead while worker runs)")
+    # child intervals: sessions excluding those that dispatch tasks themselves
+    dispatchers = {sid for sid in task_log if task_log[sid]}
+    # collect per-session wall spans from tool_log
+    spans = {}
+    for sid, evts in tool_log.items():
+        if evts:
+            spans[sid] = (min(e[0] for e in evts), max(e[1] for e in evts))
+    found_a = False
+    for sid, tasks in task_log.items():
+        if not tasks:
+            continue
+        agent = sess_agent.get(sid, "?")
+        s_start, s_end = spans.get(sid, (None, None))
+        if s_start is None:
+            continue
+        wall = (s_end - s_start) / 1000
+        all_evts = sorted(tool_log[sid])
+        await_total = 0.0
+        for tc, tu, desc in tasks:
+            dur = (tu - tc) / 1000
+            await_total += dur
+            # interleaved = caller activity overlapping the task window
+            # (bd bookkeeping etc. between dispatch and completion)
+            inter = sum(
+                1 for e in all_evts
+                if not (e[1] <= tc or e[0] >= tu) and (e[0], e[1]) != (tc, tu)
+            )
+            if dur > 60 and inter == 0:
+                found_a = True
+                print(
+                    f"  ⚠️ {agent}: task '{desc}' {dur/60:.1f}m full blocking await"
+                    f" (no caller activity during dispatch)"
+                )
+        if tasks and wall > 0:
+            share = await_total / wall * 100
+            print(
+                f"  {agent}: {len(tasks)} dispatches, {await_total/60:.1f}m"
+                f" cumulative await = {share:.0f}% of {wall/60:.1f}m wall"
+                + ("  ⚠️ dispatcher mostly dead" if share > 70 else "")
+            )
+    if not found_a:
+        print("  (no single dispatch exceeded 60s)")
+    print("\n## Dispatcher idle-on-child windows (caller gap overlapping")
+    print("   a worker session's active span = WAITING-ON-CHILD)")
+    # worker intervals = sessions that never dispatch tasks
+    workers = [sid for sid in spans if sid not in dispatchers]
+    found_b = False
+    for sid, tasks in sorted(task_log.items()):
+        if not tasks:
+            continue
+        agent = sess_agent.get(sid, "?")
+        evts = sorted(tool_log[sid])
+        task_windows = [(tc, tu) for tc, tu, _ in tasks]
+        for i in range(len(evts) - 1):
+            e, nxt = evts[i], evts[i + 1]
+            gap_start, gap_end = e[1], nxt[0]
+            gs = (gap_end - gap_start) / 1000
+            if gs < 30:
+                continue
+            # skip gaps inside an awaited task window (already lens A)
+            if any(tc <= gap_start and gap_end <= tu for tc, tu in task_windows):
+                continue
+            # which worker sessions were active during the gap?
+            active = sorted({
+                sess_agent[w] for w in workers
+                if w in spans and spans[w][0] < gap_end and spans[w][1] > gap_start
+            })
+            if active:
+                found_b = True
+                print(
+                    f"  {agent}: {gs/60:.1f}m gap with no calls, "
+                    f"while {', '.join(a or '?' for a in active)} worked — "
+                    "dispatcher idle on child"
+                )
+    if not found_b:
+        print("  (none)")
+    print("\n## Orchestrator anti-patterns (bash loops that reimplement")
+    print("   bd-native routing/polling)")
+    orchestrator_patterns(
+        {sid: tool_log[sid] for sid in tool_log}, sess_agent, sub
+    )
+
+
+def orchestrator_patterns(session_data, sess_agent, sub):
+    """Lens E: detect bash-level dispatch loops that should be bd-native.
+    Patterns: (1) --set-labels bursts (pre-routing in formula instead),
+    (2) repeat-poll (same bd query x2+ in succession), (3) sleep+poll loops.
+    Uses raw bash command text from the part data (tool_log only carries
+    tool names), so parts are re-read here."""
+    db = sqlite3.connect(DB)
+    for sid, evts in session_data.items():
+        agent = sess_agent.get(sid, "?")
+        # skip workers: only dispatch-relevant sessions orchestrate via bd
+        bash_cmds = []
+        for (raw,) in db.execute(
+            "SELECT data FROM part WHERE session_id=? ORDER BY time_created, id",
+            (sid,),
+        ):
+            try:
+                d = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            if d.get("type") == "tool" and d.get("tool") == "bash":
+                inp = (d.get("state") or {}).get("input") or {}
+                bash_cmds.append(str(inp.get("command", "")) if isinstance(inp, dict) else "")
+        if not bash_cmds:
+            continue
+        joined = " ".join(bash_cmds)
+        labels = len(re.findall(r"--set-labels", joined))
+        if labels >= 3:
+            print(f"  ⚠️ {agent}: {labels} --set-labels calls — pre-route assignees in the formula")
+        if len(re.findall(r"bd update .+ --assignee", joined)) >= 5:
+            print(f"  ⚠️ {agent}: assignee-route burst — dispatch via --assignee should be one wave op")
+        for i, c in enumerate(bash_cmds[:-1]):
+            if c.strip() and len(c.strip()) > 10 and c.strip() == bash_cmds[i + 1].strip():
+                print(f"  ⚠️ {agent}: repeat-poll — identical bd query back-to-back (use bd ready --mol)")
+                break
+        if any("sleep" in c and "bd" in c for c in bash_cmds):
+            print(f"  ⚠️ {agent}: sleep+poll loop — bd ready --mol blocks/polls natively")
 
 
 def load_sessions(sub):

@@ -35,7 +35,7 @@ title = "Groom backlog: assign roles, skills, priorities"
 type = "task"
 needs = ["raw-backlog"]
 assignee = "build"
-description = "For each raw child: (1) decide assignee (poppy/rachel/ian/pootie), (2) select skill (create-entity, create-ui, etc.), (3) set priority/labels, (4) REPARENT the child to the dev-loop step so gates with waits_for=all-children can see it. Update description with 'Use skill: <skill-name>'."
+description = "For each raw child: (1) decide assignee (poppy/rachel/ian/pootie), (2) select skill (create-entity, create-ui, etc.), (3) set priority, (4) REPARENT the child to the dev-loop step so gates with waits_for=all-children can see it. Routing lands in ONE 'bd batch' transaction (assignee waves); the skill name rides the dispatch prompt, and reparenting is the only per-bead 'bd update'."
 
 # Phase 2: Implementation Loop (poppy)
 [[steps]]
@@ -45,7 +45,7 @@ type = "task"
 needs = ["backlog-grooming"]
 assignee = "poppy"
 waits_for = "all-children"
-description = "Poppy claims beads assigned to poppy. Each bead description includes 'Use skill: <skill-name>'. Inline playtest verification via MCP runtime. Discoveries spawn children here. HARD CAP: max 2 beads per delegation batch (orchestrator dispatches repeatedly as beads close). Within a wave, orchestrator dispatches CONCURRENTLY when the beads' target file sets are disjoint (see the parallelism rule in the build profile). NOTE: orchestrator must copy bead IDs verbatim from bd output — never hand-type IDs into dispatch prompts."
+description = "Poppy claims beads assigned to poppy. Each bead dispatch includes 'Use skill: <skill-name>'. Inline playtest verification via MCP runtime. Discoveries spawn children here. Dispatch discipline (2-bead cap, batched grooming via 'bd batch', frontier pull via 'bd ready --mol'/'bd swarm status', concurrent dispatch on disjoint files, verbatim ID copying) lives authoritatively in the build profile."
 
 # Phase 3: QA Gate (rachel)
 [[steps]]
