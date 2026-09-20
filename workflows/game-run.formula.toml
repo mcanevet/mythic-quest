@@ -17,8 +17,8 @@ required = true
 id = "genesis"
 title = "Invent {{game_title}} concept"
 type = "task"
-assignee = "build"
-description = "Invent game concept. Spawn raw task children under 'raw-backlog' container (no assignment or skill routing yet)."
+assignee = "ian"
+description = "Invent game concept (assignee: ian, dispatched by the orchestrator — the worker claims and closes as ian). Spawn raw task children under 'raw-backlog' container (no assignment or skill routing yet)."
 
 [[steps]]
 id = "raw-backlog"

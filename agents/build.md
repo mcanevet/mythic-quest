@@ -75,8 +75,14 @@ Session Contract in AGENTS.md, with this role split:
   bd update <id> --description "Use skill: create-entity"
   bd update <id> --parent <dev-loop-step-id>
   ```
- - **Dispatch**: Claim beads assigned to YOU (build), then dispatch to role
-   agents via Task tool with bead ID and context.
+ - **Dispatch**: Route beads to role agents via Task tool with bead ID and
+   context. Do NOT claim beads you are delegating — a dispatcher-held claim
+   blocks the worker from claiming (observed: every wt12 role session
+   fought "already claimed: already assigned to \"build\"" and burned 2+
+   recovery turns; ian lost 5). Routing = `bd update <id> --assignee <role>`
+   (+ labels, description, reparent); claiming is the WORKER's first action
+   per worker-common. Claim only beads YOU will work yourself (your own
+   gates, release, orchestration chores).
    **Dispatch prompt contract** (every prompt includes):
    - **Warm-start header for re-verifies**: when re-dispatching a gate
      specialist after a fix round, carry the prior report path
@@ -90,10 +96,9 @@ Session Contract in AGENTS.md, with this role split:
      project-files + scene-tree tools, refreshed ONCE per dispatch wave):
     current scene/script inventory — file paths, one-line purpose, key
     node paths. Workers use this map instead of re-reading core files to
-    orient (measured:
-    main.tscn read 6×, ball.gd 4×, main.gd 4× across
-    worker sessions; the map costs ~200 tokens and eliminates most
-    orientation reads).
+    orient (measured in one run: core scene and script files each
+    re-read 4-6x across worker sessions; the map costs ~200 tokens and
+    eliminates most orientation reads).
   - **Environment facts block**: bash grants (bd verbs only), scene-file edit
     policy, and engine MCP availability AS PROBED BY THE ROLE AGENTS — before
     the FIRST role dispatch, trust sandbox-init's verified state; if a role
@@ -101,6 +106,8 @@ Session Contract in AGENTS.md, with this role split:
     available" without evidence (observed: a
     false "no engine run possible" premise downgraded ALL verification to
     static review for an entire run while the MCP server was healthy).
+    If a dispatched worker reports `already claimed` on its bead, that
+    means a stale claim (dead worker) — run `bd reclaim` and re-dispatch.
   - **Deliverables**: for interactive entities, name
     `tests/scenarios/<entity>.json` as a deliverable alongside code (the
     skill's test scenario contract).
@@ -160,9 +167,12 @@ Session Contract in AGENTS.md, with this role split:
   inspects the session DB; on confirmed death: respawn the agent with the
   same bead ID (claims survive via `bd reclaim`); do NOT re-pour or
   re-groom). If an implementer reports `⛔ BLOCKED: bd close refused`
-  (e.g. assignee mismatch), YOU own the chore: re-claim under your
-  identity and hand the close back with the implementer's verdict text —
-  never let implementers force-close.
+  for a LEGITIMATE reason — deps satisfied but the tool still reports
+  `cannot close blocked issue`, or assignee-state the worker cannot fix —
+  prefer resolving the state (`bd show`, wait for gate auto-resolve,
+  `bd gate check`) over `--force`. Reserve `--force` close for genuinely
+  wedged ledger state and note it in the close reason; blanket --force
+  habits (6+ in one run) defeat the audit trail the claims exist for.
 - **Dead-worker recovery pattern** (oqm): when a worker session ends without
   closing its bead (silent death), the build orchestrator follows:
   1. Detect: `bd show <id>` — no close reason, actor still the dead role

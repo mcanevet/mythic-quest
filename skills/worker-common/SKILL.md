@@ -24,6 +24,15 @@ before the flag was adopted).
 - Claim beads assigned to your role only: `bd ready --assignee <role>`
 - Claim one bead per bd invocation — chained `&&` commands stop at the
   first error and leave the second bead unclaimed.
+- **If your claim is refused with "already claimed: assigned to \"build\"/
+  another dispatcher**": the orchestrator routed the bead to you without
+  releasing a claim — this is expected, not a blocker. Proceed with the
+  work and close with `bd close <id> --actor <role> --reason ...`;
+  the assignee (you) is allowed to close regardless of who holds the
+  claim. Do NOT spend turns on claim recovery, do NOT report BLOCKED
+  (observed wt12: ian burned 5 turns on this exact refusal). If the
+  holder is NOT the orchestrator, report it — that's a dead-worker
+  stale claim for the orchestrator's `bd reclaim`.
 
 ## Engine health probe (mandatory, first action)
 
