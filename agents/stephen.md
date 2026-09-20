@@ -27,8 +27,7 @@ permission:
     "head *": allow # stephen: read-only output trimming; safe downstream pipe
     "grep *": allow # stephen: read-only output filtering; safe downstream pipe
     "bd create*": allow                    # stephen: discover animation bugs
-    "godot*": allow                         # stephen: CLI engine invocation (mythic-quest-4u3)
-    "npx godot-mcp-runtime*": allow        # stephen: MCP server (mythic-quest-4u3)
+    "godot*": deny                          # stephen: engine access rides MCP tools only (removed vestigial npx/godot CLI grants)
   task: deny                   # stephen: no subagent spawning
   # Engine MCP — read/verify/mutate surface for animation work (tweens,
   # AnimationPlayer nodes via add_node/set_node_properties).

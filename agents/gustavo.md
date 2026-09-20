@@ -31,8 +31,6 @@ permission:
     "head *": allow # gustavo: read-only output trimming; safe downstream pipe
     "grep *": allow # gustavo: read-only output filtering; safe downstream pipe
     "bd create*": allow                     # gustavo: discover audio bugs
-    "godot*": allow                          # gustavo: CLI engine invocation (mythic-quest-4u3)
-    "npx godot-mcp-runtime*": allow         # gustavo: MCP server (mythic-quest-4u3)
   task: deny                   # gustavo: no subagent spawning
   # Engine MCP — read/verify/mutate surface for audio work (AudioStreamPlayer
   # nodes via add_node/set_node_properties, bus layouts via .tres files).

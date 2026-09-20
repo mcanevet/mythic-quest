@@ -31,8 +31,7 @@ permission:
     "head *": allow # phil: read-only output trimming; safe downstream pipe
     "grep *": allow # phil: read-only output filtering; safe downstream pipe
     "bd create*": allow                # phil: discover visual bugs
-    "godot*": allow                     # phil: CLI engine invocation (mythic-quest-4u3)
-    "npx godot-mcp-runtime*": allow    # phil: MCP server (mythic-quest-4u3)
+    "godot*": deny                      # phil: engine access rides MCP tools only (removed vestigial npx/godot CLI grants — see gilgul vestigial-grants audit)
   task: deny                   # phil: no subagent spawning
   # Engine MCP — read/verify/runtime surface only (phil dresses scenes via
   # set_node_properties/batch ops; he does not create entities or logic).
