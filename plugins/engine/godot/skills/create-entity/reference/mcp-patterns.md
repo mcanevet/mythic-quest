@@ -38,15 +38,27 @@ Use **batch operations first**, individual tools for simple cases:
 ## Batch Operations Template
 
 ```bash
-# Pseudo-code showing batch pattern:
+# Pseudo-code showing batch pattern — note scenePath on EVERY op
+# (snake_case or camelCase both work; the wire format is a REAL ARRAY
+# of objects, never a JSON string):
 godot-mcp-runtime:batch_scene_operations(
   operations=[
-    {operation: "add_node", nodeName: "Entity1", nodeType: "Area2D", properties: {...}},
-    {operation: "add_node", nodeName: "CollisionShape2D", parentNodePath: "Entity1", nodeType: "CollisionShape2D"},
-    {operation: "save"}
-  ]
+    {operation: "add_node", scenePath: "res://entities/paddle.tscn", nodeName: "Entity1", nodeType: "Area2D", properties: {...}},
+    {operation: "add_node", scenePath: "res://entities/paddle.tscn", nodeName: "CollisionShape2D", parentNodePath: "Entity1", nodeType: "CollisionShape2D"},
+    {operation: "save", scenePath: "res://entities/paddle.tscn"}
+  ],
+  abortOnError: true
 )
 ```
+
+> ⚠️ **Wire-format traps (both observed wt15):**
+> 1. `operations` must be a real JSON array of objects. Sending a
+>    JSON-*string* (double-encoded) fails schema validation: "operations
+>    must be an array".
+> 2. Every op object must carry its own `operation` and `scenePath` keys —
+>    omitting either produces `Unknown batch operation: ` /
+>    `scene_path required for add_node` errors that are easy to miss among
+>    sibling successes.
 
 > ⚠️ **Gotcha — auto-save persists partially-failed batches:** even when some
 > ops in the batch error (e.g. a dropped `operation` or `scenePath` key), the
