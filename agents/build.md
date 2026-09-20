@@ -217,10 +217,23 @@ Session Contract in AGENTS.md, with this role split:
      Do NOT wait for any single worker — the harness returns when each
      child finishes.
   4. While workers run: do NOT sleep-poll. Groom the next wave (labels
-     via `bd batch`, reparents, prompt drafting), run gate housekeeping
-     (`bd gate check`, `bd reclaim`), prep warm-start headers for re-
-     verifies. If NOTHING is actionable, end your turn — the harness
-     will resume you when a child completes; never busy-wait in bash.
+     via `bd batch` — see example below; reparents via `bd update
+     --parent`; prompt drafting), run gate housekeeping (`bd gate
+     check`, `bd reclaim`), prep warm-start headers for re-verifies.
+     If NOTHING is actionable, end your turn — the harness will resume
+     you when a child completes; never busy-wait in bash.
+
+     **Grooming example** (one batch per wave, NEVER serial per-bead
+     updates — wt14: 25 individual `bd update --assignee --set-labels`
+     calls): collect all unassigned beads (raw-backlog children +
+     gate-discovered bugs), then run ONE `bd batch` to assign them:
+     ```bash
+     printf 'update <id1> assignee=poppy\nupdate <id2> assignee=poppy\nupdate <id3> assignee=gustavo\n' | bd batch
+     ```
+     Do NOT reparent or set-labels yourself: the WORKER's first action
+     is `bd update <id> --claim --parent <dev-loop-id>` (atomic, per
+     worker-common) — reparenting is the worker's job, and skill labels
+     go in the dispatch prompt's verbage (batch can't set either).
   5. On each worker return: verify its close reason, then loop back to 1.
 
   Anti-pattern (the exact wt14 failure): dispatch one worker → block
