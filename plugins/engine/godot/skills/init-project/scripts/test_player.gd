@@ -12,6 +12,7 @@ var _frame_count = 0
 var _violations = []
 var _violation_counts = {}
 var _held_inputs = {}
+var _warned_test_paths = {}  # node_path -> true, warn-once for null resolves
 var _metrics = {
 	"start_frame": 0,
 	"end_frame": 0,
@@ -77,6 +78,7 @@ func start_test(scenario: Dictionary) -> Dictionary:
 	_violations.clear()
 	_violation_counts.clear()
 	_held_inputs.clear()
+	_warned_test_paths.clear()  # nodes may exist next run even if absent now
 	_metrics = {
 		"start_frame": Engine.get_physics_frames(),
 		"end_frame": 0,
@@ -674,7 +676,22 @@ func _resolve_test_value(path: String):
 	var root = get_tree().root if get_tree() else null
 	if not root: return null
 	var node = root.get_node_or_null(NodePath(node_path))
-	if not node: return null
+	if not node:
+		# Warn once per bad path (checked every cycle; a fresh warning
+		# per cycle would recreate the log-spam this replaces).
+		if not _warned_test_paths.has(node_path):
+			_warned_test_paths[node_path] = true
+			# Actionable miss diagnostics: name the bad path and its nearest
+			# valid ancestor's children, so an author writing /root/Game:score
+			# against a scene rooted at /root/root learns the right base in
+			# one message instead of guessing (wt13: 30+ opaque Nil-get errors).
+			var near = _nearest_existing_path(root, node_path)
+			var hint = "nearby: (none)"
+			if near:
+				hint = "closest existing node '%s' has children: %s" % [
+					near, ", ".join(_child_names(near))]
+			push_warning("Test path '%s' not found — %s" % [node_path, hint])
+		return null
 	if prop != "":
 		if node.has_method("get_test_state"):
 			var state = node.get_test_state()
@@ -682,3 +699,20 @@ func _resolve_test_value(path: String):
 				return state.get(prop)
 		return node.get(prop)
 	return null
+
+func _nearest_existing_path(root: Node, path: String) -> Node:
+	var parts = path.trim_prefix("/").split("/")
+	var node: Node = root
+	for p in parts:
+		if p.is_empty(): continue
+		var nxt = node.get_node_or_null(p)
+		if not nxt:
+			return node
+		node = nxt
+	return node
+
+func _child_names(node: Node) -> Array:
+	var out: Array = []
+	for c in node.get_children():
+		out.append(c.name)
+	return out

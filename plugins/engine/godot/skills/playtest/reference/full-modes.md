@@ -43,6 +43,15 @@ start_test(scenario={
 
 **Rule names matter:** the harness matches `rule` exactly — an unknown name is a silent no-op (verification appears to pass while nothing is checked). See `./../init-project/reference/testing-patterns.md` for the canonical rule list. `no_fatal_errors` is a marker for process-level crash detection verified externally (crash kills the engine before the harness could check) — the other invariants do the in-run work.
 
+**Schema pre-flight (mandatory before the first `start_test`):** run
+`godot_validate` on the assembled scenario BEFORE launching the engine.
+Validation is cheap (~instant, no boot); a gauntlet run is expensive
+(15s+ of input simulation plus teardown). Every malformed entry —
+`checks` items missing `type`, custom invariants with a bad `path`
+shape — surfaces as `Invalid schema`/`Invalid checks` from the harness
+itself, only AFTER the engine booted and the run started (wt13: 7 such
+errors, each costing a boot-cycle). Validate, fix, THEN launch.
+
 ### Step 2: Get structured report
 
 ```gdscript

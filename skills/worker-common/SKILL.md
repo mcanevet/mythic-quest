@@ -73,6 +73,16 @@ refusal is deterministic, not transient: do NOT retry or use --force.
 Either close the children first or report
 `⛔ BLOCKED: open children prevent close` with the child IDs.
 
+## Pre-edit check (one grep beats two refused edits)
+
+Before `edit`, `grep -n <anchor> <file>` the unique line you're about to
+match — confirm exactly one hit. The two edit refusals (oldString not
+found; multiple matches) are stale-context symptoms: your snapshot of
+the file predates a sibling's mutation. Grep, adjust the anchor with
+surrounding lines, edit once. Each refusal re-feeds the whole context
+stack, so a 1-second grep pays for itself the first time it fires
+(wt13: 4 refused edits across poppy/stephen sessions).
+
 ## Self-created strays (one move, no deliberation)
 
 A file YOU mistakenly created (wrong path, aborted scaffold, duplicated
