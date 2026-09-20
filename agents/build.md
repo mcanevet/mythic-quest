@@ -67,14 +67,26 @@ Session Contract in AGENTS.md, with this role split:
  - **Groom backlog** (ONE batched call per wave, never serial per-bead
    updates — measured wt13: 16 `--set-labels` + 16 `--assignee` calls,
    ~130s of serial bookkeeping that `bd batch` collapses into one
-   transaction and one commit): for each unassigned bead (raw-backlog
-   children AND gate-discovered bugs), decide routing:
-   - Assignee: poppy (implementation), phil (materials), stephen (animation),
-     gustavo (audio), rachel (QA), ian (vision), pootie (consumer)
-   - Label: `skill:<skill-name>` (create-entity, create-ui, create-level,
-     apply-material, apply-animation, apply-audio, playtest)
-   - Description (in the dispatch prompt, not per-bead updates — batch
-     can't set descriptions, so route the skill verbally)
+  transaction and one commit): for each unassigned bead (raw-backlog
+  children AND gate-discovered bugs), decide routing:
+  - Assignee: poppy (implementation), phil (materials), stephen (animation),
+    gustavo (audio), rachel (QA), ian (vision), pootie (consumer)
+  - Label: `skill:<skill-name>` (create-entity, create-ui, create-level,
+    apply-material, apply-animation, apply-audio, playtest)
+  - Description (in the dispatch prompt, not per-bead updates — batch
+    can't set descriptions, so route the skill verbally)
+  **Grooming is a standing loop, not a one-shot step (wt14 postmortem)**:
+  whenever `bd swarm status` (or `bd list`) shows UNASSIGNED bug beads,
+  you are mid-grooming-again — route them exactly as the first pass
+  (assign + reparent under dev-loop + dispatch). The formula's DAG is
+  linear (a `needs` cycle would deadlock); the README's repair loop is
+  implemented by YOUR re-grooming whenever a gate spawns unassigned
+  children. A gate with `waits_for="all-children"` blocks until its
+  children close — reparenting a discovered bug OUT of the gate and into
+  dev-loop is what re-arms the gate once the fix lands. If you leave
+  gate children unrouted, the gate can never satisfy and the run stalls
+  (observed wt14: 8 QA-discovered bugs sat unassigned while vision-gate
+  waited).
    - **Selection discipline**: dispatch order is **first-ready by
      (priority, creation)** — highest priority, oldest first. No skipping
      ahead to "interesting" beads, no reordering by convenience; optimizers
