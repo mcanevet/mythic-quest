@@ -57,6 +57,11 @@ Violations are aggregated per `rule|node` in `_violation_counts`;
 Rule types: `no_fatal_errors`, `nodes_finite`, `nodes_in_bounds`
 (x/y[/z] min/max), `no_null_refs`, `frame_time_p99_below(ms)`,
 `fps_floor(n)`, `custom` (path/check/value[, max_delta_per_sec]).
+`nodes_in_bounds` targets enforce EXISTENCE — a missing node path or
+empty group is a violation, not a green no-op. Custom invariants also
+take `after_s`/`before_s` (time window, seconds from scenario start)
+and scenarios take `setup.calls` ([{path, method, args}] invoked before
+the bot starts — JSON-side game-state reset).
 
 Type rule: `below`/`above` need numerics; bools/strings need `equals`
 (rejected at load otherwise). Counters need `max_delta_per_sec`.

@@ -539,15 +539,26 @@ func _check_bounds(rule_name: String, rule: Dictionary):
 		# actually leave the play area.
 		_walk_bounds_gameplay(root, rule_name, min_x, max_x, min_y, max_y, min_z, max_z)
 	else:
-		# Explicit targets: node paths or "group:<name>" — opt-in exact checking
+		# Explicit targets: node paths or "group:<name>" — opt-in exact checking.
+		# Existence is part of the contract: a vanished target checks ZERO nodes
+		# and would otherwise pass green (wt13: paddle absent from the shipped
+		# scene while every bounds invariant stayed satisfied — empty-target
+		# no-ops laundered a missing gameplay node through all three gates).
 		for target in targets:
 			if typeof(target) == TYPE_STRING and target.begins_with("group:"):
-				for n in get_tree().get_nodes_in_group(target.substr(6)):
+				var members = get_tree().get_nodes_in_group(target.substr(6))
+				if members.is_empty():
+					_report_violation(rule_name, target,
+						"Target group '%s' has no members — expected at least one node (missing gameplay object?)" % target.substr(6))
+				for n in members:
 					_check_bounds_node(n, rule_name, min_x, max_x, min_y, max_y, min_z, max_z)
 			elif typeof(target) == TYPE_STRING:
 				var n = root.get_node_or_null(NodePath(String(target)))
 				if n:
 					_check_bounds_node(n, rule_name, min_x, max_x, min_y, max_y, min_z, max_z)
+				else:
+					_report_violation(rule_name, String(target),
+						"Target node '%s' not found — expected node missing from the scene (missing gameplay object?)" % String(target))
 
 func _is_gameplay_bounds_node(node: Node) -> bool:
 	return node is PhysicsBody2D or node is PhysicsBody3D \
