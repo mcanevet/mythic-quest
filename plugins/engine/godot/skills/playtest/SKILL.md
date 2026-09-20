@@ -218,7 +218,7 @@ These run **once per game** (after all tasks complete), not per task — not bef
 - **vision** — creative-alignment check: 90s pursuit-bot observation, 6-8 evenly spaced screenshots (`responseMode: "preview"`) analyzed with the template above, rate each vision element ✅/⚠️/❌.
 - **critique** — player-experience evaluation: the executing agent launches the game and drives it with **their own simulated inputs** (no scenario harness, no bots — `Input.is_action_pressed`-style polled controls are the reliably drivable pattern; see gotcha below), playing at a natural consumer pace for roughly 2-3 minutes; screenshots at moments of the agent's choosing; first-person present-tense narration grounded in captures; per the executing agent's role, README.md may be the only context consulted — never sources.
 
-Full workflows, scenario configs, and report templates: [reference/full-modes.md](reference/full-modes.md).
+Full workflows, scenario configs, and report templates: [reference/full-modes.md](reference/full-modes.md). Harness API cheat-sheet (symbols, report shape, path resolution — read instead of test_player.gd): [reference/harness-card.md](reference/harness-card.md).
 
 **Delta-verify (post-fix spot-check):** When re-verifying a *single* fix (bead title contains "fix" or "repair"), extract the affected invariant names from the bead description or the fix's commit message, then run a **minimal scenario** targeting only those invariants (15-30s duration, 3-5 invariants max). Do NOT re-run the full functional gauntlet — that's the qa-gate owner's job (rachel) on the *final* release chain. Delta-verify eliminates the verify→fix→re-verify round-trip (wt13: 60m wasted across 6 sessions).
 
