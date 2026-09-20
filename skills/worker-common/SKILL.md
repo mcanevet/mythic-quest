@@ -152,5 +152,10 @@ python3 -c …` pipe is denied as a whole and wastes the turn.
   verification batch.
 - **Verification workers** (playtest): run the project, execute test
   scenarios, report results. Only verification workers hold the runtime.
+  Before your first probe/input/state-read on the running engine, read the
+  engine plugin's live-engine-driving reference (playtest skill,
+  `reference/live-engine-driving.md`) — it fixes the channel for each
+  need (scenario vs probe vs simulate_input vs screenshot) and its facts
+  were each re-derived at 10-60 min cost by specialists who lacked it.
 - This separation enables parallel mutation dispatch on disjoint file
   scopes; verification runs after mutations complete.

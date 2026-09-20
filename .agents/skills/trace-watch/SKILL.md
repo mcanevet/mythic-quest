@@ -115,13 +115,51 @@ question (cost, pacing, routing).
 **Order of operations — mechanical first, judgment second:**
 
 ```bash
-python3 .agents/skills/trace-watch/scripts/scan.py <sandbox-name>        # signals
-python3 .agents/skills/trace-watch/scripts/scan.py <sandbox-name> --perf # waste
+python3 .agents/skills/trace-watch/scripts/scan.py <sandbox-name>           # signals
+python3 .agents/skills/trace-watch/scripts/scan.py <sandbox-name> --perf    # waste
+python3 .agents/skills/trace-watch/scripts/scan.py <sandbox-name> --deep    # reasoning-lens
+python3 .agents/skills/trace-watch/scripts/scan.py <sandbox-name> --latency # turn economy
 ```
 
-Read both scanner outputs first. Then apply the judgment lenses below by
+Read the scanner outputs first. Then apply the judgment lenses below by
 reading the flagged sessions — they need interpretation the scanner
 can't do.
+
+### Scanner modes
+
+- **default** — claim audit, real denials (echo-filtered), improvisation
+  language, error-shaped outputs. Correctness signals.
+- **--perf** — per-session wall/tool-time/calls/fails, top failure
+  signatures (same error ≥2× = corpus gap), duplicate reads, giant outputs.
+- **--deep** — reasoning-lens: deliberation-spiral ratio per session
+  (hedging-marker density in reasoning parts ÷ tool calls; ≥0.5 = review
+  the session by hand), probe-script repetition (same normalized
+  `run_script` head ≥3× = should have been a TestPlayer scenario), error
+  signatures shared across ≥2 agents (= one missing artifact or upstream
+  defect covering several sessions), engine relaunch count.
+- **--latency** — turn economy: wall vs tool-time vs reasoning-duration vs
+  inter-tool gap decomposition (wt12 lesson: wall time is ~model latency ×
+  turns — tools are nearly free; attacks on turn count are where the money
+  is); duplicate identical calls; orchestrator bd-admin:dispatch ratio
+  (caveat: genesis-style ledger AUTHORING — `bd create` of the subtask
+  backlog — is legitimate work, only routing/polling chatter is waste);
+  `godot_stop_project` failure rate; per-skill payload census (>10kB/load
+  = split candidate); cross-session file-read overlap (≥3 agents read the
+  same file = dispatch prompts lack a project map); per-session token
+  decomposition (input, cache-read, peak-step context — peak in the tens
+  of k = context pollution, bead tek); wave-parallelism matrix (edit-set
+  disjointness between agents — disjoint pairs could have run concurrently,
+  overlapping pairs justify serialization; bead hbm).
+
+### Deterministic vs semantic
+
+All four scanner modes are **deterministic** — regex classifiers, gap
+arithmetic, call counting. They reliably produce *candidates*; they cannot
+judge meaning. Semantic analysis (did the agent actually conclude the
+right thing? was the improvisation justified? is this a test-config
+defect?) is the human/subagent judgment pass over flagged sessions —
+everything in the checklists below. Every scanner hit is a question, not
+a finding; the WHAT/WHY/HOW triple requires reading the trace.
 
 ### Per-specialist checklist (correctness lens)
 

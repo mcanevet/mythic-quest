@@ -1,5 +1,11 @@
 # Playtest gotchas and edge cases
 
+> ⚡ **Read `live-engine-driving.md` first (same directory).** It is the
+> canonical channel-choice reference — scenario vs probe vs simulate_input
+> vs screenshot — distilled from three specialists each re-deriving it at
+> 10-60 min cost. The gotchas below cover failure modes; the driving doc
+> covers what to reach for in the first place.
+
 > ⚠️ **If `godot-mcp-runtime:run_project` fails** (bridge timeout, "did not respond", or "process exited"): **Do NOT retry immediately.** Follow the run-recovery procedure in `../../create-entity/reference/mcp-patterns.md` (_Error Recovery Pattern_): read `godot-mcp-runtime:get_debug_output()` first, kill and recycle the port, fix the root cause, then retry once. If it fails again with the same error, **STOP** and report to the caller: `⛔ BLOCKED: runtime phase failed after sanctioned recovery` — do not infinite loop, and **do not improvise workarounds** (self-launched Godot, `attach_project`, custom test hooks, shell-based runners). Happy-path-only: if the sanctioned path cannot verify, the result is a BLOCKED report, not an invented alternative.
 
 > ⚠️ **Engine-unresponsive signature (read before any run_script retry):** if `get_debug_output()` succeeds while a **trivial** `run_script` probe (`return {"ok": true}`) times out — and this persists across an engine restart — the engine is not servicing RPC. Likely root cause observed once in production: **host memory pressure** (macOS suspends the engine process; a suspended engine keeps its socket bound and stdio readable but never services calls — restarting cannot fix a starved host). The per-call error "Is the game running?" is misleading: the game IS running. Cap: ONE restart cycle + one TestPlayer-autoload-removal try, 5-minute cumulative timeout budget per phase, then `⛔ BLOCKED: engine unresponsive …` (full procedure and rationale in `../create-entity/reference/mcp-patterns.md`, _Engine/transport unresponsive_). An agent that ignored this budget spent 4h58m / 5.6M tokens in a timeout ladder producing zero forward progress.

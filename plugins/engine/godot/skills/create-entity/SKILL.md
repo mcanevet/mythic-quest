@@ -38,7 +38,7 @@ Creates entity scenes and scripts:
 
 ## Gotchas
 
-Empirically observed godot-mcp-runtime schema quirks. The full annotated failure list with evidence citations lives in [reference/gotchas.md](reference/gotchas.md). Verify each before closing a task:
+Empirically observed godot-mcp-runtime schema quirks. The full annotated failure list with evidence citations lives in [reference/gotchas.md](reference/gotchas.md). Before driving a RUNNING engine (probes, input, state reads), read [the playtest live-engine-driving reference](../playtest/reference/live-engine-driving.md) — channel choices (scenario vs probe vs simulate_input vs screenshot) that every specialist needs. Verify each before closing a task:
 
 - **Colors**: pass `{r, g, b, a}` objects with floats 0–1, not hex strings. `"#1b2a41"` fails; use `{r: 27/255, g: 42/255, b: 65/255, a: 1}`.
 - **Scripts**: pass plain `res://` path strings (e.g. `"res://scripts/station.gd"`), not nested objects.
