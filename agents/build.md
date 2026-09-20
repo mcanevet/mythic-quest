@@ -76,6 +76,15 @@ Session Contract in AGENTS.md, with this role split:
     apply-material, apply-animation, apply-audio, playtest)
   - Description (in the dispatch prompt, not per-bead updates — batch
     can't set descriptions, so route the skill verbally)
+  - **Gate independence rule (zx6)**: the gate agent that DISCOVERED a
+    bug must not be assigned to FIX it (a verifier closing its own
+    findings weakens the gate; wt14: rachel spent 12m closing her own
+    scenario-defect findings). Exceptions: (a) trivial metadata fixes
+    (a typo in a scenario JSON the gate agent itself authored); (b)
+    harness defects whose fix is editing the gate agent's own test
+    artifacts. When in doubt, route to the owning specialist —
+    gate-found GAME bugs always go to poppy/specialists, never the
+    gate agent that found them.
   **Grooming is a standing loop, not a one-shot step (wt14 postmortem)**:
   whenever `bd swarm status` (or `bd list`) shows UNASSIGNED bug beads,
   you are mid-grooming-again — route them exactly as the first pass
