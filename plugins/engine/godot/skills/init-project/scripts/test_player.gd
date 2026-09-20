@@ -101,14 +101,10 @@ func start_test(scenario: Dictionary) -> Dictionary:
 	# can detect it through input injection alone (observed 2026-09-17,
 	# walkthrough7 RallyWall: move_left/move_right defined with no key
 	# events; paddle responded to every synthetic probe, real keyboard dead).
-	for action in _input_actions:
-		if action.begins_with("ui_"):
-			continue
-		var events := InputMap.action_get_events(action)
-		if events.is_empty():
-			_report_violation("unbound_action", "/root/InputMap/%s" % action,
-				"InputMap action '%s' is defined but has NO bound events — real keyboard/gamepad input can never trigger it. Action-press and synthetic-key probes both bypass the binding table, so this bug is undetectable by input injection. Bind at least one event (InputMap.action_add_event or [input] section in project.godot)." % action)
-
+	# Populate the action list BEFORE the unbound check below reads it —
+	# previously the loop ran first on an empty [] (initial value), so the
+	# FIRST start_test in a process silently skipped the unbound_action
+	# check and only a second run saw the actions (9zx).
 	_input_actions = InputMap.get_actions()
 	_input_actions.erase("ui_accept")
 	_input_actions.erase("ui_select")
@@ -123,6 +119,14 @@ func start_test(scenario: Dictionary) -> Dictionary:
 	_input_actions.erase("ui_page_down")
 	_input_actions.erase("ui_home")
 	_input_actions.erase("ui_end")
+	
+	for action in _input_actions:
+		if action.begins_with("ui_"):
+			continue  # built-in UI actions vary unbound across platforms (e.g. ui_accessibility_*) — not game actions
+		var events := InputMap.action_get_events(action)
+		if events.is_empty():
+			_report_violation("unbound_action", "/root/InputMap/%s" % action,
+				"InputMap action '%s' is defined but has NO bound events — real keyboard/gamepad input can never trigger it. Action-press and synthetic-key probes both bypass the binding table, so this bug is undetectable by input injection. Bind at least one event (InputMap.action_add_event or [input] section in project.godot)." % action)
 	
 	var bot_cfg = scenario.get("bot", {})
 	if bot_cfg.get("type") == "nav_agent":
