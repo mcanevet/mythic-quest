@@ -112,6 +112,14 @@ directories implicitly: to create `tests/scenarios/`, write a file
 (e.g. a `.gitkeep` or placeholder README) at the target path. Never
 burn a turn probing for a shell workaround.
 
+## Deleting files (rm is not granted — overwrite instead)
+
+`bash rm` is also denied. Do NOT retry it. The sanctioned pattern is
+**overwrite, never delete**: write the replacement content directly
+over the old file. If a file must cease to exist (e.g. a stale scene
+reference), that is an orchestrator/human decision — report it, don't
+improvise a shell workaround.
+
 ## Self-verify before close (fixers especially)
 
 An unvalidated fix bounces back as a re-verify session — cold start +
