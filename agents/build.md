@@ -27,6 +27,7 @@ permission:
     "jq *": allow   # build: read-only bd JSON shaping; safe downstream pipe
     "head *": allow # build: read-only output trimming; safe downstream pipe
     "grep *": allow # build: read-only output filtering; safe downstream pipe
+    "for *": allow  # build: read-only loops over bd/jq/grep (wt14: 120 denials on 'for i in ...' reparent loops; safe—body commands already whitelisted)
   task:
     "*": deny        # build: anti-recursion baseline
     poppy: allow     # build: delegate implementation
