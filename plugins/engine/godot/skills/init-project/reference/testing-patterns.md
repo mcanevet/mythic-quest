@@ -169,6 +169,31 @@ The report includes these metrics collected every physics tick:
 
 ---
 
+## Canonical Functional Gauntlet Template
+
+A pre-authored baseline gauntlet lives at
+[functional-gauntlet-scenario.json](functional-gauntlet-scenario.json).
+The QA specialist starts from it (copy into the sandbox's
+`tests/scenarios/functional_gauntlet.json`), adjusts `nodes_in_bounds`
+extents to the game's viewport, and adds one `custom` invariant per
+game-economy counter (with `max_delta_per_sec` sized to a plausible human
+ceiling) and per win/lose state. This baseline exists so QA never
+authors a gauntlet from a blank page (wt14: rachel wrote ~20 ad-hoc
+probe scripts instead of extending one scenario).
+
+Customization checklist (in order):
+1. Viewport bounds: set `min/max_x/y` to the game's actual resolution.
+2. Economy counters: `{"name": "<counter>_rate_sane", "rule": "custom",
+   "path": "/root/<Game>/<Manager>:<counter>", "check": "above",
+   "value": <floor>, "max_delta_per_sec": <human ceiling>}`.
+3. Terminal states: `{"name": "<state>_reachable", "rule": "custom",
+   "path": "/root/<Game>:<state>", "check": "equals", "value": true}`
+   — verify win/lose states flip, not just that no-crash holds.
+4. Entities in `test_exposed` group expose `get_test_state()` keys —
+   add per-entity invariants from those keys rather than probing.
+
+---
+
 ## Determinism Guarantee
 
 The harness runs on `_physics_process()`, not `_process()`. This ensures:

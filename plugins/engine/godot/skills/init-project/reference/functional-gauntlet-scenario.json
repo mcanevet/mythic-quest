@@ -1,0 +1,16 @@
+{
+  "scenario_id": "functional_gauntlet",
+  "duration_s": 30,
+  "bot": {
+    "type": "chaos",
+    "seed": 42,
+    "input_rate_hz": 10
+  },
+  "invariants": [
+    {"name": "no_crash", "rule": "no_fatal_errors"},
+    {"name": "no_physics_blowup", "rule": "nodes_finite"},
+    {"name": "stay_in_play_area", "rule": "nodes_in_bounds", "min_x": 0, "max_x": 960, "min_y": 0, "max_y": 540},
+    {"name": "fps_stable", "rule": "frame_time_p99_below", "value": 33.3},
+    {"name": "min_30fps", "rule": "fps_floor", "value": 30}
+  ]
+}
