@@ -24,6 +24,11 @@ permission:
     "bd dep add*": allow                    # stephen: wire escalation blockers
     "bd children*": allow                   # stephen: pre-close check (worker-common)
     "jq *": allow   # stephen: read-only bd JSON shaping; safe downstream pipe
+    "cat *": allow  # read-only file dump; loop/chain segment
+    "ls *": allow   # read-only listing; loop/chain segment
+    "ls": allow     # bare ls in chains (segment matcher splits 'ls; ...')
+    "awk *": allow  # read-only text extraction
+    "sed -n *": allow # read-only line-range printing; safe downstream pipe
     "head *": allow # stephen: read-only output trimming; safe downstream pipe
     "grep *": allow # stephen: read-only output filtering; safe downstream pipe
     "bd create*": allow                    # stephen: discover animation bugs

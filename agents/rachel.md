@@ -23,6 +23,12 @@ permission:
     "jq *": allow   # rachel: read-only bd JSON shaping; safe downstream pipe
     "head *": allow # rachel: read-only output trimming; safe downstream pipe
     "grep *": allow # rachel: read-only output filtering; safe downstream pipe
+    "cat *": allow  # rachel: read-only file dump; loop/chain segment (wt13: for-loop over scenario files denied 2x)
+    "for *": allow  # rachel: read-only loops over scenario/script files — body verbs (cat/awk/grep/jq) each match their own grants; bash loop still visible to one-pass discipline (wt13: get_test_state sweep denied whole-command)
+    "ls *": allow   # rachel: read-only listing; loop/chain segment (wt13: ls segments in chains denied 3x)
+    "ls": allow     # rachel: bare ls in chains (segment matcher splits 'ls; bd ...' — bare 'ls' matched nothing)
+    "awk *": allow  # rachel: read-only text extraction from scripts/scenarios (wt13: get_test_state sweep denied)
+    "sed -n *": allow # rachel: read-only line-range printing (cat -A | sed chains)
     "bd ready*": allow
     "bd show*": allow
     "bd list*": allow

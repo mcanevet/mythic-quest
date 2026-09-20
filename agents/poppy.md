@@ -22,6 +22,8 @@ permission:
     "**/*.import": allow
     ".gitignore": allow
     "**/.gitignore": allow
+    ".gitkeep": allow   # keep empty scenario dirs in git (wt13: denied, agent improvised a JSON placeholder)
+    "**/.gitkeep": allow
     "**/*.tscn": deny
     ".opencode/**": deny
     "**/.opencode/**": deny
@@ -53,6 +55,11 @@ permission:
     "*scripts/*.sh*": allow  # poppy: run project helper scripts (setup, validate)
     "*scripts/*.py*": allow  # poppy: run python helpers (generate levels, process assets)
     "jq *": allow   # poppy: read-only bd JSON shaping; safe downstream pipe
+    "cat *": allow  # read-only file dump; loop/chain segment
+    "ls *": allow   # read-only listing; loop/chain segment
+    "ls": allow     # bare ls in chains (segment matcher splits 'ls; ...')
+    "awk *": allow  # read-only text extraction
+    "sed -n *": allow # read-only line-range printing; safe downstream pipe
     "head *": allow # poppy: read-only output trimming; safe downstream pipe
     "grep *": allow # poppy: read-only output filtering; safe downstream pipe
     "bd ready --json*": allow  # find work; also supports --assignee filtering

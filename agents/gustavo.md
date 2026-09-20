@@ -28,6 +28,11 @@ permission:
     "bd dep add*": allow                     # gustavo: wire escalation blockers (worker-common escalation contract)
     "bd children*": allow                     # gustavo: pre-close check (worker-common)
     "jq *": allow   # gustavo: read-only bd JSON shaping; safe downstream pipe
+    "cat *": allow  # read-only file dump; loop/chain segment
+    "ls *": allow   # read-only listing; loop/chain segment
+    "ls": allow     # bare ls in chains (segment matcher splits 'ls; ...')
+    "awk *": allow  # read-only text extraction
+    "sed -n *": allow # read-only line-range printing; safe downstream pipe
     "head *": allow # gustavo: read-only output trimming; safe downstream pipe
     "grep *": allow # gustavo: read-only output filtering; safe downstream pipe
     "bd create*": allow                     # gustavo: discover audio bugs

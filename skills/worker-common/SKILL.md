@@ -24,6 +24,12 @@ before the flag was adopted).
 - Claim beads assigned to your role only: `bd ready --assignee <role>`
 - Claim one bead per bd invocation — chained `&&` commands stop at the
   first error and leave the second bead unclaimed.
+- **Heartbeat on long beads**: a claim's lease expires after 5 minutes
+  (default TTL); `bd reclaim` can revert it after 10. If your bead runs
+  long (any verification/gauntlet work), refresh between work steps —
+  `bd heartbeat <id>` — roughly every few minutes of elapsed work. Cheap
+  insurance against a mid-flight reclaim causing double-dispatch; no-op
+  on short beads.
 - **If your claim is refused with "already claimed: assigned to \"build\"/
   another dispatcher**": the orchestrator routed the bead to you without
   releasing a claim — this is expected, not a blocker. Proceed with the
@@ -111,10 +117,12 @@ and for `show` extract only the fields you need (`.description`,
 project it unless you need full descriptions.
 
 Piped bash commands are permission-checked **per pipeline segment**
-(opencode splits the command into segments and matches each against the
-allow rules independently). `jq`, `head`, and `grep` are granted as
-downstream segments; `python3 -c`, `awk`, `sed` are not — a `bd … |
-python3 -c …` pipe is denied as a whole and wastes the turn.
+(opencode splits the command into segments and matches each against
+the allow rules independently). Read-only text segments granted to
+every worker role: `jq`, `head`, `grep`, `cat`, `ls`, `awk`,
+`sed -n`; `python3 -c` is not — a `bd … | python3 -c …` pipe is denied
+as a whole and wastes the turn. (rachel additionally holds `for *` for
+read-only scenario sweeps — loop bodies still need their own grants.)
 
 ## Reporting
 
@@ -125,8 +133,24 @@ python3 -c …` pipe is denied as a whole and wastes the turn.
 ## Context economy (measured waste, from session traces)
 
 - **Read a file once, fully.** Shifted-offset re-reads of the same file
-  burned 5× reads on one scene in a single session. If the file changed
-  under you (rare), re-read then — not speculatively.
+  burned 5× reads on one scene in a single session. If you need a symbol
+  you already read, grep it — a targeted `grep -n <symbol>` is one cheap
+  call; a re-read re-pays the whole payload. Re-read only if the file
+  demonstrably changed under you (post-mutation read-backs), not to
+  "refresh memory".
+
+## Output economy (30kB reads are a turn-cost multiplier)
+
+Tool outputs persist in context forever. The largest reads observed
+(30kB) were whole-file dumps where the agent needed one section:
+
+- **Range-read, don't full-read**: use the read tool's offset/limit to
+  fetch the 50 lines around your target symbol, not the file. Full read
+  only for files you will substantially edit.
+- **Pipe bd JSON through jq before it lands** (see the jq rule above) —
+  unshaped `bd list --json` is 10-60kB.
+- **Scene trees**: prefer a scoped `get_scene_tree` (subtree/path filter)
+  over the full-tree dump when you only need one branch.
 - **Batch mutations.** Prefer one engine batch scene-operations call over many
   single-property edits (14 separate edits observed on one bead).
 - **Validate once, at the end of a logical unit** — not after every edit
