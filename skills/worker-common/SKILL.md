@@ -14,6 +14,8 @@ Your harness actor identity defaults to the **human user**, not your
 role. Every actor-identifying bd write must pass the flag:
 
 - Claim: `bd --actor <role> update <id> --claim`
+- Claim + reparent (when routed from raw-backlog): `bd --actor <role>
+  update <id> --claim --parent <dev-loop-id>` (one call, atomic)
 - Close: `bd close <id> --actor <role> --reason ...`
 
 Without `--actor`, claims on beads assigned to your role are refused
