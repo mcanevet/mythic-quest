@@ -64,6 +64,20 @@ deterministic refusal: close them first or report
 edit refusals (not-found, multi-match) are stale-context symptoms
 (wt13: 4); each re-feeds the whole stack. One grep pays for itself.
 
+## GDScript type annotation discipline (wt14: 111 infer-errors)
+
+Godot's GDScript cannot infer types from Variant-returning calls
+(`dict.get()`, `node.call()`, `get_meta()`, `get_node()`). Always use
+explicit type annotations for locals derived from such calls:
+
+- ❌ `var x := dict.get("key", 0)` → "Cannot infer the type of x"
+- ✅ `var x: int = dict.get("key", 0)`
+- ✅ `var x: Node = get_node("path")` (or untyped `var x = ...` if you don't need type safety)
+
+This is the single largest compile-error class in wt14 (111 occurrences
+in run_script inputs, 4 runtime errors). The fix is a one-line habit
+change; apply it to every probe script you author.
+
 ## Self-verify before close (fixers especially)
 
 An unvalidated fix bounces back as a re-verify session — cold start +
