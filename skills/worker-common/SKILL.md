@@ -104,6 +104,14 @@ harmless noise, not a failure. The denial happens at the opencode
 platform layer, not the tool. Report it to the human if it blocks
 progress; the fix belongs in opencode's result classification.
 
+## Creating directories (mkdir is not granted)
+
+`bash mkdir` is not in the worker permission stencil — a `mkdir -p`
+call is denied. Do NOT retry it. The `write` tool creates missing parent
+directories implicitly: to create `tests/scenarios/`, write a file
+(e.g. a `.gitkeep` or placeholder README) at the target path. Never
+burn a turn probing for a shell workaround.
+
 ## Self-verify before close (fixers especially)
 
 An unvalidated fix bounces back as a re-verify session — cold start +
