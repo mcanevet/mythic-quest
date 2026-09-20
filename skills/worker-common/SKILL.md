@@ -138,21 +138,12 @@ python3 -c …` pipe is denied as a whole and wastes the turn.
   file-map snapshot (paths, purposes, key node paths). Use it for
   orientation; only read a file when you will EDIT it or need its exact
   contents — not to learn what exists.
-- **Testing-patterns cheat sheet** (observed waste: 2 full 22k-char reads
-  of the same reference in one worker session):
-  - **Bot types**: chaos (random inputs), pursuit (follows target), replay
-    (replays recorded path), nav_agent (pathfinding)
-  - **Built-in invariants**: `no_fatal_errors`, `nodes_finite`,
-    `nodes_in_bounds(min_x/max_x/min_y/max_y)`, `no_null_refs`,
-    `frame_time_p99_below(33.3ms)`, `fps_floor(30)`
-  - **Custom invariants**: `path + check + value` where path is
-    `_meta.<field>` (harness metric) or `/root/<node>:<key>` (game state)
-  - **Rate-of-change guard**: add `max_delta_per_sec` to every counter
-    (score, currency, ammo) sized to a plausible human ceiling — catches
-    re-firing handler bugs that point-in-time checks miss
-  - Full reference: the engine plugin's testing-patterns doc
-    (`plugins/engine/<engine>/skills/init-project/reference/testing-patterns.md`
-    — locate it under the mounted engine plugin)
+- **Scenario-testing cheat sheet**: bots (chaos/pursuit/replay/nav_agent),
+  built-in invariants (`no_fatal_errors`, `nodes_finite`, `nodes_in_bounds`,
+  `no_null_refs`, `frame_time_p99_below`, `fps_floor`), custom invariants
+  (`path + check + value`), rate-of-change guards — condensed details and
+  the type rules in [reference.md](reference.md) (read it once when
+  authoring scenarios; do not re-read per bead).
 - **Batch-debug: one run per fix round** (same-session tool-call telemetry
   measured: 18 script-run calls in a single session, each failure re-feeding a tall
   context stack). Write one test script that asserts ALL outstanding

@@ -31,7 +31,7 @@ Six execution modes (perf, fast-verify, scene-verify, functional, vision, critiq
 **Workflow**
 1. Ensure engine running (same as common workflow step 2)
 2. Start profiler: `godot-mcp-runtime:start_profiler(projectPath=".")`
-3. Run gameplay scenario (60s recommended): `start_test(scenario={...})`
+3. Run gameplay scenario (60s recommended): `start_test(scenario={...})`. A returned `{"status": "rejected", "error": ...}` means the SCENARIO CONFIG is defective (e.g. bool value with a numeric `below`/`above` check) — that is a test-harness defect, not a game bug: fix the scenario JSON (or file a bug bead routing it to dev per your agent profile), do not run the scenario.
 4. Stop profiler + capture: `godot-mcp-runtime:stop_profiler(projectPath=".")` → returns `{frameMs, worstFrame, perFunctionBreakdown}`
 5. Assert invariants:
    - `frameMs < 16.7` (60fps target)
@@ -93,7 +93,7 @@ The framework uses genre-agnostic bots (chaos, pursuit, replay, nav_agent) and i
    - The engine has crashed or an unrecovered error occurred
    When in doubt whether a file changed: diff mtimes or just restart — a rebooted engine costs seconds; a stale-bytecode false verdict costs a REWORK cycle.
 
-> **Gotchas and edge cases live in [reference/gotchas.md](reference/gotchas.md)** — read them BEFORE your first `run_project` retry, before any run_script debug loop, before triaging a violation, and before any critique-mode "unresponsive controls" verdict. They cover: run-recovery procedure (never blind-retry), engine-unresponsive signature + 5-min budget cap, never-pkill rule, background-frame throttling and state-advance traps, synthetic-input blind spots (event handlers, InputMap binding table), script-staleness under a live engine, probe budget + artifact ledger, and empirical-first triage.
+> **Gotchas and edge cases live in [reference/gotchas.md](reference/gotchas.md)** — read them BEFORE your first `run_project` retry, before any run_script debug loop, before triaging a violation, and before any critique-mode "unresponsive controls" verdict. They cover: run-recovery procedure (never blind-retry), engine-unresponsive signature + 5-min budget cap, never-pkill rule, background-frame throttling and state-advance traps, synthetic-input blind spots (event handlers, InputMap binding table), script-staleness under a live engine, probe budget + artifact ledger + compact probe returns, screenshots-vs-state-reads, and empirical-first triage.
 
 ---
 

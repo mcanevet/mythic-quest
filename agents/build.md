@@ -144,6 +144,18 @@ Session Contract in AGENTS.md, with this role split:
   scripts/scene subtrees. Serialize only when beads touch the same files
   — the engine plugin's shared_files list (project manifest, main scene,
   main script). Parallel dispatch respects the 2-bead hard cap per role.
+  **DISPATCH CONCURRENTLY, not serially** — a wave of aesthetic
+  specialists dispatched one-at-a-time wastes the whole point of the
+  split (observed: phil→stephen→gustavo ran serially at ~15.5m though
+  phil's edit set was fully disjoint from both; phil+gustavo concurrent
+  in an earlier run was clean). Default per-role ownership (for the
+  disjointness check — verify against the actual bead, don't trust the
+  default blindly): shader/material/visual roles own shaders and
+  cosmetic scene props; audio roles own audio scripts + autoload; juice/
+  animation roles own animation scripts. Two roles that both hook the
+  same game script (common: both patch <game-state>.gd for their hook)
+  must be serialized — check the hook-target list, not vibes. When
+  disjoint, fire all dispatches in ONE turn (parallel Task calls).
   **Bead-ID integrity** (observed incident):
   never hand-type bead IDs
   into dispatch prompts — a transposed ID sent poppy chasing closed beads

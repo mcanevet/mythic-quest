@@ -63,6 +63,12 @@ QA, vision, and acceptance specialists who didn't have this document.
    and panel visibility are deterministic via `get_node(...).text` /
    `run_script` state returns. Screenshot digit misreads ("2" vs "6") are
    expected — never reconcile a state discrepancy with more screenshots.
+   Division of labor: screenshots answer AESTHETICS and LAYOUT questions;
+   node text/getters answer STATE questions. A discrepancy between a
+   screenshot and a state read resolves in favor of the state read —
+   re-photographing to "double-check" a digit misread burns turns
+   resolving OCR noise (observed: multiple reconciliation detours in
+   consumer-acceptance and vision sessions).
 
 ## Stop and restart facts
 

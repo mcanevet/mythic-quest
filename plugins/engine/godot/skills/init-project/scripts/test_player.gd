@@ -39,6 +39,30 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func start_test(scenario: Dictionary) -> Dictionary:
+	# Load-time scenario schema check: a bool (or string) checked with
+	# below/above is a scenario-authoring defect — reject at load, never
+	# run 900 frames of guaranteed violations (observed: bools checked
+	# with numeric compares produced false-violation storms and were
+	# explained away in QA reports instead of being fixed).
+	for rule in scenario.get("invariants", []):
+		var rc = rule.get("check", "below")
+		if rc == "below" or rc == "above":
+			var v = rule.get("value", null)
+			if typeof(v) == TYPE_BOOL or typeof(v) == TYPE_STRING:
+				var vtype: String = "string"
+				if typeof(v) == TYPE_BOOL:
+					vtype = "bool"
+				return {
+					"status": "rejected",
+					"error": "Scenario invariant '%s' uses check='%s' with a %s value (%s) — use check:'equals' or a numeric threshold" % [
+						rule.get("name", rule.get("path", "?")), rc, vtype, str(v)]
+				}
+		elif rc != "equals":
+			return {
+				"status": "rejected",
+				"error": "Scenario invariant '%s' uses unknown check '%s' (below/above/equals)" % [
+					rule.get("name", rule.get("path", "?")), rc]
+			}
 	_scenario = scenario
 	_running = true
 	_frame_count = 0

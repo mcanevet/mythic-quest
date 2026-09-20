@@ -190,7 +190,12 @@ then.
 A run can pass every checklist point and still be 2× slower and 3× more
 expensive than it needs to be. Quantify per session —
 `wall / tool-time / calls / fails / duplicate-reads` — then attribute
-each finding to one category (attribution keeps fixes accountable):
+each finding to one category (attribution keeps fixes accountable).
+**Headline metrics for benchmark reports: per-session TURN COUNT and
+INPUT TOKENS** (from `--latency`) — wall time is almost entirely
+model-API latency between actions (rachel gauntlet: 29m wall, 144s
+tools), so turns are the cost lever, not tool speed. Evaluate corpus
+changes by delta in turns/spirals vs the prior run, not anecdotes.
 
 1. **Tool errors & retries** — failed calls; repeated identical
    signatures (same error ≥2× in a session = corpus gap, not bad luck:

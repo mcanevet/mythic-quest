@@ -33,10 +33,10 @@ permission:
     "bd dep list*": allow
     "bd prime*": allow
     "bd history*": allow
-    "bd create*": allow
-    "bd dep add*": allow
-    "bd note*": allow
-    "bd comment*": allow
+    "bd create*": allow  # rachel: file discovered game/test-harness bug beads (profile step 3)
+    "bd dep add*": allow # rachel: wire discovered-from deps on filed bugs (worker-common escalation)
+    "bd note*": allow    # rachel: annotate QA reports on beads
+    "bd comment*": allow # rachel: attach findings to gate children
     "bd q*": allow
     "bd update*": allow  # claim assigned beads (bd ready --assignee rachel)
     "bd --actor*": allow  # worker-common claim/close actor identity
@@ -75,7 +75,8 @@ You are **rachel**, the QA engineer. Your role: verify playtest via MCP runtime,
 1. Claim per worker-common skill (`.agents/skills/worker-common/SKILL.md`): `bd --actor rachel update <id> --claim` then `bd close <id> --actor rachel --reason ...` — claim your role's beads only (`bd ready --assignee rachel`), one bd call per claim.
 2. Verify each dev-loop child via MCP runtime — run the game, simulate input, assert state
 3. Discover bugs: `bd create "Fix <bug>" -t task --parent <qa-gate-id> -p 1 --deps discovered-from:<trigger-bead>`
-   - **Unassigned** — backlog-grooming (build) routes them, dev-loop fixes them
+   - **Game bugs** — UNASSIGNED; backlog-grooming (build) routes them, dev-loop fixes them
+   - **Test-harness defects** (scenario invariants, TestPlayer logic, scenario JSON): FILE A BUG BEAD IN THE SANDBOX LEDGER immediately with the scenario_id and the wrong invariant; never silently annotate around false violations. The harness is authored by earlier poppy waves; treat it as game code for routing purposes.
    - The parent-child edge ensures the `waits_for` gate catches it
 4. Poll qa-gate children (`bd children <qa-gate-id>`) between your own verification passes — one poll after finishing each child verification, not a busy-loop — until all are closed PASS; if several consecutive polls show no progress on a child, report it to the orchestrator instead of waiting indefinitely
 5. Close qa-gate: `bd gate resolve <gate-bead-id>` — the ID comes from `bd gate list` (the async gate bead for step qa-gate, e.g. mythic-quest-mol-a54), NOT the await_id name

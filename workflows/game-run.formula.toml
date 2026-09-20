@@ -45,7 +45,7 @@ type = "task"
 needs = ["backlog-grooming"]
 assignee = "poppy"
 waits_for = "all-children"
-description = "Poppy claims beads assigned to poppy. Each bead description includes 'Use skill: <skill-name>'. Inline playtest verification via MCP runtime. Discoveries spawn children here. HARD CAP: max 2 beads per delegation batch (orchestrator dispatches repeatedly as beads close). NOTE: orchestrator must copy bead IDs verbatim from bd output — never hand-type IDs into dispatch prompts."
+description = "Poppy claims beads assigned to poppy. Each bead description includes 'Use skill: <skill-name>'. Inline playtest verification via MCP runtime. Discoveries spawn children here. HARD CAP: max 2 beads per delegation batch (orchestrator dispatches repeatedly as beads close). Within a wave, orchestrator dispatches CONCURRENTLY when the beads' target file sets are disjoint (see the parallelism rule in the build profile). NOTE: orchestrator must copy bead IDs verbatim from bd output — never hand-type IDs into dispatch prompts."
 
 # Phase 3: QA Gate (rachel)
 [[steps]]
