@@ -33,7 +33,7 @@ Reference templates: [reference/project-godot-template.md](reference/project-god
 1. Create the layout (skip entries that already exist)
 2. Run the installer (idempotent):
    ```bash
-   ./scripts/install_test_player.sh <project_root>
+   .agents/plugins/engine/godot/skills/init-project/scripts/install_test_player.sh <project_root>
    ```
    This copies `scripts/test_player.gd` to `<project_root>/scripts/test_player.gd`
    but deliberately does NOT register the autoload — the playtest skill
@@ -41,7 +41,7 @@ Reference templates: [reference/project-godot-template.md](reference/project-god
 
 ## Done when
 
-`scripts/validate.sh` runs without errors AND `scripts/test_player.gd` exists
+`.agents/plugins/engine/godot/skills/init-project/scripts/validate.sh` runs without errors AND `scripts/test_player.gd` exists
 in the project root AND `tests/scenarios/` directory exists.
 
 ## Gotchas

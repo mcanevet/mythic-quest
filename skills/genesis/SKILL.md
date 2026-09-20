@@ -69,8 +69,10 @@ bd create "[Imperative title]" \
 Run the validation script before returning success:
 
 ```bash
-scripts/validate.sh
+.agents/skills/genesis/scripts/validate.sh
 ```
+
+Run this from the project root (your session CWD). NEVER construct `../` escapes or absolute paths to a parent repo — everything you need is inside the sandbox. If that invocation fails with "no such file", do not improvise path traversal; locate the script with `ls .agents/skills/genesis/scripts/`.
 
 Exit code must be 0. The script checks:
 - Beads ledger initialized (`bd list` succeeds)
@@ -87,4 +89,4 @@ If validation fails, fix the issues and re-run. Do not return success with a non
 - 10-20 raw task beads exist as children of the `raw-backlog` step
 - Every bead is unassigned and unrouted (no labels, no deps)
 - I have **not** groomed anything — assignment/routing is the orchestrator's job
-- `scripts/validate.sh` exits 0 (deterministic gate)
+- `.agents/skills/genesis/scripts/validate.sh` exits 0 (deterministic gate)

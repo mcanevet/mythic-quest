@@ -32,6 +32,6 @@ Creates UI scenes with Control-node hierarchy and a script:
 
 ## Done when
 
-Scene loads cleanly via `scripts/validate.sh <scene>` (in this skill — wraps
+Scene loads cleanly via `.agents/plugins/engine/godot/skills/create-ui/scripts/validate.sh <scene>` (wraps
 `godot --headless`) without errors, and buttons respond to
 `pressed` in the runtime bridge (input simulation or a smoke-script call).

@@ -80,13 +80,13 @@ canonical schema in [../init-project/reference/testing-patterns.md](../init-proj
 
 ## Done when
 
-`scripts/validate.sh <res://scenes/....tscn>` (in this skill) runs without
+`.agents/plugins/engine/godot/skills/create-entity/scripts/validate.sh <res://scenes/....tscn>` runs without
 errors — it wraps `godot --headless <scene> --quit-after 1` — AND test hooks
 respond AND the entity is integrated into its parent scene (an entity not
 in the scene tree is dead code — integrate via `add_node` under the
 project's Main scene at the plan-specified node path, then confirm via
 `get_scene_tree()` that it appears under its parent). Before runtime
-verification, also run `scripts/validate.sh` with **no argument** — the
+verification, also run `.agents/plugins/engine/godot/skills/create-entity/scripts/validate.sh` with **no argument** — the
 headless project-boot mode (legacy `headless_check.sh` equivalent) catches
 script parse errors across the whole project that single-scene loading
 misses. AND `tests/scenarios/<entity_name>.json` exists for interactive
