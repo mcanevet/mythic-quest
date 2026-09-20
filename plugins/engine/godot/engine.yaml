@@ -25,7 +25,7 @@ shared_files:
 # refused twice during poppy's runtime session).
 #
 # Upstream lifecycle (mcp.json):
-# - Pin `f582ade` on github.com/Erodenn/godot-mcp-runtime: all our PRs
+# - Pin `v3.8.0` on github.com/Erodenn/godot-mcp-runtime: all our PRs
 #   merged into upstream main (packed-array coercion #52; validate
 #   checks #54 + follow-ups; check_health #48 then superseded by the
 #   check_project rename; click_ui_element #47 superseded by Erodenn's
@@ -34,10 +34,13 @@ shared_files:
 #   (prepare script, ea75a0d-era fix retained upstream); npx smoke
 #   tested 2026-09-20. Includes maintainer release-review fixes
 #   (typed Array[T] silent-drop guard, batch-validate guards,
-#   check_project exit reporting). Not yet a tagged release (npm
-#   3.7.1 predates the merges) — retirement: when upstream tags
-#   >= v3.8 including
-#   these commits, re-pin to the tag or npm version.
+#   check_project exit reporting). Retired the "not yet a tagged
+#   release" caveat: upstream tagged v3.8.0 (be7e20f), which also
+#   includes the batch cold-import pre-pass fix (#60: path params
+#   normalized before classification; [IMPORT_NEEDED] marker disarmed
+#   after a save so a batch never replays over applied mutations;
+#   validate names the actual node type on mismatch). Re-pinned to
+#   the tag 2026-09-20.
 # - Upstream main also hardened the stop path (session auto-clear on
 #   engine exit; stop_project on a dead process now SUCCEEDS with
 #   alreadyExited and frees the slot — retires the 60b workaround
