@@ -79,6 +79,28 @@ func start_test(scenario: Dictionary) -> Dictionary:
 	_violation_counts.clear()
 	_held_inputs.clear()
 	_warned_test_paths.clear()  # nodes may exist next run even if absent now
+	
+	# Scenario-side game-state reset (setup.calls): a list of {path, method, args}
+	# to invoke before the bot starts. Enables JSON-only reset hooks without
+	# modifying the harness per-game (wt13: rachel blocked on ball.json needing
+	# restart_game() via /root/root/Game).
+	for call in scenario.get("setup", {}).get("calls", []):
+		var p = call.get("path", "")
+		var m = call.get("method", "")
+		if p.is_empty() or m.is_empty(): continue
+		var st = get_tree() if get_tree() else null
+		var node = st.root.get_node_or_null(NodePath(p)) if st else null
+		if not node:
+			push_warning("Setup call skipped: path '%s' not found" % p)
+			continue
+		if node.has_method(m):
+			var args = call.get("args", [])
+			if args is Array:
+				node.callv(m, args)
+			else:
+				node.call(m)
+		else:
+			push_warning("Setup call skipped: node '%s' has no method '%s'" % [p, m])
 	_metrics = {
 		"start_frame": Engine.get_physics_frames(),
 		"end_frame": 0,
@@ -585,6 +607,17 @@ func _check_no_nan_inf(rule_name: String):
 	_check_finite_positions(rule_name)
 
 func _check_custom_invariant(rule_name: String, rule: Dictionary):
+	# Optional time scoping: invariants may carry after_s/before_s so a rule
+	# only applies inside a window (e.g. score checks AFTER the setup reset
+	# has taken effect — avoids false positives from pre-reset carried state;
+	# wt13 4qn.6). Elapsed time measured from scenario start, seconds.
+	var after_s = rule.get("after_s", null)
+	var before_s = rule.get("before_s", null)
+	var elapsed_s = _frame_count / float(max(_ticks_per_second, 1))
+	if after_s != null and elapsed_s < float(after_s):
+		return
+	if before_s != null and elapsed_s >= float(before_s):
+		return
 	var path = rule.get("path", "")
 	var value = rule.get("value", null)
 	
