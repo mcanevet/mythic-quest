@@ -26,7 +26,7 @@ Reference templates: [reference/project-godot-template.md](reference/project-god
 
 **Configuration rules (mandatory):**
 - `config/name` in `project.godot` comes from **VISION.md's title** (first `#` heading) — never invent a name; read VISION.md first if it exists
-- Discover the installed engine version via `godot-mcp-runtime:get_project_info` (or `godot --version`) — never hardcode a version anywhere; templates must work with whatever engine the MCP runtime serves
+- Discover the installed engine version via `godot-mcp-runtime:check_project` (or `godot --version`) — never hardcode a version anywhere; templates must work with whatever engine the MCP runtime serves
 
 ## Execution
 

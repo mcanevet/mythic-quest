@@ -54,11 +54,12 @@ Empirically observed godot-mcp-runtime schema quirks. The full annotated failure
   Group validations by scene dependency (observed: 14 type-inference parse
   errors concentrated in one batch-validation run).
 
-**Signal wiring**: use `verify_node_connections` instead of manual 4-point
-checks (upstream status: released on the pinned combo branch
-`combo/mythic-quest-integration`, PRs #45–#47; retire the manual procedure
-when a tagged upstream release ships the tool). See
-[reference/signals.md](reference/signals.md) for the manual path.
+**Signal wiring**: use `validate` with `checks: [{type: "signals"}]`
+(upstream merged our signal-verification work into the `validate` tool's
+`checks` array — one call verifies connections AND handler methods exist;
+scene structure via `type: "structure"` schemas) instead of manual 4-point
+checks. See [reference/signals.md](reference/signals.md) for the manual path
+(only if `checks` is unavailable on the pinned runtime).
 
 ## Test scenario contract (creator-authored)
 

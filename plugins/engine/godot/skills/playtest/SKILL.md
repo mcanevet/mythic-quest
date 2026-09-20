@@ -46,7 +46,7 @@ Five execution modes (fast-verify, scene-verify, functional, vision, critique), 
 Before any MCP tool call, verify bridge availability:
 
 ```
-godot-mcp-runtime:get_project_info(projectPath=".")
+godot-mcp-runtime:check_project(projectPath=".")
 ```
 
 If this returns an error or times out → **FAIL IMMEDIATELY**. Report "MCP bridge unavailable" and stop. No fallback.

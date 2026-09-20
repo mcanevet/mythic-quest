@@ -65,13 +65,10 @@ godot-mcp-runtime:batch_scene_operations(
 
 ## MCP Health Check (mandatory before any engine work)
 
-Before the first engine tool call in a session, call `godot-mcp-runtime:get_project_info()`.
+Before the first engine tool call in a session, call `godot-mcp-runtime:check_project()` — it returns project metadata AND a runtime health block (activeSession, bridgeResponsive, processExited) in one call.
 
 - **It succeeds** → proceed normally.
 - **The tool is absent from your toolset** (no `godot-mcp-runtime_*` tools available) → **STOP IMMEDIATELY.** Return `⛔ BLOCKED: engine tools missing from toolset. Only the human can fix this by restarting the entire opencode process; re-delegating or spawning a new subagent inherits the same dead toolset (subagents share the parent's MCP connections). Do not retry, do not re-delegate, do not build shell-based workarounds` (custom validators, headless drivers, screenshot scripts) — that masks a broken harness and silently degrades verification quality (observed: subagents ran for extended spans with no engine tools, building parallel test infra nobody sanctioned). The MCP server is a child of the primary opencode process; no agent action can restart it.
-  - **Report the likely cause, not just the symptom** (two causes share this symptom):
-    - *Server death* — opencode logged `MCP connection closed`, earlier sessions had the tools. Wording: `MCP server down`.
-    - *Toolset-snapshot race* — this session started within ~seconds of opencode boot; the async MCP handshake (npx cold-start → connect → listTools) hadn't finished when the toolset was snapshotted. Server process is alive; LATER sessions have the tools. Wording: `likely toolset-snapshot race at opencode boot`. Same fix (restart), but this tells the human the server itself is fine and they should not debug the MCP server config.
 
 ## Error Recovery Pattern
 

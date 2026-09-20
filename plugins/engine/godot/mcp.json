@@ -1,7 +1,7 @@
 {
   "godot": {
     "command": "npx",
-    "args": ["-y", "git+https://github.com/mcanevet/godot-mcp-runtime.git#c47994c"],
+    "args": ["-y", "git+https://github.com/Erodenn/godot-mcp-runtime.git#3e847f2"],
     "env": { "GODOT_MCP_DISABLE_ELICITATION": "true" }
   }
 }

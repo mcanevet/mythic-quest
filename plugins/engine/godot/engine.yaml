@@ -25,18 +25,19 @@ shared_files:
 # refused twice during poppy's runtime session).
 #
 # Upstream lifecycle (mcp.json):
-# - Pin `ea75a0d` on github.com/mcanevet/godot-mcp-runtime: combo branch
-#   carrying the four tools added upstream as PRs #45–#47
-#   (verify_node_connections, validate_scene_structure, click_ui_element)
-#   plus check_health, WITH dist/ committed (ea75a0d) — the npm package
-#   publishes bin → dist/index.js but gitignored dist, so
-#   `npx git+...#combo/...` failed with 'command not found', silently
-#   tool-less sessions (root cause of 09-17 walkthrough8's zero MCP
-#   calls and a live sandbox BLOCKED reproduction; fixed by committing
-#   the build output to the pin branch). Status: PRs filed/CI-green,
-#   not yet merged into a tagged upstream release. Retirement: when a
-#   tagged upstream release (>= v3.5) ships all four tools AND a
-#   working npm package (dist present), re-pin to that tag.
+# - Pin `3e847f2` on github.com/Erodenn/godot-mcp-runtime: all our PRs
+#   merged into upstream main (packed-array coercion #52; validate
+#   checks #54 + follow-ups; check_health #48 then superseded by the
+#   check_project rename; click_ui_element #47 superseded by Erodenn's
+#   simulate_input redesign). dist/ builds on install from source
+#   (prepare script, ea75a0d-era fix retained upstream); npx smoke
+#   tested 2026-09-20. Not yet a tagged release (npm 3.7.1 predates
+#   the merges) — retirement: when upstream tags >= v3.8 including
+#   these commits, re-pin to the tag or npm version.
+# - Upstream main also hardened the stop path (session auto-clear on
+#   engine exit; stop_project on a dead process now SUCCEEDS with
+#   alreadyExited and frees the slot — retires the 60b workaround
+#   ladder) and made simulate_input ms waits wall-clock true.
 # - GODOT_MCP_DISABLE_ELICITATION=true: bridges runtime elicitations that
 #   stall headless agent sessions. Status: workaround for an upstream
 #   behavior; retirement: remove when upstream makes non-interactive the

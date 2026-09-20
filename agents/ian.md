@@ -56,9 +56,8 @@ permission:
   task: deny
   skill: allow
   "godot-mcp-runtime_*": deny
-  "godot-mcp-runtime_get_project_info": allow  # ian: engine introspection
+  "godot-mcp-runtime_check_project": allow  # ian: engine introspection
   "godot-mcp-runtime_simulate_input": allow  # ian: vision-check interactive behavior
-  "godot-mcp-runtime_check_health": allow  # ian: health probe
   "godot-mcp-runtime_run_project": allow  # ian: observe the running game
   "godot-mcp-runtime_stop_project": allow  # ian: teardown after observation
   "godot-mcp-runtime_take_screenshot": allow  # ian: visual fidelity check

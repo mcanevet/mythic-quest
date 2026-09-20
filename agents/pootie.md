@@ -34,8 +34,7 @@ permission:
   webfetch: deny
   websearch: deny
   "godot-mcp-runtime_*": deny
-  "godot-mcp-runtime_get_project_info": allow  # pootie: engine introspection
-  "godot-mcp-runtime_check_health": allow  # pootie: health probe
+  "godot-mcp-runtime_check_project": allow  # pootie: engine introspection (merged health+info probe, PR #48 upstream follow-up)
   "godot-mcp-runtime_run_project": allow  # pootie: actually play the game
   "godot-mcp-runtime_stop_project": allow  # pootie: teardown after play
   "godot-mcp-runtime_take_screenshot": allow  # pootie: capture gameplay moments

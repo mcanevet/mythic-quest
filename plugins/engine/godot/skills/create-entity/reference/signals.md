@@ -1,6 +1,10 @@
 # Signal Wiring Verification Procedure
 
-**Upstream retirement:** This procedure will be replaced by `verify_node_connections` tool (upstream bead 8nk). Until then, use this manual verification.
+**Upstream status:** preferred path is `godot-mcp-runtime:validate` with
+`checks: [{type: "signals", nodePath?: "..."}]` — verifies connections and
+handler existence in one headless call (our PR #54, merged upstream with
+follow-ups). This manual procedure is the fallback when the pinned runtime
+predates `checks`.
 
 ## Connection Method Selection
 

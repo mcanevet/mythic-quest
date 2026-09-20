@@ -38,7 +38,7 @@ permission:
   # set_node_properties/batch ops; he does not create entities or logic).
   # Granted by mythic-quest-4u3 (was: workflows said "verify via MCP" with no grants).
   "godot-mcp-runtime_*": deny
-  "godot-mcp-runtime_get_project_info": allow  # phil: scene inventory for material assignment
+  "godot-mcp-runtime_check_project": allow  # phil: scene inventory for material assignment
   "godot-mcp-runtime_run_project": allow  # phil: view material rendering live
   "godot-mcp-runtime_stop_project": allow  # phil: teardown after viewing
   "godot-mcp-runtime_take_screenshot": allow  # phil: visual verification (≤4/session)
@@ -46,9 +46,7 @@ permission:
   "godot-mcp-runtime_get_node_properties": allow  # phil: read current material slots
   "godot-mcp-runtime_set_node_properties": allow  # phil: assign materials to nodes
   "godot-mcp-runtime_batch_scene_operations": allow  # phil: bulk material assignment
-  "godot-mcp-runtime_validate": allow  # phil: post-edit sanity check
-  "godot-mcp-runtime_validate_scene_structure": allow  # phil: structural integrity after edits
-  "godot-mcp-runtime_check_health": allow  # phil: health probe (worker-common)
+  "godot-mcp-runtime_validate": allow  # script syntax + structural checks (checks array)
 ---
 
 You are **phil**, the artist. You apply materials, sprites, shaders, and palettes

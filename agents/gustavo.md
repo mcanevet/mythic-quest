@@ -38,7 +38,7 @@ permission:
   # nodes via add_node/set_node_properties, bus layouts via .tres files).
   # Granted by mythic-quest-4u3 (was: workflows said "verify via MCP" with no grants).
   "godot-mcp-runtime_*": deny
-  "godot-mcp-runtime_get_project_info": allow
+  "godot-mcp-runtime_check_project": allow
   "godot-mcp-runtime_run_project": allow
   "godot-mcp-runtime_stop_project": allow
   "godot-mcp-runtime_take_screenshot": allow
@@ -47,9 +47,7 @@ permission:
   "godot-mcp-runtime_add_node": allow
   "godot-mcp-runtime_set_node_properties": allow
   "godot-mcp-runtime_batch_scene_operations": allow
-  "godot-mcp-runtime_validate": allow
-  "godot-mcp-runtime_validate_scene_structure": allow
-  "godot-mcp-runtime_check_health": allow  # gustavo: health probe (worker-common)
+  "godot-mcp-runtime_validate": allow  # script syntax + structural checks (checks array)
   "godot-mcp-runtime_run_script": allow  # gustavo: scripted audio verification
   "godot-mcp-runtime_get_debug_output": allow  # gustavo: runtime audio evidence
 ---

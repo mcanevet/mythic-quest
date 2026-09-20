@@ -46,9 +46,8 @@ permission:
   webfetch: allow
   websearch: allow
   "godot-mcp-runtime_*": deny
-  "godot-mcp-runtime_get_project_info": allow  # rachel: engine introspection
+  "godot-mcp-runtime_check_project": allow  # rachel: engine introspection
   "godot-mcp-runtime_simulate_input": allow  # rachel: functional-mode scenario input
-  "godot-mcp-runtime_check_health": allow  # rachel: health probe
   "godot-mcp-runtime_run_project": allow  # rachel: run scenarios against live game
   "godot-mcp-runtime_stop_project": allow  # rachel: teardown after verification
   "godot-mcp-runtime_take_screenshot": allow  # rachel: oracle evidence

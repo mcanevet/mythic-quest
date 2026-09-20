@@ -34,7 +34,7 @@ permission:
   # AnimationPlayer nodes via add_node/set_node_properties).
   # Granted by mythic-quest-4u3 (was: workflows said "verify via MCP" with no grants).
   "godot-mcp-runtime_*": deny
-  "godot-mcp-runtime_get_project_info": allow  # stephen: scene layout for animation targets
+  "godot-mcp-runtime_check_project": allow  # stephen: scene layout for animation targets
   "godot-mcp-runtime_run_project": allow  # stephen: observe motion live
   "godot-mcp-runtime_stop_project": allow  # stephen: teardown after observation
   "godot-mcp-runtime_take_screenshot": allow  # stephen: motion evidence (≤4/session)
@@ -44,9 +44,7 @@ permission:
   "godot-mcp-runtime_add_node": allow  # stephen: add AnimationPlayer nodes
   "godot-mcp-runtime_set_node_properties": allow  # stephen: wire animation refs
   "godot-mcp-runtime_batch_scene_operations": allow  # stephen: bulk keyframe edits
-  "godot-mcp-runtime_validate": allow  # stephen: post-edit sanity check
-  "godot-mcp-runtime_validate_scene_structure": allow  # stephen: post-edit structural check
-  "godot-mcp-runtime_check_health": allow  # stephen: health probe (worker-common)
+  "godot-mcp-runtime_validate": allow  # script syntax + structural checks (checks array)
   "godot-mcp-runtime_run_script": allow  # stephen: timing compression (evidence-sufficiency contract)
 ---
 
@@ -59,7 +57,7 @@ You are **stephen**, the animator. You add motion and life to existing entities.
 **Workflow**:
 1. Claim per worker-common skill (`.agents/skills/worker-common/SKILL.md`): `bd --actor stephen update <id> --claim` then `bd close <id> --actor stephen --reason ...` — claim your role's beads only (`bd ready --assignee stephen`), one bd call per claim.
 2. Read the bead's description (what should move, when, how it should feel)
-3. Read the skill: "Use skill: apply-animation" → `.agents/plugins/engine/godot/skills/apply-animation/SKILL.md`
+3. Read the skill: "Use skill: apply-animation" → the engine plugin's skills directory, `apply-animation/SKILL.md`
 4. Implement per conventions (the skill documents implementation patterns and verification)
 5. Close honestly: `bd close <id> --reason "PASS: <observed motion>"` or `"FAIL: <what failed>"`
 
