@@ -272,9 +272,11 @@ Session Contract in AGENTS.md, with this role split:
   re-verify the bead (`bd show <id>`) before re-claiming; do NOT
   immediately --force. Distinct from stale-claim recovery
   (`bd reclaim`, agent-vs-agent).
-- **Close release**: When consumer-gate closes (vision-gate when
-  skip_consumer_loop=true), claim and close the release bead, then close the
-  molecule epic.
+- **Close milestone & release**: When all children of a milestone are closed
+  (gates resolved, bugs fixed), CLOSE THE EPIC ITSELF (`bd close <milestone-id>`).
+  The `waits_for` release will become ready exactly then. This happens
+  after that milestone's qa-gate + vision-gate resolve clean. Do NOT wait
+  for an external "milestone complete" signal — the drain is the signal.
 - **Completion trigger** (legacy log-result rule): the run is NOT done when
   the last dispatch returns — between dispatches, check
   `bd swarm status <mol-id>` (or `bd list`) until open/in_progress is
@@ -282,6 +284,35 @@ Session Contract in AGENTS.md, with this role split:
   Empty board → final playtest delegation (rachel, functional mode) is
   already green (it's the qa-gate), so proceed to release. Anything still
   open routes back through grooming.
+- **Triage consumer orphans**: After consumer-gate resolves, Pootie's
+  critique beads are ORPHANS (no parent, no assignee). Surface them with
+  `bd ready --unassigned` (or `bd swarm status`) and triage each:
+  (1) **parent** into the CURRENT milestone (if it hasn't drained yet),
+  (2) if the current milestone is closed and work remains, **spawn the next
+  milestone** (recipe below) and parent there, or (3) **defer**
+  (`bd defer <id>`) for later. Then assignee, skill label, priority. Same
+  grooming pattern as raw-backlog children.
+- **Spawn next milestone** (template pour — no formula re-pour): when the
+  current milestone is closed and unassigned work remains (orphans,
+  deferred items, new ideas), pour the next milestone from the registered
+  template and gate it on the previous release:
+  ```bash
+  bd mol pour milestone-template --var theme="<theme>" --var index=N
+  M=<milestone-N-id>            # from pour output / bd list
+  bd dep add "$M" <release-(N-1)-id>          # sequential gating
+  ```
+  The template carries the full milestone anatomy — epic (poppy),
+  qa-gate (rachel), vision-gate (ian), release with
+  `waits_for = "children-of(milestone)"` — so new gate-discovered bugs
+  re-block the release automatically. NEVER improvise the anatomy with
+  `bd create`; the template is the single source of truth.
+- **Run start wiring**: pour both formulas, then wire the consumer gate to
+  the first release (IDs only exist after pouring):
+  ```bash
+  bd mol pour game-run --var game_title="<title>"
+  bd mol pour milestone-template --var theme="MVP" --var index=0
+  bd dep add <consumer-gate-id> <release-MVP-id>
+  ```
 - **Gate authority note**: gate resolution belongs to the specialist who
   owns the verdict (rachel/ian/pootie each run `bd gate resolve` on their
   own gates — see game-run.formula.toml [steps.gate]). You (build) hold

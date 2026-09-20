@@ -14,29 +14,47 @@ An autonomous game-generation pipeline: **skills** that implement engine-specifi
 
 ```mermaid
 flowchart TD
-    GEN[genesis] --> RAW[raw-backlog<br/>unassigned children]
-    RAW --> GROOM[backlog-grooming<br/>assignee + skill routing]
-    GROOM --> DEV[dev-loop<br/>poppy implements]
-    DEV -->|"waits_for: all-children"| QAG{{"qa-gate<br/>rachel"}}
-    QAG -->|"waits_for: all-children"| VIG{{"vision-gate<br/>ian"}}
-    VIG -->|"waits_for: all-children"| CG{{"consumer-gate<br/>pootie"}}
-    CG --> REL[release]
+    GEN[genesis<br/>ian invents concept] --> RAW[raw-backlog<br/>unassigned children]
+    RAW --> GROOM[backlog-grooming<br/>standing loop: triage + route]
+    GROOM -->|"reparents + routes"| M0[/milestone-0<br/>MVP epic · poppy/]
+    M0 -->|"waits_for: children-of"| REL0{{release-0}}
+    REL0 -->|"ship"| CUST{{"consumer-gate<br/>pootie (post-release)"}}
 
-    %% Rework loops: gate owners discover unassigned bugs as children;
-    %% backlog-grooming routes them, dev-loop fixes them
-    QAG -.->|"discovers unassigned bugs"| GROOM
-    VIG -.->|"discovers unassigned misalignments"| GROOM
-    CG -.->|"discovers unassigned critiques"| GROOM
+    %% Milestones are POURED from milestone-template.formula.toml at runtime
+    %% (count unknowable at pour time); game-run.formula.toml holds only the
+    %% cross-milestone glue. Sequential gating is one dep-add per milestone.
+    %% Gates are concurrent observers, children of the milestone
+    subgraph gates [gate owners parent bugs INTO the milestone]
+        QAG["qa-gate · rachel"]
+        VIG["vision-gate · ian"]
+    end
+    M0 --- gates
 
-    style QAG fill:#bfb
-    style VIG fill:#fbf
-    style CG fill:#fdf
+    %% Convergence: any open child re-blocks the release
+    QAG -.->|"discovers bugs"| M0
+    VIG -.->|"discovers drift"| M0
+    M0 -.->|"open child re-blocks"| REL0
+
+    %% Post-release critique: orphans, triaged by grooming
+    CUST -.->|"orphan beads"| GROOM
+    GROOM -->|"triage: current / next milestone / defer"| M1[/milestone-N<br/>poured from milestone-template · poppy/]
+    M1 -.->|"sequential gating"| REL0
+    M1 -->|"waits_for: children-of"| RELN{{release-N}}
+
+    style M0 fill:#bfb
+    style M1 fill:#bfb
+    style REL0 fill:#fbf
+    style RELN fill:#fbf
+    style CUST fill:#fdf
 ```
 
 **Legend**:
-- Rectangles: workflow steps (poured from `workflows/game-run.formula.toml` at init)
-- Rounded diamonds: human gates — closed via `bd gate resolve` after all children (including rework) are closed PASS
-- Dashed arrows: gate owners discover issues as **unassigned** children of the gate (`--parent <gate-id>` keeps `waits_for` working), then backlog-grooming routes them like any other raw bead
+- **Milestones (epics, green)**: the single converging backlog. Core tasks, gate-discovered bugs, and the gates themselves are all children. An epic cannot close while a child is open — that drain IS the convergence criterion; the rework loop needs no DAG cycle.
+- **Releases (diamonds, pink)**: `waits_for = children-of(milestone)`. Adding any child (a new bug) re-blocks the release; it becomes ready exactly when the milestone drains and the orchestrator closes the epic.
+- **Gates**: human-gate beads owned by their specialists (`bd gate resolve`). They never `needs` dev work — they're concurrent observers that parent their discoveries into the milestone.
+- **Consumer gate (post-release)**: pootie reviews the *shipped* artifact and creates **orphan beads** (no parent — the customer doesn't know internal structure). The standing grooming loop triages them: current milestone, the next milestone (poured from `milestone-template.formula.toml` + one `dep add`), or deferred.
+- **Two formulas**: `game-run.formula.toml` is the cross-milestone glue (backlog, grooming, consumer gate); `milestone-template.formula.toml` is the milestone anatomy (epic + gates + `waits_for` release), poured once per milestone at runtime — the count is unknowable at pour time, and each pour carries identical, lint-checked anatomy.
+- Dashed arrows: discovery/triage flow; solid arrows: dependency/gating flow.
 
 ## Quick Start
 

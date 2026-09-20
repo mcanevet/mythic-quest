@@ -1,103 +1,58 @@
 formula = "game-run"
-description = "Multi-loop game build: genesis → grooming → dev (poppy) → QA (rachel) → vision (ian) → consumer (pootie) → release"
-version = 1
+description = "Cross-milestone glue for a convergent milestone build: backlog intake, standing grooming loop, post-release consumer critique. Milestones themselves (epic + gates + release) come from workflows/milestone-template.formula.toml, poured once per milestone at runtime — their count is unknowable at pour time."
+version = 2
 type = "workflow"
-
-[vars.skip_consumer_loop]
-description = "Skip consumer-gate phase for comparability with older runs (benchmark parity flag)"
-required = false
-default = false
 
 [vars.game_title]
 description = "Title of the game being built"
 required = true
 
-# Phase 0: Genesis (creative)
-[[steps]]
-id = "genesis"
-title = "Invent {{game_title}} concept"
-type = "task"
-assignee = "ian"
-description = "Invent game concept (assignee: ian, dispatched by the orchestrator — the worker claims and closes as ian). Spawn raw task children under 'raw-backlog' container (no assignment or skill routing yet)."
+# ── Milestone anatomy: workflows/milestone-template.formula.toml ──────────────
+# At run start, pour milestone 0 from the template and gate the consumer on
+# its release (see agents/build.md "run start"):
+#
+#   bd mol pour game-run --var game_title="<title>"
+#   bd mol pour milestone-template --var theme="MVP" --var index=0
+#   bd dep add <consumer-gate> <release-MVP>          # post-release critique
+#
+# Every later milestone is the SAME two-command pour plus one gating edge
+# ("spawn next milestone"): template pour, then
+#   bd dep add <new-milestone> <previous-release>.
+# The template carries the convergence primitive — release
+# waits_for = "children-of(milestone)" — so gate-discovered bugs
+# re-block the release automatically, and the epic's own closure rule
+# (no open children) IS the vision-gate convergence criterion.
 
 [[steps]]
 id = "raw-backlog"
 title = "Raw backlog (unassigned)"
 type = "task"
-needs = ["genesis"]
 assignee = "build"
-description = "Container for raw task beads from genesis. Pending grooming."
+description = "Container for raw task beads from genesis, pending grooming. Grooming reparents each child into the current milestone and routes assignee + skill."
 
-# Phase 1: Backlog Grooming (build decides routing)
 [[steps]]
 id = "backlog-grooming"
 title = "Groom backlog: assign roles, skills, priorities"
 type = "task"
-needs = ["raw-backlog"]
 assignee = "build"
-description = "For each raw child: (1) decide assignee (poppy/rachel/ian/pootie), (2) select skill (create-entity, create-ui, etc.), (3) set priority, (4) REPARENT the child to the dev-loop step so gates with waits_for=all-children can see it. Routing lands in ONE 'bd batch' transaction (assignee waves); the skill name rides the dispatch prompt, and reparenting is the only per-bead 'bd update'."
+description = "Standing loop. For each unassigned bead (raw-backlog children, gate-discovered bugs, post-release consumer orphans): (1) choose milestone (current milestone, next milestone, defer), (2) assignee, (3) skill label, (4) priority, (5) REPARENT into the milestone. One 'bd batch' per wave; reparents are individual 'bd update --parent' calls (batch cannot reparent)."
 
-# Phase 2: Implementation Loop (poppy)
-[[steps]]
-id = "dev-loop"
-title = "Implement features"
-type = "task"
-needs = ["backlog-grooming"]
-assignee = "poppy"
-waits_for = "all-children"
-description = "Poppy claims beads assigned to poppy. Each bead dispatch includes 'Use skill: <skill-name>'. Inline playtest verification via MCP runtime. Discoveries spawn children here. Dispatch discipline (2-bead cap, batched grooming via 'bd batch', frontier pull via 'bd ready --mol'/'bd swarm status', concurrent dispatch on disjoint files, verbatim ID copying) lives authoritatively in the build profile."
+# ── Post-release consumer critique ───────────────────────────────────────────
+# The customer reviews the SHIPPED artifact, not WIP. The customer gate is
+# NOT a child of any milestone (it must not block release), and the critiquer
+# has no knowledge of internal structure: discovered beads are ORPHANS
+# (no parent), triaged by the standing grooming loop into the next milestone
+# or deferred. Wiring (`bd dep add <consumer-gate> <release-0>`) happens at
+# run start because the template pour generates the release ID.
 
-# Phase 3: QA Gate (rachel)
-[[steps]]
-id = "qa-gate"
-title = "QA signoff (Rachel)"
-type = "task"
-needs = ["dev-loop"]
-waits_for = "all-children"
-assignee = "rachel"
-description = "Rachel verifies all dev children via MCP runtime. Discovers UNASSIGNED bugs as children of qa-gate (--parent); grooming routes, dev fixes. Gate closes only when all children PASS."
-
-[steps.gate]
-type = "human"
-id = "rachel-qa-signoff"
-description = "Rachel must run 'bd gate resolve' after all qa-gate children are closed PASS."
-
-# Phase 4: Vision Validation (ian)
-[[steps]]
-id = "vision-gate"
-title = "Vision validation (Ian)"
-type = "task"
-needs = ["qa-gate"]
-waits_for = "all-children"
-assignee = "ian"
-description = "Ian validates against VISION.md. Writes critiques and discovers UNASSIGNED misalignment bugs as children. Gate closes only when clean."
-
-[steps.gate]
-type = "human"
-id = "ian-vision-review"
-description = "Ian must run 'bd gate resolve' after validation."
-
-# Phase 5: Consumer Critique (pootie)
 [[steps]]
 id = "consumer-gate"
 title = "Consumer acceptance (Pootie)"
-type = "task"
-needs = ["vision-gate"]
-waits_for = "all-children"
+type = "human"
 assignee = "pootie"
-description = "Pootie experiences game via MCP (screenshots, input sim), writes critique and discovers UNASSIGNED improvement bugs. Must actually play via engine MCP — code-blind critique is NOT acceptable (if engine tools are unavailable, report ⛔ BLOCKED; see walkthrough8 postmortem). Gating routes; dev fixes."
-condition = "skip_consumer_loop == false"
+description = "Pootie experiences the RELEASED game via engine MCP (screenshots, input sim) — never a code-blind critique (if engine tools are unavailable, report ⛔ BLOCKED; walkthrough8 postmortem). Writes critique and creates UNASSIGNED ORPHAN beads (no --parent) — grooming triages them into the next milestone or defers. Must actually play via engine MCP."
 
 [steps.gate]
 type = "human"
 id = "pootie-consumer-acceptance"
-description = "Pootie must run 'bd gate resolve' after critique."
-
-# Phase 6: Release
-[[steps]]
-id = "release"
-title = "Release {{game_title}}"
-type = "task"
-needs = ["consumer-gate", "vision-gate"]
-assignee = "build"
-description = "Final validation, clean reimport, stable run. Ship. (vision-gate in needs makes release reachable both when the consumer loop runs and when skip_consumer_loop=true — the consumer-gate need is conditional and vanishes with the step.)"
+description = "Pootie runs 'bd gate resolve' after critique."

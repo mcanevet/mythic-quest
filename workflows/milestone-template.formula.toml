@@ -1,0 +1,47 @@
+formula = "milestone-template"
+description = "One milestone: epic drains (core tasks + gates + gate-discovered bugs), release waits on the drain"
+version = 1
+type = "workflow"
+
+[vars.theme]
+description = "Theme name of the milestone (e.g. MVP, Audio, Polish)"
+required = true
+
+[vars.index]
+description = "Milestone number (used for titles only; beads IDs are self-generated)"
+required = true
+
+# The milestone is an EPIC — the single converging backlog. Core tasks,
+# gate-discovered bugs, and the QA/vision gates themselves are all its
+# CHILDREN (nested below). An epic cannot close while any child is open —
+# that IS the convergence criterion. Gates being children matters: with
+# zero children a waits_for gate would pass vacuously at pour time.
+
+[[steps]]
+id = "milestone"
+title = "Milestone {{index}}: {{theme}}"
+type = "epic"
+assignee = "poppy"
+description = "Container epic for milestone {{index}} ({{theme}}). Core features land here as children; QA and vision gate owners also parent their discovered bugs HERE (not under the gate). Poppy claims work via 'bd ready --mol'."
+
+[[steps.children]]
+id = "qa-gate"
+title = "QA signoff (Rachel) — milestone {{index}}"
+type = "human"
+assignee = "rachel"
+description = "Rachel verifies the build via MCP runtime playtest. Discovered bugs are created as UNASSIGNED children of this milestone (NOT of this gate) — the milestone cannot drain while they are open. Resolve the gate only when the playtest is clean."
+
+[[steps.children]]
+id = "vision-gate"
+title = "Vision validation (Ian) — milestone {{index}}"
+type = "human"
+assignee = "ian"
+description = "Ian validates against VISION.md. Misalignment bugs are created as UNASSIGNED children of this milestone. Resolve only when aligned. Vision-gate passing plus a drained milestone means the milestone closes."
+
+[[steps]]
+id = "release"
+title = "Release {{theme}}"
+type = "task"
+assignee = "build"
+waits_for = "children-of(milestone)"
+description = "Final validation, clean reimport, stable run, ship. Ready only when the milestone has no open children and the epic is closed."
