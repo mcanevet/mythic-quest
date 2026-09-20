@@ -78,6 +78,21 @@ This is the single largest compile-error class in wt14 (111 occurrences
 in run_script inputs, 4 runtime errors). The fix is a one-line habit
 change; apply it to every probe script you author.
 
+## run_script pre-flight checklist (wt14: 16 avoidable model turns)
+
+Before submitting ANY `godot_run_script` probe, check three things
+(each failure = one wasted model turn + full context re-send):
+
+1. **Balanced brackets**: count `[`/`]` and `{`/`}` pairs, especially
+   in nested dictionary literals. wt14: 9 bracket-mismatch retries.
+2. **RefCounted context**: your script extends `RefCounted` and
+   receives `scene_tree: SceneTree` as an ARGUMENT. Never call
+   `get_tree()` or reference bare `root` — use `scene_tree.root` /
+   `scene_tree.current_scene`. wt14: 4+3 such retries.
+3. **Declared identifiers**: every identifier you reference must be a
+   parameter, local, or class member — no undefined `root`, `game`,
+   `score` shortcuts from memory.
+
 ## Self-verify before close (fixers especially)
 
 An unvalidated fix bounces back as a re-verify session — cold start +
