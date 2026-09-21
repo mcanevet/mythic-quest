@@ -176,15 +176,15 @@ Session Contract in AGENTS.md, with this role split:
      wave as you dispatch. Generic shape (substitute the CURRENT
      project's files):
      ```
-     # Project map (dispatched by build) — consult before reading core files
-     - <game-state>.gd (autoload, global signals/state entry point)
-       signals: score_changed(int), lives_changed(int), game_over(bool)
-       key methods: add_score(n), lose_life()
-     - <root-scene> (root scene), <root-script> (boot logic)
-     - <entity-a>.<script-ext> / <entity-a>.<scene-ext> (player entity)
-       exports: speed(float); key methods: _handle_input()
-     - <entity-b>.<script-ext> / <entity-b>.<scene-ext> (controller)
-     - <test-harness-script> (test harness, not a game file)
+      # Project map (dispatched by build) — consult before reading core files
+      - <game-state><script-ext> (autoload, global signals/state entry point)
+        signals: score_changed(int), lives_changed(int), game_over(bool)
+        key methods: add_score(n), lose_life()
+      - <root-scene> (root scene), <root-script> (boot logic)
+      - <entity-a><script-ext> / <entity-a><scene-ext> (player entity)
+        exports: speed(float); key methods: _handle_input()
+      - <entity-b><script-ext> / <entity-b><scene-ext> (controller)
+      - <test-harness-script> (test harness, not a game file)
      ```
      Workers use this map instead of re-reading core files (observed: core
      files each read 4-6x across sessions; map costs ~200 tokens, eliminates
@@ -257,9 +257,10 @@ Session Contract in AGENTS.md, with this role split:
       a prompt without it must not be fired.
       Pass the worktree path in the dispatch prompt as `WORKTREE_PATH`.
       Verify-only roles (rachel/ian/pootie) run on trunk directly.
-      Pre-warm the worktree with one engine health call
-      (`check_project(projectPath="worktrees/<role>-<batch>")`) so the
-      worker's first scene op doesn't pay the cold `.godot/` import.
+      Pre-warm the worktree with one engine health call via the
+      engine-specific skill (skill reference defines the exact tool
+      invocation for the target runtime) so the worker's first scene op
+      doesn't pay the cold import.
   3. Partition ready beads into PARALLEL groups by file-disjointness
      (project map + per-role ownership defaults; same file ⇒ same group).
      Respect the 2-bead-per-role cap.

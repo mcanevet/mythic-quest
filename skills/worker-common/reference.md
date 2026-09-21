@@ -43,7 +43,7 @@ for read-only sweeps; loop bodies still need their own grants.)
 
 Condensed harness facts below; the FULL symbol map and report shape are
 in the playtest skill's `reference/harness-card.md` (read that instead
-of the 720-line test_player.gd). The full testing-patterns reference
+of the 720-line test-harness player script). The full testing-patterns reference
 lives in the engine plugin (`skills/init-project/reference/testing-patterns.md`).
 
 ### Bot types

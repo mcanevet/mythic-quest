@@ -24,8 +24,8 @@ Without `--actor`, claims on beads assigned to your role are refused
 - Claim beads assigned to your role only: `bd ready --assignee <role>`;
   one claim per bd invocation — `&&` chains strand the second bead.
 - **Heartbeat on long beads**: lease TTL is 5m, `bd reclaim` can fire at
-  10m. On verification/gauntlet work, `bd heartbeat <id>` every few
-  minutes of elapsed work.
+  10m. On verification/gauntlet work, `bd heartbeat <id>` between turns
+  (the orchestrator's turn boundary, not clock-based).
 - **Claim refused with "already claimed: assigned to build"**: the
   orchestrator routed without releasing its claim — expected, not a
   blocker. Proceed and close; the assignee may close regardless of the
@@ -51,8 +51,9 @@ is required for every close (false-PASS laundering observed).
   retried the same failing command 3+ times without progress, STOP
   retrying — report `⛔ BLOCKED: stuck on <symptom>` or file a
   discovered-work bead. A fresh dispatch resolving it is cheaper than
-  a fourth identical attempt (wt15 poppy s1: paddle.tscn re-read 6×
-  over a validate failure; only the replacement dispatch fixed it).
+  a fourth identical attempt (observed wt15: one implementer re-read a
+  scene 6× over a validate failure; only the replacement dispatch
+  fixed it).
 - Blocking on a fix: wire `bd dep add <your-bead> <fix-bead>` — your
   bead auto-shows blocked and resumes when the fix closes.
 - Each BLOCKED becomes a prevention fix: gotcha entry, scaffold
@@ -222,8 +223,9 @@ jq projection recipes, and the granted pipeline-segment list live in
   prompt; read only files you will EDIT or need exact contents of. The
   map includes each file's public surface (signals, exports, method
   signatures) — that IS the API documentation; do not read a file merely
-  to discover what the map already states (wt14: ball.gd read by 5
-  agents, mostly for signal discovery the map could have carried).
+  to discover what the map already states (observed wt14: one entity
+  script read by 5 agents, mostly for signal discovery the map could
+  have carried).
 - **Batch-debug**: one run script asserting ALL outstanding behaviors
   per fix round — never edit→run→edit→run on single assertions
   (input tokens grow quadratically with turns; 30 turns ≈ 400-550k).
