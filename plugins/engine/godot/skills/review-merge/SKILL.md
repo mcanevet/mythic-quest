@@ -32,7 +32,7 @@ Review per-worker worktree commits before merging to trunk:
 
 ### Compile check
 
-- **Parse errors**: `godot --headless --check-only` on the merged trunk
+- **Parse errors**: MCP `godot-mcp-runtime:validate` tool (headless parse) — no `godot --check-only` CLI exists for whole projects
 - **Missing dependencies**: all `ext_resource` paths resolve; all `preload()` calls succeed
 - **Type mismatches**: no "cannot infer type" or "expected X but got Y" errors
 - **Signal connections**: connected methods exist on target nodes

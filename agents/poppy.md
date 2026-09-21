@@ -54,7 +54,8 @@ permission:
     "*": deny
     "git status*": allow  # wt16 bkk: worktree status check
     "git diff*": allow    # wt16 bkk: review own changes before commit
-    "git add*": allow     # wt16 bkk: stage changes for merge-gate
+    "git add*": allow
+    "git -C *": allow  # wt16 bkk: worktree commit (git -C form)
     "git commit*": allow  # wt16 bkk: commit worktree changes before merge-gate
     "*scripts/*.sh*": allow  # poppy: run project helper scripts (setup, validate)
     "*scripts/*.py*": allow  # poppy: run python helpers (generate levels, process assets)

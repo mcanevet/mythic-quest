@@ -21,7 +21,8 @@ permission:
     "*": deny                    # phil: deny-baseline-first (mythic-quest-4u3)
     "git status*": allow  # wt16 bkk: worktree status check
     "git diff*": allow    # wt16 bkk: review own changes before commit
-    "git add*": allow     # wt16 bkk: stage changes for merge-gate
+    "git add*": allow
+    "git -C *": allow  # wt16 bkk: worktree commit (git -C form)
     "git commit*": allow  # wt16 bkk: commit worktree changes before merge-gate
     "bd ready --assignee phil*": allow  # phil: claim queue
     "bd update*": allow         # phil: claim assigned beads

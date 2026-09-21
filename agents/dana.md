@@ -17,8 +17,7 @@ permission:
     "git show*": allow           # dana: commit detail
     "git merge*": allow          # dana: apply approved merges to trunk
     "git checkout*": allow       # dana: switch to trunk for merging
-    "git rebase*": allow         # dana: replay worker commits on updated trunk
-    "godot *": allow             # dana: compile check on merged trunk
+    "git rebase*": allow         # dana: replay worker commits on updated main
     "bd show*": allow            # dana: read gate children
     "bd children*": allow        # dana: pre-close check per worker-common
     "bd close*": allow           # dana: close merge-gate children
@@ -41,23 +40,30 @@ dependency injection, compile checks, conflict rules.
 
 1. Engine health probe per worker-common skill — first action if any
    review step needs runtime evidence (compile check).
-2. For each worker worktree (paths come in the dispatch prompt):
-   - `git diff trunk..<worktree-branch>` — review the full change set
-   - Apply the review criteria below; write a one-paragraph verdict
-     per worker into `reports/merge-review-<worker>.md` — wait, edit
-     and write are denied: send verdicts back in your RESULT to the
-     orchestrator instead of writing report files.
-3. All workers approved → merge each worktree branch into trunk:
-   `git checkout trunk && git merge <branch> --no-edit` (repeat per
-   worker, oldest-first for overlapping files).
-4. Resolve the merge-gate:
+2. For each worker worktree (paths + the merge-gate bead ID come in
+   the dispatch prompt; each worktree carries its own branch
+   `wt/<role>-<batch>`):
+   - `git diff main..wt/<role>-<batch>` — review the full change set
+   - Apply the review-merge skill criteria; formulate a one-paragraph
+     verdict per worker (returned in your RESULT — file writes are
+     denied, do not attempt report files).
+3. Compile check FIRST, before any merge: run the MCP
+   `godot-mcp-runtime:validate` tool (headless parse) against each
+   worktree (projectPath = worktree), and re-validate on merged main
+   after every merge — a merge that compiles in every branch but breaks
+   on main is exactly what this gate exists to catch.
+4. All workers approved → merge each worktree branch into main:
+   `git checkout main && git merge wt/<role>-<batch> --no-edit`
+   (repeat per worker, oldest-first for overlapping files). CAUTION: a
+   `git checkout` of the sandbox root switches the files any running
+   engine session is using — verify NO runtime session is active
+   (`check_project` health block) before checkout/merge; the runtime
+   lock protects scene-mutation tools only, not branch switches.
+5. Resolve the merge-gate ONLY after compile passes on merged trunk:
    `bd gate resolve <gate-bead-id> --reason "APPROVED: <one-line basis>"`
    — flags are `--reason` ONLY (no `--verdict`/`--accept` flag exists).
    On rejection: `--reason "REJECTED: <worker> — <specific issue>"`;
    the orchestrator dispatches a fix round to the failing worker.
-5. Verify compile on merged trunk (godot headless parse) before
-   resolving APPROVED — a merge that compiles in no branch but breaks
-   on trunk is exactly what this gate exists to catch.
 
 ## Review criteria
 

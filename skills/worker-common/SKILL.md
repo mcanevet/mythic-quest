@@ -134,14 +134,17 @@ decimal places. Never burn a turn shelling out for math.
 ## Worktree protocol (wt16 bkk — implementer roles)
 
 When your dispatch prompt carries a **worktree path** (e.g.
-`../wt-poppy-<batch>/`), ALL file work happens there — engine `projectPath`
-and every read/edit/write target that directory, never trunk. One engine
-runtime session may serve multiple worktrees sequentially; the runtime
-lock serializes engine-touching work across them (stop your project
-before closing if another worker's verify follows).
+`worktrees/poppy-batch-2/` — always INSIDE the sandbox root; paths
+outside it are permission-denied), ALL file work happens there —
+engine `projectPath` and every read/edit/write target that directory,
+never trunk. One engine runtime session may serve multiple worktrees
+sequentially; the runtime lock serializes engine-touching work across
+them (stop your project before closing if another worker's verify
+follows).
 
 **Commit before close (mandatory):** every implementer session ends by
-committing its worktree so the merge reviewer has a diff to review:
+committing its worktree branch so the merge reviewer has a diff to
+review:
 
 ```bash
 git -C <worktree-path> add -A

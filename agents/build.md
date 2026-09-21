@@ -241,21 +241,31 @@ Session Contract in AGENTS.md, with this role split:
   1. `bd ready --mol <mol-id> --json` + `bd swarm status <mol-id>` —
      the frontier (one turn).
   2. **Worktree setup (wt16 bkk):** for each implementer wave (poppy/phil/stephen/gustavo),
-     create a worktree: `git worktree add ../wt-<role>-<batch>/ trunk`.
+     create a worktree INSIDE the sandbox root (outside-the-root paths are
+     denied by external_directory and unreachable by workers):
+     `git worktree add worktrees/<role>-<batch>/ -b wt/<role>-<batch>`.
+     The `-b` is MANDATORY: without it the worktree shares trunk's branch
+     and worker commits land directly on trunk, defeating isolation.
      Pass the worktree path in the dispatch prompt as `WORKTREE_PATH`.
      Verify-only roles (rachel/ian/pootie) run on trunk directly.
+     Pre-warm the worktree with one engine health call
+     (`check_project(projectPath="worktrees/<role>-<batch>")`) so the
+     worker's first scene op doesn't pay the cold `.godot/` import.
   3. Partition ready beads into PARALLEL groups by file-disjointness
      (project map + per-role ownership defaults; same file ⇒ same group).
      Respect the 2-bead-per-role cap.
   4. Fire ALL groups' dispatches as parallel Task calls in ONE turn.
      Do NOT wait for any single worker — the harness returns when each
      child finishes.
-  5. While workers run: do NOT sleep-poll. Groom the next wave (labels
-     via `bd batch` — see example below; reparents via `bd update
-     --parent`; prompt drafting), run gate housekeeping (`bd gate
-     check`, `bd reclaim`), prep warm-start headers for re-verifies.
-     If NOTHING is actionable, end your turn — the harness will resume
-     you when a child completes; never busy-wait in bash.
+   5. While workers run: do NOT sleep-poll. Groom the next wave (labels
+      via `bd batch` — see example below; reparents via `bd update
+      --parent`; prompt drafting), run gate housekeeping (`bd gate
+      check`, `bd reclaim`), prep warm-start headers for re-verifies.
+      **Optimization**: when a merge-gate is dispatched, Dana's review
+      can OVERLAP with the NEXT mutation wave (worktrees make this safe
+      — Dana reviews committed diffs, workers mutate new worktrees).
+      If nothing is actionable, end your turn — the harness will resume
+      you when a child completes; never busy-wait in bash.
 
      **Grooming example** (one batch per wave, NEVER serial per-bead
      updates — wt14: 25 individual `bd update --assignee --set-labels`
@@ -268,19 +278,20 @@ Session Contract in AGENTS.md, with this role split:
      is `bd update <id> --claim --parent <dev-loop-id>` (atomic, per
      worker-common) — reparenting is the worker's job, and skill labels
      go in the dispatch prompt's verbage (batch can't set either).
-  5. On each worker return: verify its close reason, then loop back to 1.
-  6. **Merge wave (wt16 bkk)**: when an implementer wave completes and
-     all worktrees carry committed changes, dispatch **dana** with the
-     worktree paths + trunk branch name. Dana reviews each worktree
-     diff (compile/consistency/vision criteria), resolves the
-     merge-gate, and applies approved merges to trunk. After Dana
-     returns APPROVED, clean up worktrees (`git worktree remove`).
-     Overlapping-file rejections come back as fix-round beads for the
-     responsible worker.
+   6. **Merge wave (wt16 bkk)**: when an implementer wave completes and
+     all worktrees carry committed changes, create a merge-gate bead
+     as a child of the current milestone (`bd create "Dana merge review
+     — wave <N>" -t task --parent <milestone-id> -p 1 --assignee dana`),
+     then dispatch **dana** with the worktree paths + the gate bead ID.
+     Dana reviews each worktree diff (compile/consistency/vision criteria
+     per the review-merge skill), resolves the gate, and applies approved
+     merges to trunk. After Dana returns APPROVED, clean up worktrees
+     (`git worktree remove`). Overlapping-file rejections come back as
+     fix-round beads for the responsible worker.
      A shared remote "trunk" simplification: trunk IS the sandbox's
      main working tree; workers' worktrees live alongside it in
-     `../wt-<role>-<batch>/` (created by `git worktree add`, removed
-     after merge). Engine verify roles always run against trunk.
+     `worktrees/<role>-<batch>/` (created by `git worktree add -b`,
+     removed after merge). Engine verify roles always run against trunk.
 
   Anti-pattern (the exact wt14 failure): dispatch one worker → block
   inside the Task await → wake → dispatch next. The await is dead time;
