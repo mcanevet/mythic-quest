@@ -264,6 +264,13 @@ Session Contract in AGENTS.md, with this role split:
       **Optimization**: when a merge-gate is dispatched, Dana's review
       can OVERLAP with the NEXT mutation wave (worktrees make this safe
       — Dana reviews committed diffs, workers mutate new worktrees).
+      **Merge-phase exclusion (wt16 hardening)**: Dana's MERGE phase
+      cannot — `git checkout main` swaps trunk's working tree while a
+      verify-role session (rachel/ian/pootie playtest on trunk) may be
+      loading files from it. Dispatch Dana's merge wave ONLY when no
+      verify-role dispatch is outstanding; if a playtest is running,
+      hold the merge until it returns. Review (diffs, validate) may
+      overlap freely.
       If nothing is actionable, end your turn — the harness will resume
       you when a child completes; never busy-wait in bash.
 
