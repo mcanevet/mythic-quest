@@ -10,7 +10,9 @@ permission:
     "bd list*": allow    # build: board inspection
     "bd show*": allow   # build: bead detail
     "bd blocked*": allow # build: blocker inspection
+    "bd children*": allow # build: pre-close child check (wt15: denied in build profile)
     "bd dep tree*": allow # build: molecule structure
+    "bd dep add*": allow  # build: wire dependencies (discover-from, gating)
     "bd create*": allow  # build: pour molecule, spawn raw children
     "bd update*": allow  # build: assignee changes, grooming
     "bd batch*": allow   # build: collapse routing waves into ONE transaction (bd-native batch; replaces serial update loops)
@@ -360,6 +362,19 @@ Session Contract in AGENTS.md, with this role split:
   `waits_for = "children-of(milestone)"` — so new gate-discovered bugs
   re-block the release automatically. NEVER improvise the anatomy with
   `bd create`; the template is the single source of truth.
+- **Expected post-pour bead inventory** (do not improvise close dances
+  when reality differs from assumption — wt15: ~10 turns closing
+  mol-sbr against deferred children): game-run yields 3 beads
+  (raw-backlog, backlog-grooming, consumer-gate) + its gate;
+  each milestone pour yields 3 beads (milestone epic, release) + 2
+  child gates nested under the epic (qa-gate, vision-gate). There is
+  NO separate "dev-loop" step — the milestone epic IS the dev-loop
+  container. raw-backlog children block its close until groomed
+  (reparented or deferred). Deferred children may still count as
+  "not closed" for molecule drain purposes: use `bd blocked` and
+  `bd swarm status` to confirm actual drain state before close attempts;
+  if close is refused, read the refusal reason and act on it, do not
+  re-issue the same close.
 - **Run start wiring**: pour both formulas, then wire the consumer gate to
   the first release (IDs only exist after pouring):
   ```bash

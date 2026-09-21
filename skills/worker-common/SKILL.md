@@ -98,6 +98,12 @@ Before submitting ANY `godot_run_script` probe, check three things
 3. **Declared identifiers**: every identifier you reference must be a
    parameter, local, or class member — no undefined `root`, `game`,
    `score` shortcuts from memory.
+4. **No `:=` after Variant-returning calls**: scan your script for
+   `var x := ` where the right side is `get_node(...)`, `dict.get(...)`,
+   `get_meta(...)` etc. — Godot cannot infer those types (error 43).
+   Replace with explicit types (`var x: Node = ...`) or untyped
+   `var x = ...`. This applies to throwaway probes too, not just
+   game code (wt15: 3 probe retries from exactly this pattern).
 
 ## macOS sandbox-extension noise (benign, wt14: 48 spurious denials)
 
@@ -117,6 +123,13 @@ call is denied. Do NOT retry it. The `write` tool creates missing parent
 directories implicitly: to create `tests/scenarios/`, write a file
 (e.g. a `.gitkeep` or placeholder README) at the target path. Never
 burn a turn probing for a shell workaround.
+
+## Inline compute (python3 -c is not granted)
+
+`python3 -c "..."` for arithmetic/trig is denied by the worker stencil.
+Do the computation mentally, in the GDScript probe itself (engines have
+full math libraries), or estimate — a launch angle does not need ten
+decimal places. Never burn a turn shelling out for math.
 
 ## Deleting files (rm is not granted — overwrite instead)
 
