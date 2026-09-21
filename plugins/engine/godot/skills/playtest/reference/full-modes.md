@@ -208,6 +208,8 @@ what's significant). Use `responseMode: "preview"` to keep token cost down.
 Ground your narration in what you actually saw and did; first-person present
 tense.
 
+**Start-gate heuristic (mandatory):** if the world seems frozen or unresponsive on first boot, suspect a start gate/input wait BEFORE diagnosing physics or controls. Try pressing Space/Enter/any key, or check for an overlay ColorRect in the scene tree. A "ball not moving" or "controls dead" verdict on first boot is almost always a deliberate start gate (wt15 pootie: 8 turns diagnosing immobility before discovering the Space overlay — the game's README had incorrectly said "starts immediately").
+
 Narrate what you see — pacing, feel, readability, "would I keep playing".
 Screenshots here may show symptoms (stuck screens, dead overlays) — record
 them as *observations*, not verdicts.

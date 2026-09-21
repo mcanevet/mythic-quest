@@ -72,6 +72,12 @@ Every stop_project returned the macOS `_process failed ... Operation not permitt
 ### 9. Pootie's 11m Space-gate probe spiral (0.37 ratio)
 Pootie burned ~8 turns diagnosing "ball not moving" before discovering the start overlay required Space — the game's README said "starts immediately" (the actual rr2.1 bug!). A consumer critique that reads the start-overlay code path first, or tries "press any key" before deep-diagnosing immobility, would save ~5 turns. **Fix:** critique-mode doc: "if the world seems frozen on first boot, suspect a start gate/input wait before diagnosing physics."
 
+### 10. Worker wall dominated by per-turn inference latency (bs69)
+**NEW finding:** trace decomposition shows worker sessions' wall time is 3-15% tool execution, the rest is per-turn model inference/generation. Poppy session 2 (B9yx8N): 15.2m wall, 26s tool, 13.2m of inter-part gaps (20-70s per turn × 48 turns). Same shape: poppy s1 19m gaps vs 112s tool; pootie 11.1m gaps vs 41s tool. **Implication:** parallel waves only help if workers inside them are fast; turns × per-turn-latency = worker wall. **Fix:** wt16 experiment (bead bs69) — tune per-role reasoningEffort (poppy low, specialists medium, build high) + reduce turn count via batching.
+
+### 11. Spiral trap: duplicate-read loop without tripwire (03h0)
+Poppy session 1 re-read paddle.tscn 6× and paddle2.tscn 5× while stuck on PhysicsDirectBodyState validate failures; the spiral resolved only via a NEW dispatch, not self-recovery. **Fix:** worker-common addition (bead 03h0): "if you have read the same file 3+ times or retried the same failing validate 3+ times without progress, stop and report BLOCKED or file a discovered-work bead — a fresh dispatch is cheaper than a fourth identical attempt."
+
 ## Comparison to wt14
 
 - **Cost:** every dimension down 70%+ — the ten doc/skill fixes + v3.8.0 runtime worked exactly as designed.
@@ -81,11 +87,13 @@ Pootie burned ~8 turns diagnosing "ball not moving" before discovering the start
 ## Next Steps
 
 1. **Wave-loop escalation** — structural dispatch algorithm or checklist citation in build.md (fold into bkk's worktree design).
-2. **Formula anatomy verification** — game-run molecule bead inventory vs build.md expectations.
-3. **Build-profile permission grants** — `bd children*/gate*/blocked*/dep*/swarm*`.
-4. **Gate-resolve exact-flag docs** in gate-owner profiles.
-5. **Critique start-gate heuristic** in pootie/full-modes docs.
-6. Run **wt16** with worktree isolation + Dana merge-gate (bead bkk) — parallel dispatch becomes mandatory when workers own separate clones.
+2. **Reasoning-effort tuning** (bs69) — per-role reasoningEffort in agent profiles; wall ≈ turns × per-turn latency.
+3. **Duplicate-read tripwire** (03h0) — worker-common spiral guard.
+4. **Formula anatomy verification** — game-run molecule bead inventory vs build.md expectations.
+5. **Build-profile permission grants** — `bd children*/gate*/blocked*/dep*/swarm*`.
+6. **Gate-resolve exact-flag docs** in gate-owner profiles.
+7. **Critique start-gate heuristic** in pootie/full-modes docs.
+8. Run **wt16** with worktree isolation + Dana merge-gate (bead bkk) — parallel dispatch becomes mandatory when workers own separate clones.
 
 ---
 

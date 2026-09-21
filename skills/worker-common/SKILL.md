@@ -47,6 +47,12 @@ is required for every close (false-PASS laundering observed).
   denials) → STOP: `⛔ BLOCKED: <cause> / Evidence / Action required`.
   Never retry.
 - Transient infra → one bounded retry, then escalate.
+- **Spiral tripwire**: if you have read the same file 3+ times or
+  retried the same failing command 3+ times without progress, STOP
+  retrying — report `⛔ BLOCKED: stuck on <symptom>` or file a
+  discovered-work bead. A fresh dispatch resolving it is cheaper than
+  a fourth identical attempt (wt15 poppy s1: paddle.tscn re-read 6×
+  over a validate failure; only the replacement dispatch fixed it).
 - Blocking on a fix: wire `bd dep add <your-bead> <fix-bead>` — your
   bead auto-shows blocked and resumes when the fix closes.
 - Each BLOCKED becomes a prevention fix: gotcha entry, scaffold
