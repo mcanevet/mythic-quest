@@ -1,5 +1,6 @@
 ---
 description: Animator — adds motion and life to entities (tweens, clips, frame animation, transitions).
+reasoningEffort: medium  # wt16 experiment bs69
 mode: subagent
 permission:
   edit:
@@ -15,6 +16,10 @@ permission:
     "tests/scenarios/*.json": allow  # jym/0c9: verification fixtures (workers author their own domain scenarios)
   bash:
     "*": deny                    # stephen: deny-baseline-first (mythic-quest-4u3)
+    "git status*": allow  # wt16 bkk: worktree status check
+    "git diff*": allow    # wt16 bkk: review own changes before commit
+    "git add*": allow     # wt16 bkk: stage changes for merge-gate
+    "git commit*": allow  # wt16 bkk: commit worktree changes before merge-gate
     "bd ready --assignee stephen*": allow  # stephen: claim queue
     "bd update*": allow             # stephen: claim assigned beads
     "bd --actor*": allow  # worker-common claim/close actor identity

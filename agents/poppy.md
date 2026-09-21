@@ -1,6 +1,7 @@
 ---
 mode: subagent
 description: Poppy Li, lead engineer — implements features/bugs from beads (entities, mechanics, UI) per the engine skills. Robust implementation, performance, technical excellence.
+reasoningEffort: low  # wt16 experiment bs69: routine implementer; latency reduction prioritized
 permission:
   read: allow
   glob: allow
@@ -52,6 +53,10 @@ permission:
     "**/skills/**": deny
   bash:
     "*": deny
+    "git status*": allow  # wt16 bkk: worktree status check
+    "git diff*": allow    # wt16 bkk: review own changes before commit
+    "git add*": allow     # wt16 bkk: stage changes for merge-gate
+    "git commit*": allow  # wt16 bkk: commit worktree changes before merge-gate
     "*scripts/*.sh*": allow  # poppy: run project helper scripts (setup, validate)
     "*scripts/*.py*": allow  # poppy: run python helpers (generate levels, process assets)
     "jq *": allow   # poppy: read-only bd JSON shaping; safe downstream pipe

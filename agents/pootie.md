@@ -1,4 +1,5 @@
 ---
+reasoningEffort: medium  # wt16 experiment bs69
 mode: subagent
 description: Pootie Shoe, streamer critic — plays the shipped game via engine MCP as a real player and delivers the B-hole verdict. No spec, no code, no metrics.
 permission:

@@ -1,5 +1,6 @@
 ---
 description: Sound designer — applies music, SFX, ambience to the game (procedural audio, buses, triggers).
+reasoningEffort: medium  # wt16 experiment bs69
 mode: subagent
 permission:
   edit:
@@ -19,6 +20,10 @@ permission:
     "**/*.tres": allow
   bash:
     "*": deny                    # gustavo: deny-baseline-first (mythic-quest-4u3)
+    "git status*": allow  # wt16 bkk: worktree status check
+    "git diff*": allow    # wt16 bkk: review own changes before commit
+    "git add*": allow     # wt16 bkk: stage changes for merge-gate
+    "git commit*": allow  # wt16 bkk: commit worktree changes before merge-gate
     "bd ready --assignee gustavo*": allow  # gustavo: claim queue
     "bd update*": allow              # gustavo: claim assigned beads
     "bd --actor*": allow  # worker-common claim/close actor identity
