@@ -13,8 +13,8 @@ rule).
 
 | Mode | Scope | When |
 |------|-------|------|
-| `lint-dev` | git-changed files; all files if `.agents/lint/rules.yaml` changed | Pre-commit, pipeline-dev sessions |
-| `lint-audit` | all files (excluding `.beads/`, external skills, symlinks) | Periodic audit, milestones |
+| `lint-dev` | git-changed files under `agents/`, `skills/`, `plugins/`; full scope if `.agents/lint/rules.yaml` changed | Pre-commit, pipeline-dev sessions |
+| `lint-audit` | all files under `agents/`, `skills/`, `plugins/` (excluding `.beads/`, external skills, symlinks) | Periodic audit, milestones |
 
 Mechanical orchestration (discovery, wisp creation, fan-in edges) is done by
 [`scripts/lint-wisp.sh`](scripts/lint-wisp.sh) — invoke it, don't replicate it.

@@ -51,15 +51,16 @@ discover_files() {
 }
 
 filter_files() {
-  # Excludes .beads/, external skills, symlinks. Reads stdin, writes stdout.
+  # Scopes to agents/, skills/, plugins/; excludes .beads/, external skills, symlinks. Reads stdin, writes stdout.
   local f skip
   while IFS= read -r f; do
     [ -z "$f" ] && continue
     skip=0
     case "$f" in
-      .beads/*) skip=1 ;;
+      agents/*|skills/*|plugins/*) skip=0 ;;
+      *) skip=1 ;;
     esac
-    [ -L "$f" ] && skip=1
+    [ "$skip" -eq 0 ] && [ -L "$f" ] && skip=1
     if [ "$skip" -eq 0 ]; then
       printf '%s\n' "$f"
     fi

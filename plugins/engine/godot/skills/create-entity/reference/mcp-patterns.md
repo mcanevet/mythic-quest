@@ -69,11 +69,6 @@ godot-mcp-runtime:batch_scene_operations(
 > 2. **Check every entry in `results[]`**, not just the last one — each op is
 >    tagged with its own `success`/`error`. A batch "completes" even when ops
 >    inside it failed.
->
-> Also: every op object must carry its own `operation` and `scenePath` keys —
-> omitting either produces `Unknown batch operation: ` /
-> `scene_path required for add_node` errors that are easy to miss among
-> sibling successes.
 
 ## MCP Health Check (mandatory before any engine work)
 
