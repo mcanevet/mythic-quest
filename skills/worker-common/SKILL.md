@@ -98,13 +98,16 @@ This is the single largest compile-error class in wt14 (111 occurrences
 in run_script inputs, 4 runtime errors). The fix is a one-line habit
 change; apply it to every probe script you author.
 
-## run_script pre-flight checklist (wt14: 16 avoidable model turns)
+## run_script pre-flight checklist (wt14: 16 avoidable model turns; wt16: 3 recurrences despite prose)
 
 Before submitting ANY `godot_run_script` probe, check three things
 (each failure = one wasted model turn + full context re-send):
 
-1. **Balanced brackets**: count `[`/`]` and `{`/`}` pairs, especially
-   in nested dictionary literals. wt14: 9 bracket-mismatch retries.
+1. **Balanced brackets — MECHANICAL CHECK, not mental counting**: write
+   your probe to a temp file, then run
+   `skills/worker-common/scripts/check-brackets.sh <file>`. If it
+   reports imbalance, fix before submitting — prose counting failed
+   in both wt14 (9 retries) and wt16 (3 retries); the script cannot.
 2. **RefCounted context**: your script extends `RefCounted` and
    receives `scene_tree: SceneTree` as an ARGUMENT. Never call
    `get_tree()` or reference bare `root` — use `scene_tree.root` /
@@ -112,12 +115,10 @@ Before submitting ANY `godot_run_script` probe, check three things
 3. **Declared identifiers**: every identifier you reference must be a
    parameter, local, or class member — no undefined `root`, `game`,
    `score` shortcuts from memory.
-4. **No `:=` after Variant-returning calls**: scan your script for
-   `var x := ` where the right side is `get_node(...)`, `dict.get(...)`,
-   `get_meta(...)` etc. — Godot cannot infer those types (error 43).
-   Replace with explicit types (`var x: Node = ...`) or untyped
-   `var x = ...`. This applies to throwaway probes too, not just
-   game code (wt15: 3 probe retries from exactly this pattern).
+4. **No `:=` after Variant-returning calls**: see the "GDScript
+   type annotation discipline" section below — scan the script before
+   submitting. This applies to throwaway probes too, not just game
+   code (wt15: 3 probe retries from exactly this pattern).
 
 ## macOS sandbox-extension noise (benign, wt14: 48 spurious denials)
 
@@ -225,7 +226,10 @@ jq projection recipes, and the granted pipeline-segment list live in
   signatures) — that IS the API documentation; do not read a file merely
   to discover what the map already states (observed wt14: one entity
   script read by 5 agents, mostly for signal discovery the map could
-  have carried).
+  have carried; wt16 recurrence: a specialist re-read all four entity
+  scripts + the root scene despite a complete map in the prompt — a
+  map present but unenforced saves nothing; treat "read the mapped
+  file anyway" as a violation of this rule, not a judgement call).
 - **Batch-debug**: one run script asserting ALL outstanding behaviors
   per fix round — never edit→run→edit→run on single assertions
   (input tokens grow quadratically with turns; 30 turns ≈ 400-550k).

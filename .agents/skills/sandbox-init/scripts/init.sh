@@ -169,6 +169,18 @@ mkdir -p "$SANDBOX/.beads/formulas"
 command cp "$FORMULA_SRC" "$SANDBOX/.beads/formulas/" ||
   fail "failed to copy game-run formula into sandbox"
 
+# milestone-template: poured per-milestone by the orchestrator. Copy + cook
+# it too, or `bd mol pour milestone-template` fails 'not found' and the
+# orchestrator hand-builds the milestone anatomy (observed wt16: ~10
+# recovery turns + miswired epic-blocked-by-molecule deps).
+MILESTONE_SRC="$REPO_ROOT/workflows/milestone-template.formula.toml"
+if [ -f "$MILESTONE_SRC" ]; then
+  command cp "$MILESTONE_SRC" "$SANDBOX/.beads/formulas/" ||
+    warn "failed to copy milestone-template formula into sandbox"
+else
+  warn "milestone-template formula missing from pipeline repo (workflows/)"
+fi
+
 # Persist the cooked proto so `bd mol pour game-run` finds it by NAME.
 # (walkthrough8, 2026-09-17: the orchestrator's `bd mol pour game-run` failed
 # with 'not found as formula or proto ID' — a copied formula alone does not
@@ -180,6 +192,13 @@ command cp "$FORMULA_SRC" "$SANDBOX/.beads/formulas/" ||
   mise exec -C . -- bd cook game-run --persist >/dev/null 2>&1 &&
   mise exec -C . -- bd mol pour game-run --var game_title=__INIT_VERIFY__ --dry-run >/dev/null 2>&1
 ) || fail "game-run proto registration failed (cook --persist / pour --dry-run)"
+
+# Cook milestone-template's proto too — same pour-by-name requirement.
+(
+  cd "$SANDBOX" &&
+  mise exec -C . -- bd cook milestone-template --persist >/dev/null 2>&1 &&
+  mise exec -C . -- bd mol pour milestone-template --var theme=__INIT_VERIFY__ --var index=0 --dry-run >/dev/null 2>&1
+) || warn "milestone-template proto registration failed (cook --persist / pour --dry-run)"
 
 (cd "$SANDBOX" && bd setup "$HARNESS") >/dev/null 2>&1 ||
   fail "bd setup $HARNESS failed in sandbox (valid recipe?)"

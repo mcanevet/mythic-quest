@@ -16,6 +16,7 @@ permission:
     "bd create*": allow  # build: pour molecule, spawn raw children
     "bd update*": allow  # build: assignee changes, grooming
     "bd batch*": allow   # build: collapse routing waves into ONE transaction (bd-native batch; replaces serial update loops)
+    "bd defer*": allow   # build: park beads for later grooming (wt16: future beads parked unassigned due to deny)
     "bd swarm*": allow   # build: computed swarm status (active/ready/blocked in one call; replaces bd show/list/children polling chains)
     "bd gate check*": allow   # build: auto-resolve timer/gh gates (gates await auto-resolution, not manual resolve)
     "bd merge-slot *": allow  # wt16: guard Dana merge phase (atomic exclusion; acquire before dispatch, release after gate resolved)
@@ -30,6 +31,8 @@ permission:
     "jq *": allow   # build: read-only bd JSON shaping; safe downstream pipe
     "head *": allow # build: read-only output trimming; safe downstream pipe
     "grep *": allow # build: read-only output filtering; safe downstream pipe
+    "printf *": allow # build: stdin piping to bd batch (heredoc form also works: 'cat <<EOF | bd batch')
+    "test *": allow # build: file existence checks (VISION.md, worktree paths, etc.)
     "for *": allow  # build: read-only loops over bd/jq/grep (wt14: 120 denials on 'for i in ...' reparent loops; safe—body commands already whitelisted)
     "git worktree*": allow # wt16 bkk: create/remove per-worker worktrees
     "git status*": allow   # wt16 bkk: verify trunk state before merge wave
@@ -186,16 +189,24 @@ Session Contract in AGENTS.md, with this role split:
       - <entity-b><script-ext> / <entity-b><scene-ext> (controller)
       - <test-harness-script> (test harness, not a game file)
      ```
-     Workers use this map instead of re-reading core files (observed: core
-     files each read 4-6x across sessions; map costs ~200 tokens, eliminates
-     most orientation reads). Include each file's PUBLIC SURFACE — signals
-     declared, exported vars, key method signatures — because that is
-     precisely what workers re-read files to learn (wt14: ball.gd read by
-     5 agents, game.gd by 4, mostly for signal/method discovery). A map
-     line without the API summary does not prevent the read; the API
-     summary IS the point. Refresh the map incrementally as waves land:
-     append new entities when you dispatch their wave, update signal
-     lines when a worker reports adding one.
+      Workers use this map instead of re-reading core files (observed: core
+      files each read 4-6x across sessions; map costs ~200 tokens, eliminates
+      most orientation reads). Include each file's PUBLIC SURFACE — signals
+      declared, exported vars, key method signatures — because that is
+      precisely what workers re-read files to learn (wt14: ball.gd read by
+      5 agents, game.gd by 4, mostly for signal/method discovery). A map
+      line without the API summary does not prevent the read; the API
+      summary IS the point. Refresh the map incrementally as waves land:
+      append new entities when you dispatch their wave, update signal
+      lines when a worker reports adding one.
+      **Prompt must FORBID the re-read explicitly (wt16 09eh)**: append
+      to every dispatch prompt carrying a map, one line:
+      "Do NOT read mapped files for orientation — the map IS their API;
+      read only files you will edit or need exact contents of."
+      Observed wt16: phil re-read all 4 entity scripts + main.tscn
+      (~100k tokens) DESPITE a complete map in his prompt — the map
+      prevents the read only when the prompt bans it, not merely
+      provides it.
   - **Environment facts block**: bash grants (bd verbs only), scene-file edit
     policy, and engine MCP availability AS PROBED BY THE ROLE AGENTS — before
     the FIRST role dispatch, trust sandbox-init's verified state; if a role
@@ -261,9 +272,17 @@ Session Contract in AGENTS.md, with this role split:
       engine-specific skill (skill reference defines the exact tool
       invocation for the target runtime) so the worker's first scene op
       doesn't pay the cold import.
-  3. Partition ready beads into PARALLEL groups by file-disjointness
-     (project map + per-role ownership defaults; same file ⇒ same group).
-     Respect the 2-bead-per-role cap.
+   3. Partition ready beads into PARALLEL groups by file-disjointness
+      (project map + per-role ownership defaults; same file ⇒ same group).
+      Respect the 2-bead-per-role cap.
+      **Cross-role overlap (wt16 izcc)**: partition ACROSS roles, not
+      just within one — e.g. a visual-style bead (phil, touches
+      palette/materials) is file-disjoint from a mechanics wave (poppy,
+      touches scripts/scenes) and SHOULD be dispatched in the SAME
+      wave, each in its own worktree. Observed wt16: phil's 13-minute
+      materials pass ran strictly after poppy's 21-minute mechanics
+      wave despite disjoint file sets — ~13-20 min wall-clock lost to
+      role-at-a-time serialization.
   4. Fire ALL groups' dispatches as parallel Task calls in ONE turn.
      Do NOT wait for any single worker — the harness returns when each
      child finishes.

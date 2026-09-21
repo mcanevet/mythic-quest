@@ -57,7 +57,7 @@ permission:
     "git add*": allow
     "git -C *": allow  # wt16 bkk: worktree commit (git -C form)
     "git commit*": allow  # wt16 bkk: commit worktree changes before merge-gate
-    "*scripts/*.sh*": allow  # poppy: run project helper scripts (setup, validate)
+    "*scripts/*.sh*": allow  # poppy: run project helper scripts (setup, validate) + worker-common helpers (check-brackets.sh pre-flight) — glob is path-suffix matching, kept because project scaffolds put scripts in arbitrary subdirs
     "*scripts/*.py*": allow  # poppy: run python helpers (generate levels, process assets)
     "jq *": allow   # poppy: read-only bd JSON shaping; safe downstream pipe
     "cat *": allow  # read-only file dump; loop/chain segment
