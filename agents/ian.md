@@ -1,5 +1,4 @@
 ---
-reasoningEffort: medium  # wt16 experiment bs69
 mode: subagent
 description: Ian Grimm, creative director — writes VISION.md (genesis), validates the game against it at the vision gate. Judges emotional impact and promise-delivery.
 permission:

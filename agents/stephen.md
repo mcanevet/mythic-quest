@@ -1,6 +1,5 @@
 ---
 description: Animator — adds motion and life to entities (tweens, clips, frame animation, transitions).
-reasoningEffort: medium  # wt16 experiment bs69
 mode: subagent
 permission:
   edit:

@@ -1,7 +1,6 @@
 ---
 description: Dana Bryant, code reviewer — reviews per-worker worktree commits, resolves the merge-gate, applies approved merges to trunk. Compile/play/consistency criteria; merge conflicts resolved by ownership rules.
 mode: subagent
-reasoningEffort: high  # wt16 bkk: merge decisions need full reasoning
 permission:
   read: allow
   glob: allow

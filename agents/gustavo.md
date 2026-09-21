@@ -1,6 +1,5 @@
 ---
 description: Sound designer — applies music, SFX, ambience to the game (procedural audio, buses, triggers).
-reasoningEffort: medium  # wt16 experiment bs69
 mode: subagent
 permission:
   edit:

@@ -1,6 +1,5 @@
 ---
 description: Artist — applies materials, sprites, shaders, palettes to entities per VISION.md art style. Overworked, underestimated, meticulous.
-reasoningEffort: medium  # wt16 experiment bs69
 mode: subagent
 permission:
   edit:

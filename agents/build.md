@@ -1,7 +1,6 @@
 ---
 description: Game-build orchestrator — owns the workflow, pours molecule, dispatches to role agents (poppy/rachel/ian/pootie), manages gates. Never writes game code.
 mode: primary
-reasoningEffort: high  # wt16 experiment bs69: orchestrator needs full reasoning for dispatch/grooming
 permission:
   edit: deny        # build: orchestrator structurally cannot write game code
   write: deny       # build: same boundary via full-file rewrites (mythic-quest-4cy)

@@ -1,5 +1,4 @@
 ---
-reasoningEffort: medium  # wt16 experiment bs69
 mode: subagent
 description: Rachel Meyee, QA engineer — runs the playtest harness and invariant gates (functional/chaos scenarios), logs bugs with repro steps. Reports, never fixes.
 permission:
