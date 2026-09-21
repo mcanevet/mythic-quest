@@ -64,6 +64,19 @@ is required for every close (false-PASS laundering observed).
 deterministic refusal: close them first or report
 `⛔ BLOCKED: open children prevent close` with IDs. No retries, no --force.
 
+## Worktree check (wt16)
+
+If your dispatch prompt carries a `WORKTREE_PATH` field:
+- Verify it exists: `test -d "<WORKTREE_PATH>"`
+- Verify it is a worktree: `git -C "<WORKTREE_PATH>" rev-parse --is-inside-work-tree`
+- If either fails: `⛔ BLOCKED: invalid WORKTREE_PATH <path>` — STOP,
+  report to the orchestrator. Do NOT fall back to writing trunk.
+- All file edits, engine operations (projectPath = WORKTREE_PATH), and
+  your commit (`git -C "<WORKTREE_PATH>" add ... && git -C
+  "<WORKTREE_PATH>" commit ...`) happen inside the worktree. Commit
+  BEFORE closing the bead — the merge reviewer only sees committed
+  diffs; uncommitted work is invisible to the merge wave.
+
 ## Pre-edit check
 
 `grep -n <anchor> <file>` before `edit` — confirm exactly one hit. Both

@@ -22,6 +22,7 @@ permission:
     "bd children*": allow        # dana: pre-close check per worker-common
     "bd close*": allow           # dana: close merge-gate children
     "bd gate resolve*": allow    # dana: resolve the merge-gate (verdict owner)
+    "bd merge-slot *": allow     # wt16: release merge slot after merge completes (build acquires before dispatch)
     "jq *": allow                # dana: read-only JSON shaping
     "head *": allow              # dana: read-only output trimming
     "grep *": allow              # dana: read-only filtering
@@ -64,6 +65,10 @@ dependency injection, compile checks, conflict rules.
    — flags are `--reason` ONLY (no `--verdict`/`--accept` flag exists).
    On rejection: `--reason "REJECTED: <worker> — <specific issue>"`;
    the orchestrator dispatches a fix round to the failing worker.
+6. Release the merge slot the orchestrator acquired for this dispatch:
+   `bd merge-slot release --actor dana` — the merge pipeline is stuck
+   until you do, so do it even on REJECTED verdicts (the fix round
+   re-acquires when its merge wave comes).
 
 ## Review criteria
 

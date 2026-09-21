@@ -17,7 +17,8 @@ permission:
     "bd update*": allow  # build: assignee changes, grooming
     "bd batch*": allow   # build: collapse routing waves into ONE transaction (bd-native batch; replaces serial update loops)
     "bd swarm*": allow   # build: computed swarm status (active/ready/blocked in one call; replaces bd show/list/children polling chains)
-    "bd gate check*": allow  # build: auto-resolve timer/gh gates (gates await auto-resolution, not manual resolve)
+    "bd gate check*": allow   # build: auto-resolve timer/gh gates (gates await auto-resolution, not manual resolve)
+    "bd merge-slot *": allow  # wt16: guard Dana merge phase (atomic exclusion; acquire before dispatch, release after gate resolved)
     "bd reclaim*": allow     # build: dead worker recovery (worker crash risk: observed micro-session deaths)
     "bd mol pour*": allow    # build: pour game-run formula (proto persisted at sandbox-init; mythic-quest-704)
     "bd mol current*": allow # build: track progress
@@ -240,17 +241,25 @@ Session Contract in AGENTS.md, with this role split:
 
   1. `bd ready --mol <mol-id> --json` + `bd swarm status <mol-id>` —
      the frontier (one turn).
-  2. **Worktree setup (wt16 bkk):** for each implementer wave (poppy/phil/stephen/gustavo),
-     create a worktree INSIDE the sandbox root (outside-the-root paths are
-     denied by external_directory and unreachable by workers):
-     `git worktree add worktrees/<role>-<batch>/ -b wt/<role>-<batch>`.
-     The `-b` is MANDATORY: without it the worktree shares trunk's branch
-     and worker commits land directly on trunk, defeating isolation.
-     Pass the worktree path in the dispatch prompt as `WORKTREE_PATH`.
-     Verify-only roles (rachel/ian/pootie) run on trunk directly.
-     Pre-warm the worktree with one engine health call
-     (`check_project(projectPath="worktrees/<role>-<batch>")`) so the
-     worker's first scene op doesn't pay the cold `.godot/` import.
+   2. **Worktree setup (wt16 bkk)**: for each implementer wave (poppy/phil/stephen/gustavo),
+      create a worktree INSIDE the sandbox root (outside-the-root paths are
+      denied by external_directory and unreachable by workers):
+      `git worktree add worktrees/<role>-<batch>/ -b wt/<role>-<batch>`.
+      The `-b` is MANDATORY: without it the worktree shares trunk's branch
+      and worker commits land directly on trunk, defeating isolation.
+      **Structural enforcement (wt16 hardening)**: dispatching an
+      implementer WITHOUT a worktree is a protocol violation. Verify after
+      creation: `git worktree list` must show the new worktrees; if
+      worktree creation FAILS, ABORT the wave — do NOT dispatch the worker
+      to trunk as a fallback (observed wt16: build skipped worktrees
+      entirely and mutated trunk; worktree isolation is the whole point).
+      The dispatch prompt's `WORKTREE_PATH` field is likewise REQUIRED —
+      a prompt without it must not be fired.
+      Pass the worktree path in the dispatch prompt as `WORKTREE_PATH`.
+      Verify-only roles (rachel/ian/pootie) run on trunk directly.
+      Pre-warm the worktree with one engine health call
+      (`check_project(projectPath="worktrees/<role>-<batch>")`) so the
+      worker's first scene op doesn't pay the cold `.godot/` import.
   3. Partition ready beads into PARALLEL groups by file-disjointness
      (project map + per-role ownership defaults; same file ⇒ same group).
      Respect the 2-bead-per-role cap.
@@ -285,16 +294,29 @@ Session Contract in AGENTS.md, with this role split:
      is `bd update <id> --claim --parent <dev-loop-id>` (atomic, per
      worker-common) — reparenting is the worker's job, and skill labels
      go in the dispatch prompt's verbage (batch can't set either).
-   6. **Merge wave (wt16 bkk)**: when an implementer wave completes and
-     all worktrees carry committed changes, create a merge-gate bead
-     as a child of the current milestone (`bd create "Dana merge review
-     — wave <N>" -t task --parent <milestone-id> -p 1 --assignee dana`),
-     then dispatch **dana** with the worktree paths + the gate bead ID.
-     Dana reviews each worktree diff (compile/consistency/vision criteria
-     per the review-merge skill), resolves the gate, and applies approved
-     merges to trunk. After Dana returns APPROVED, clean up worktrees
-     (`git worktree remove`). Overlapping-file rejections come back as
-     fix-round beads for the responsible worker.
+    6. **Merge wave (wt16 bkk)**: when an implementer wave completes and
+      all worktrees carry committed changes:
+      1. **Acquire the merge slot** (`bd merge-slot acquire`) — the rig's
+         single atomic exclusion primitive. If the slot is held, WAIT —
+         do NOT dispatch Dana yet. (Create the slot once via
+         `bd merge-slot create` if `bd merge-slot check` reports none.)
+      2. Verify no verify-role dispatch (rachel/ian/pootie) is
+         outstanding — `git checkout main` swaps trunk's working tree
+         under a live playtest. If one is running, release the slot and
+         hold the merge until it returns.
+      3. Create a merge-gate bead as a child of the current milestone
+         (`bd create "Dana merge review — wave <N>" -t task --parent
+         <milestone-id> -p 1 --assignee dana`), then dispatch **dana**
+         with the worktree paths + the gate bead ID. Dana reviews each
+         worktree diff (compile/consistency/vision criteria per the
+         review-merge skill), resolves the gate, and applies approved
+         merges to trunk.
+      4. Dana releases the merge slot after resolving the gate
+         (`bd merge-slot release --actor dana`) — if Dana crashes
+         without releasing, `bd reclaim`/manual release recovers it.
+      After Dana returns APPROVED, clean up worktrees
+      (`git worktree remove`). Overlapping-file rejections come back as
+      fix-round beads for the responsible worker.
      A shared remote "trunk" simplification: trunk IS the sandbox's
      main working tree; workers' worktrees live alongside it in
      `worktrees/<role>-<batch>/` (created by `git worktree add -b`,

@@ -296,6 +296,14 @@ git -C "$SANDBOX" -c user.name=harness -c user.email=harness@local \
   commit -qm "chore: bd ledger + managed instructions ($HARNESS)" >/dev/null 2>&1 ||
   fail "seed commit failed"
 
+# 5b. Merge slot ------------------------------------------------------------------
+# The rig's single merge slot (<prefix>-merge-slot) guards the merge-review
+# phase of the build orchestrator (atomic exclusion for trunk checkout/
+# merge; created here so the orchestrator never races a nonexistent slot).
+if ! (cd "$SANDBOX" && bd merge-slot create) >/dev/null 2>&1; then
+  warn "merge-slot create failed (orchestrator can create it later via 'bd merge-slot create')"
+fi
+
 # 5c. Engine MCP servers -> harness config -------------------------------------
 # The engine plugin declares MCP servers (plugins/engine/<engine>/mcp.json,
 # format: {"<server-name>": {command,args,env}}). We render them into the
