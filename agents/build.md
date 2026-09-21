@@ -308,6 +308,16 @@ Session Contract in AGENTS.md, with this role split:
     1,106 tools, 5h47m); larger batches lose incremental closure visibility
     and risk catastrophic loss on mid-batch failure. Dispatch repeatedly in
     2-bead batches as beads close.
+    **Worktree-wave exception (wt16)**: mutation waves running in worktrees
+    may raise the cap to **4 beads per poppy instance** AND run **up to 3
+    parallel poppy instances** (each in its own worktree, disjoint file
+    sets). The marathon-session risk is contained by worktree scoping —
+    each instance has bounded scope and a mandatory commit-before-close.
+    Practical ceiling beyond this: the single MCP server serializes tool
+    calls server-wide ("another command in flight"), so more than 3
+    parallel instances saturate the mutation queue without adding
+    throughput. Specialists (phil/stephen/gustavo) stay at 1-2 beads
+    per instance (their waves are smaller).
   **Report economy**: role agents return verdict lines + report paths only;
   read the full report ONLY on FAIL or when evidence is needed — inline
   full reports accumulate in your context on every turn.
