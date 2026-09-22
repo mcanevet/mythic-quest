@@ -54,6 +54,7 @@ permission:
     "*": deny
     "git status*": allow  # wt16 bkk: worktree status check
     "git diff*": allow    # wt16 bkk: review own changes before commit
+    "git log*": allow     # wt17: review own worktree commit history (read-only)
     "git add*": allow
     "git -C worktrees/*": allow  # wt16 bkk: worktree commit (git -C form) — scoped to worktree paths only
     "git commit*": allow  # wt16 bkk: commit worktree changes before merge-gate
