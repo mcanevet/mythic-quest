@@ -29,9 +29,9 @@ Without `--actor`, claims on beads assigned to your role are refused
 - **Claim refused with "already claimed: assigned to build"**: the
   orchestrator routed without releasing its claim — expected, not a
   blocker. Proceed and close; the assignee may close regardless of the
-  claim holder. No claim-recovery turns (wt12: ian burned 5). If the
-  holder is NOT the orchestrator, report it — stale dead-worker claim
-  for `bd reclaim`.
+  claim holder. No claim-recovery turns (wt12: the vision reviewer
+  burned 5). If the holder is NOT the orchestrator, report it — stale
+  dead-worker claim for `bd reclaim`.
 
 ## Engine health probe (mandatory, first action)
 
@@ -76,7 +76,10 @@ If your dispatch prompt carries a `WORKTREE_PATH` field:
   your commit (`git -C "<WORKTREE_PATH>" add ... && git -C
   "<WORKTREE_PATH>" commit ...`) happen inside the worktree. Commit
   BEFORE closing the bead — the merge reviewer only sees committed
-  diffs; uncommitted work is invisible to the merge wave.
+  diffs; uncommitted work is invisible to the merge wave. An uncommitted
+  worktree is an incomplete session — your changes are invisible to the
+  merge-gate and will be lost on cleanup. If you made no changes
+  (verify-only session), close with `--reason "no changes"`.
 
 ## Pre-edit check
 
@@ -137,9 +140,14 @@ Before submitting ANY `godot_run_script` probe, check three things
 macOS sandbox-extension cleanup artifact AFTER successful process
 termination. The tool itself returns `completed` with `alreadyExited:
 false` (success). If you see this message, **do not retry** — it's
-harmless noise, not a failure. The denial happens at the opencode
-platform layer, not the tool. Report it to the human if it blocks
-progress; the fix belongs in opencode's result classification.
+  harmless noise, not a failure. The denial happens at the opencode
+  platform layer, not the tool. Report it to the human if it blocks
+  progress; the fix belongs in opencode's result classification.
+  **Retirement condition**: when opencode classifies tool results
+  post-termination instead of streaming raw stderr as tool output,
+  this section and the associated error-retry logic become obsolete.
+  (Filed: mythic-quest-l0a7 — monitor opencode changelog for
+  "tool-result classification" or "stderr filtering" entries.)
 
 ## Creating directories (mkdir is not granted)
 
@@ -148,6 +156,21 @@ call is denied. Do NOT retry it. The `write` tool creates missing parent
 directories implicitly: to create `tests/scenarios/`, write a file
 (e.g. a `.gitkeep` or placeholder README) at the target path. Never
 burn a turn probing for a shell workaround.
+
+## Path discipline: never escape the sandbox root
+
+Workers run inside a sandbox under `test/<name>/`. The `external_directory`
+policy denies any `cd` or path traversal that leaves the sandbox root.
+As a subagent, you cannot surface a permission prompt — you will hang
+forever if you try. **Never use `cd ..` or any relative path that escapes
+the sandbox.** Always:
+- Use absolute paths (e.g. `/Users/.../test/walkthrough17/...`)
+- Or stay within the sandbox using `.` and subdirs only
+- If you need the sandbox root, run `pwd` once at session start and
+  remember it; construct all paths from there.
+Observed wt17: the lead engineer hung 64+ minutes after `cd ..`
+escaped the sandbox while trying to inspect the parent; the permission
+prompt never surfaced to the user because the worker is a subagent.
 
 ## Inline compute (python3 -c is not granted)
 
@@ -159,7 +182,7 @@ decimal places. Never burn a turn shelling out for math.
 ## Worktree protocol (wt16 bkk — implementer roles)
 
 When your dispatch prompt carries a **worktree path** (e.g.
-`worktrees/poppy-batch-2/` — always INSIDE the sandbox root; paths
+`worktrees/<role>-<batch>/` — always INSIDE the sandbox root; paths
 outside it are permission-denied), ALL file work happens there —
 engine `projectPath` and every read/edit/write target that directory,
 never trunk. One engine runtime session may serve multiple worktrees
@@ -169,16 +192,7 @@ follows).
 
 **Commit before close (mandatory):** every implementer session ends by
 committing its worktree branch so the merge reviewer has a diff to
-review:
-
-```bash
-git -C <worktree-path> add -A
-git -C <worktree-path> commit -m "<bead-id>: <one-line summary>"
-```
-
-An uncommitted worktree is an incomplete session — your changes are
-invisible to the merge-gate and will be lost on cleanup. If you made no
-changes (verify-only session), close with `--reason "no changes"`.
+review (see the Worktree check section for the exact commit sequence).
 
 ## Deleting files (rm is not granted — overwrite instead)
 
