@@ -22,7 +22,7 @@ permission:
     "git status*": allow  # wt16 bkk: worktree status check
     "git diff*": allow    # wt16 bkk: review own changes before commit
     "git add*": allow
-    "git -C *": allow  # wt16 bkk: worktree commit (git -C form)
+    "git -C worktrees/*": allow  # wt16 bkk: worktree commit (git -C form) — scoped to worktree paths only
     "git commit*": allow  # wt16 bkk: commit worktree changes before merge-gate
     "bd ready --assignee phil*": allow  # phil: claim queue
     "bd update*": allow         # phil: claim assigned beads

@@ -351,8 +351,9 @@ Session Contract in AGENTS.md, with this role split:
   shader/material/visual roles own shaders and cosmetic scene props;
   audio roles own audio scripts + autoload; juice/animation roles own
   animation scripts. Two roles that both hook the same game script
-  (common: both patch <game-state>.gd for their hook) must be
-  serialized — check the hook-target list, not vibes.
+  (common: both patch the shared game-state hook-target script for
+  their hook) must be serialized — check the hook-target list, not
+  vibes.
   **Bead-ID integrity** (observed incident):
   never hand-type bead IDs
   into dispatch prompts — a transposed ID sent poppy chasing closed beads

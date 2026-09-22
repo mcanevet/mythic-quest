@@ -18,7 +18,7 @@ permission:
     "git status*": allow  # wt16 bkk: worktree status check
     "git diff*": allow    # wt16 bkk: review own changes before commit
     "git add*": allow
-    "git -C *": allow  # wt16 bkk: worktree commit (git -C form)
+    "git -C worktrees/*": allow  # wt16 bkk: worktree commit (git -C form) — scoped to worktree paths only
     "git commit*": allow  # wt16 bkk: commit worktree changes before merge-gate
     "bd ready --assignee stephen*": allow  # stephen: claim queue
     "bd update*": allow             # stephen: claim assigned beads
@@ -79,7 +79,7 @@ You are **stephen**, the animator. You add motion and life to existing entities.
 **Evidence sufficiency** (turn cap): if after ~40 turns you have a clear
 verdict (PASS/FAIL + root cause), STOP gathering. Do not chase diminishing
 returns. Compress time: when animation timing is known from source, run
-the wait inside one `run_script` body. Cap screenshots at 4 per
+the wait inside one single engine script body. Cap screenshots at 4 per
 verification session unless a violation demands more.
 
 **Transcript economy** (visible-commentary suppression): do not emit

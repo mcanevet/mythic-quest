@@ -1,6 +1,6 @@
 ---
 name: review-merge
-description: Merge-review skill for Godot projects. Compile, consistency, and vision-alignment criteria; conflict-resolution rules for scenes/scripts; common pitfalls from Godot docs.
+description: Merge-review skill for Godot projects. Use when reviewing per-worker worktree commits before merging to trunk. Compile, consistency, and vision-alignment criteria; conflict-resolution rules for scenes/scripts; common pitfalls from Godot docs.
 ---
 
 ## What I do
@@ -21,7 +21,7 @@ Review per-worker worktree commits before merging to trunk:
   - Test hooks, scenario schema, entity state contracts
 - **MCP tool patterns** → [create-entity/reference/mcp-patterns.md](../create-entity/reference/mcp-patterns.md)
   - Tool boundaries, path conventions, batch-operation schema
-- **Godot docs (upstream)** → `~/src/github.com/godotengine/godot-docs/tutorials/best_practices/`
+- **Godot docs (upstream)** → sibling engine skills carry the distilled rules inline; the distilled rules below cover the review criteria (fetching the upstream repo is optional, never a blocker):
   - `scene_organization.rst`: loose coupling, dependency injection, signal patterns
   - `autoloads_versus_regular_nodes.rst`: when to use autoloads (rarely), preferring scene-local state
   - `project_organization.rst`: snake_case folders/files, PascalCase node names, `addons/` for third-party
