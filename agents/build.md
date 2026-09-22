@@ -299,12 +299,27 @@ Session Contract in AGENTS.md, with this role split:
       verify-role dispatch is outstanding; if a playtest is running,
       hold the merge until it returns. Review (diffs, validate) may
       overlap freely.
+      **Engine-session exclusivity (wt16 8vpa, m0sa)**: at most ONE
+      live engine session per sandbox AT ANY MOMENT, regardless of
+      project directory or role. Do not dispatch any role that will
+      run the project (rachel, ian, pootie, any verification wave)
+      while another engine session is outstanding — verify roles are
+      serialized against EACH OTHER and against all worktree-based
+      verification. Rationale: each opencode session spawns its own
+      engine MCP server process; concurrent server processes corrupt
+      each other's runtime state even across DIFFERENT project dirs
+      (wt16: rachel+ian dispatched in parallel on the same project
+      killed each other's bridge at 22:56; the different-project case
+      is untested upstream — single-shared-runner architecture).
+      Worktree MUTATION waves are exempt (no engine session), and Dana's
+      review phases are exempt (static). This restriction lifts when
+      upstream multi-project support lands (beads 8vpa/f7xv).
       If nothing is actionable, end your turn — the harness will resume
       you when a child completes; never busy-wait in bash.
 
-     **Grooming example** (one batch per wave, NEVER serial per-bead
-     updates — wt14: 25 individual `bd update --assignee --set-labels`
-     calls): collect all unassigned beads (raw-backlog children +
+     **Grooming example** (route-count logic and one-batch rule per
+     the Grooming section above; wt14: 25 individual per-bead updates
+     collapsed): collect all unassigned beads (raw-backlog children +
      gate-discovered bugs), then run ONE `bd batch` to assign them:
      ```bash
      printf 'update <id1> assignee=poppy\nupdate <id2> assignee=poppy\nupdate <id3> assignee=gustavo\n' | bd batch
