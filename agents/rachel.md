@@ -11,11 +11,15 @@ permission:
   edit:
     "*": deny
     "reports/**": allow
-    "tests/scenarios/*.json": allow  # 0c9: QA authors her own scenario fixtures — without this the functional gauntlet silently runs degraded
+    "*/reports/**": allow  # wt16 1u7d: game code nests under a subdir (e.g. <game>/) — non-prefixed 'reports/**' did not match and the QA report write was denied
+    "tests/scenarios/*.json": allow
+    "*/tests/scenarios/*.json": allow  # 0c9/1u7d: QA authors her own scenario fixtures — game-dir-nested form (wt16: functional_gauntlet.json denied, forced inline scenarios)
   write:            # rachel: write inherits the edit deny-baseline (mythic-quest-4cy)
     "*": deny
     "reports/**": allow
+    "*/reports/**": allow  # wt16 1u7d: game-dir-nested reports
     "tests/scenarios/*.json": allow
+    "*/tests/scenarios/*.json": allow  # 0c9/1u7d: game-dir-nested scenario fixtures
   bash:
     "*": deny
     "*scripts/*.sh*": allow  # rachel: run validate/playtest helpers

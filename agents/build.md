@@ -193,8 +193,9 @@ Session Contract in AGENTS.md, with this role split:
       files each read 4-6x across sessions; map costs ~200 tokens, eliminates
       most orientation reads). Include each file's PUBLIC SURFACE — signals
       declared, exported vars, key method signatures — because that is
-      precisely what workers re-read files to learn (wt14: ball.gd read by
-      5 agents, game.gd by 4, mostly for signal/method discovery). A map
+      precisely what workers re-read files to learn (wt14: the ball
+      entity's script read by 5 agents, the game-state script by 4,
+      mostly for signal/method discovery). A map
       line without the API summary does not prevent the read; the API
       summary IS the point. Refresh the map incrementally as waves land:
       append new entities when you dispatch their wave, update signal
@@ -203,7 +204,7 @@ Session Contract in AGENTS.md, with this role split:
       to every dispatch prompt carrying a map, one line:
       "Do NOT read mapped files for orientation — the map IS their API;
       read only files you will edit or need exact contents of."
-      Observed wt16: phil re-read all 4 entity scripts + main.tscn
+      Observed wt16: phil re-read all 4 entity scripts + the main scene
       (~100k tokens) DESPITE a complete map in his prompt — the map
       prevents the read only when the prompt bans it, not merely
       provides it.
@@ -226,12 +227,10 @@ Session Contract in AGENTS.md, with this role split:
   - **Close hint**: `bd close --actor <role>` for role-owned beads.
   **Parallelism rule** (measured: 3 serialized domain-disjoint poppy
   batches cost ~30-40min recoverable; the one deliberate parallel —
-  phil+gustavo on disjoint files — was clean; observed:
-  scene ops colliding with
-  a live runtime session; measured:
-  even the disjoint-file poppy batches
-  serialized because every batch both mutated scenes AND ran the project
-  for verification — the runtime lock was the serializer, not the files):
+  phil+gustavo on disjoint files — was clean; even the disjoint-file
+  poppy batches serialized because every batch both mutated scenes AND
+  ran the project for verification — the runtime lock was the
+  serializer, not the files):
   use a **mutation/verification split**. Mutation beads (create-*,
   apply-*) run WITHOUT the project running — no engine runtime, no
   runtime playtest; their PASS rests on batch validation
@@ -268,10 +267,10 @@ Session Contract in AGENTS.md, with this role split:
       a prompt without it must not be fired.
       Pass the worktree path in the dispatch prompt as `WORKTREE_PATH`.
       Verify-only roles (rachel/ian/pootie) run on trunk directly.
-      Pre-warm the worktree with one engine health call via the
-      engine-specific skill (skill reference defines the exact tool
-      invocation for the target runtime) so the worker's first scene op
-      doesn't pay the cold import.
+      Pre-warm the worktree by INCLUDING the engine health probe in
+      the worker's dispatch prompt (first action per worker-common;
+      you cannot run it yourself — you hold no engine tool grants):
+      so the worker's first scene op doesn't pay the cold import.
    3. Partition ready beads into PARALLEL groups by file-disjointness
       (project map + per-role ownership defaults; same file ⇒ same group).
       Respect the 2-bead-per-role cap.
@@ -363,9 +362,8 @@ Session Contract in AGENTS.md, with this role split:
   `bd children`). If you notice an ID in your prompt that you did not
   copy from fresh output, STOP and re-derive it.
     **Hard cap: 2 beads per delegation** (one-batch maximum). A 4-task batch
-    produced a 229-part marathon session in MythicQuest (see
-    23 sessions,
-    1,106 tools, 5h47m); larger batches lose incremental closure visibility
+  produced a 229-part marathon session in MythicQuest (23 sessions,
+  1,106 tools, 5h47m); larger batches lose incremental closure visibility
     and risk catastrophic loss on mid-batch failure. Dispatch repeatedly in
     2-bead batches as beads close.
     **Worktree-wave exception (wt16)**: mutation waves running in worktrees

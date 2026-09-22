@@ -119,6 +119,16 @@ Before submitting ANY `godot_run_script` probe, check three things
    type annotation discipline" section below — scan the script before
    submitting. This applies to throwaway probes too, not just game
    code (wt15: 3 probe retries from exactly this pattern).
+5. **Long nested-dict payloads ride as JSON strings**: any dict/array
+   literal longer than ~20 lines (scenario configs, invariant tables,
+   test manifests) must be encoded as a single JSON string and parsed
+   in-script (`JSON.parse_string`) instead of written as a nested
+   GDScript literal. Observed wt16: large nested-dict literals in
+   gauntlet scripts arrived transport-mangled ("Expected closing ')'"
+   parse errors that check-brackets.sh cannot catch — they are not
+   bracket imbalance, they are serialization corruption; the
+   JSON-string form completed cleanly on the first attempt after 3
+   failed gauntlet submissions).
 
 ## macOS sandbox-extension noise (benign, wt14: 48 spurious denials)
 

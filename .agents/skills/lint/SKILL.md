@@ -89,6 +89,17 @@ the comments **before** burning — comments are deleted with the wisp.
   committing. After resolution, purge the wisp.
 - If the run surfaced something worth keeping (e.g., a systemic issue),
   `bd promote <wisp-id>` preserves a digest before purging.
+
+## Walkthrough-evidence patch discipline (6yk7)
+
+When patching agent profiles from walkthrough findings: the evidence names
+concrete engines (file formats, tool names, node types) — translate those
+nouns to role/engine-neutral terms before saving instruction text
+(e.g. "ball.gd read by 5 agents" → "the ball entity's script read by 5
+agents"). The evidence citation stays honest; only the noun is neutralized.
+The mechanical guard (`.agents/lint/scripts/engine-noun-guard.sh`, wired
+into `lint-wisp.sh`) fails the run on obvious leaks, but it is a noun list,
+not understanding — translation at patch time is the real fix.
 - **Update the incremental cache** (audit mode only, skip for wisp whose
   target file list was cached-filtered away): for each judged file, append
   `{"file": "<path>", "hash": "$(git hash-object <path>)", "result": "clean"|"dirty"}`

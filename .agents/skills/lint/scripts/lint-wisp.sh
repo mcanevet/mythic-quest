@@ -81,6 +81,17 @@ if [ -n "$FILTERED" ] && printf '%s\n' "$FILTERED" | grep -qE '\.(gd|md)$'; then
   bash ".agents/skills/lint/scripts/lint-gdscript-check.sh" || true
 fi
 
+# Mechanical engine-noun tripwire (blocking): obvious engine-agnostic-agents
+# violations in agent instruction bodies fail fast, before dispatching judge
+# subagents. rules.yaml stays the semantic source of truth.
+if [ -n "$FILTERED" ] && printf '%s\n' "$FILTERED" | grep -qE '^agents/'; then
+  echo "Running engine-noun guard..."
+  bash ".agents/lint/scripts/engine-noun-guard.sh" || {
+    echo "engine-noun guard FAILED — fix the flagged nouns (translate to role/engine-neutral terms) before linting" >&2
+    exit 1
+  }
+fi
+
 # rules.yaml changed => full scope. Checked out here (not in filter_files)
 # because command substitutions run in subshells where variable writes vanish.
 if [ "$MODE" = "dev" ] && printf '%s\n' "$FILTERED" | grep -qxF "$RULES"; then

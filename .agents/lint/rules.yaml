@@ -88,6 +88,25 @@ rules:
       would survive an engine switch it is decision logic (agent); if it
       names APIs/files/tools it is implementation (skill).
 
+  grant-scope-proportionality:
+    title: Bash grant scope matches its justification
+    rationale: >
+      Incident-driven permission patches justify broad grants with a
+      citation but nothing revisits scope: 'git -C *' was justified by a
+      worktree-commit incident yet reached any repo/remote (wt16 96om).
+      Scope breadth must match the incident that earned it.
+    applies_to: "agents/**"
+    prompt: >
+      In frontmatter bash permission grants, flag allows whose pattern is
+      materially broader than the cited justification requires. Specific
+      red flags: 'git -C *' (unscoped directory reach) where the comment
+      cites a worktree or specific-path incident; 'git push*' or
+      'git config*' anywhere; command wildcards covering subcommands the
+      comment does not mention. Grants already scoped (e.g.
+      'git -C worktrees/*', 'git status*', 'git diff*') are proportional
+      when the comment names their purpose. Only flag real breadth-
+      beyond-need; do not demand narrowing read-only commands.
+
   no-improvised-alternatives:
     title: Sanctioned paths only — no improvised alternatives
     rationale: >
