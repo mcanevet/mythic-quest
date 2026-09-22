@@ -8,20 +8,22 @@ description = "Title of the game being built"
 required = true
 
 # ── Milestone anatomy: workflows/milestone-template.formula.toml ──────────────
-# At run start, pour milestone 0 from the template and gate the consumer on
-# its release (see agents/build.md "run start"):
+# At run start, pour the game-run molecule, then bond milestone 0 from the
+# template as a parallel child (not a separate pour). Bonding attaches the
+# milestone subtree to the same molecule root so `bd ready --mol` and
+# `bd swarm status` see everything. The consumer gate is wired to the
+# release by the bonding step; no manual dep add needed:
 #
 #   bd mol pour game-run --var game_title="<title>"
-#   bd mol pour milestone-template --var theme="MVP" --var index=0
+#   bd mol bond milestone-template <game-run-root-id> --type parallel \
+#     --var theme="MVP" --var index=0
 #   bd dep add <consumer-gate> <release-MVP>          # post-release critique
+#   (release ID comes from the bond's spawn output / bd list)
 #
-# Every later milestone is the SAME two-command pour plus one gating edge
-# ("spawn next milestone"): template pour, then
-#   bd dep add <new-milestone> <previous-release>.
-# The template carries the convergence primitive — release
-# waits_for = "children-of(milestone)" — so gate-discovered bugs
-# re-block the release automatically, and the epic's own closure rule
-# (no open children) IS the vision-gate convergence criterion.
+# Later milestones are the SAME bond command with incremented index.
+# Sequential gating (milestone N+1 after release N) is optional — for
+# content milestones parallel is usually fine; for strict sequencing,
+# dep-add the new milestone's release to the previous release.
 
 [[steps]]
 id = "raw-backlog"
@@ -42,8 +44,9 @@ description = "Standing loop. For each unassigned bead (raw-backlog children, ga
 # NOT a child of any milestone (it must not block release), and the critiquer
 # has no knowledge of internal structure: discovered beads are ORPHANS
 # (no parent), triaged by the standing grooming loop into the next milestone
-# or deferred. Wiring (`bd dep add <consumer-gate> <release-0>`) happens at
-# run start because the template pour generates the release ID.
+# or deferred. The consumer gate still needs one manual dep add after the
+# bond (the bond wires the milestone, not the consumer):
+#   bd dep add <consumer-gate> <release-MVP>          # post-release critique
 
 [[steps]]
 id = "consumer-gate"

@@ -22,6 +22,7 @@ permission:
     "bd merge-slot *": allow  # wt16: guard Dana merge phase (atomic exclusion; acquire before dispatch, release after gate resolved)
     "bd reclaim*": allow     # build: dead worker recovery (worker crash risk: observed micro-session deaths)
     "bd mol pour*": allow    # build: pour game-run formula (proto persisted at sandbox-init; mythic-quest-704)
+    "bd mol bond*": allow    # build: attach milestone-template to game-run root (parallel; wt17 shape fix)
     "bd mol current*": allow # build: track progress
     "bd mol progress*": allow # build: completion rate/ETA in one call
     "bd formula list*": allow # build: verify game-run registered
@@ -467,15 +468,20 @@ Session Contract in AGENTS.md, with this role split:
   milestone** (recipe below) and parent there, or (3) **defer**
   (`bd defer <id>`) for later. Then assignee, skill label, priority. Same
   grooming pattern as raw-backlog children.
-- **Spawn next milestone** (template pour — no formula re-pour): when the
+- **Spawn next milestone** (bond, no formula re-pour): when the
   current milestone is closed and unassigned work remains (orphans,
-  deferred items, new ideas), pour the next milestone from the registered
-  template and gate it on the previous release:
+  deferred items, new ideas), bond the next milestone from the registered
+  template onto the SAME game-run root (parallel) so it stays visible to
+  molecule-scoped queries:
   ```bash
-  bd mol pour milestone-template --var theme="<theme>" --var index=N
-  M=<milestone-N-id>            # from pour output / bd list
-  bd dep add "$M" <release-(N-1)-id>          # sequential gating
+  bd mol bond milestone-template <game-run-root-id> --type parallel \
+    --var theme="<theme>" --var index=N
   ```
+  Milestones bond in parallel; sequential ordering (milestone N+1 after
+  release N) is expressed by dep-adding the new milestone's release
+  gate to the previous release IF the game rules demand strict
+  sequencing — for content milestones (levels, themes), parallel is
+  usually the right default since work can overlap.
   The template carries the full milestone anatomy — epic (poppy),
   qa-gate (rachel), vision-gate (ian), release with
   `waits_for = "children-of(milestone)"` — so new gate-discovered bugs
@@ -494,13 +500,20 @@ Session Contract in AGENTS.md, with this role split:
   `bd swarm status` to confirm actual drain state before close attempts;
   if close is refused, read the refusal reason and act on it, do not
   re-issue the same close.
-- **Run start wiring**: pour both formulas, then wire the consumer gate to
-  the first release (IDs only exist after pouring):
+- **Run start wiring**: pour the game-run molecule, then bond the milestone
+  template as a parallel child so the milestone subtree is visible to
+  `bd ready --mol` and `bd swarm status`, then wire the consumer gate to
+  the first release:
   ```bash
   bd mol pour game-run --var game_title="<title>"
-  bd mol pour milestone-template --var theme="MVP" --var index=0
+  bd mol bond milestone-template <game-run-root-id> --type parallel \
+    --var theme="MVP" --var index=0
   bd dep add <consumer-gate-id> <release-MVP-id>
   ```
+  The bond attaches the milestone subtree (epic, both gates, release) to
+  the same molecule root — every `--mol`-scoped query sees it. The
+  consumer-gate dep add is still manual: the bond wires the milestone,
+  not the consumer.
 - **Gate authority note**: gate resolution belongs to the specialist who
   owns the verdict (rachel/ian/pootie each run `bd gate resolve` on their
   own gates — see game-run.formula.toml [steps.gate]). You (build) hold
