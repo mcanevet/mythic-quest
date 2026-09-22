@@ -168,9 +168,19 @@ the sandbox.** Always:
 - Or stay within the sandbox using `.` and subdirs only
 - If you need the sandbox root, run `pwd` once at session start and
   remember it; construct all paths from there.
-Observed wt17: the lead engineer hung 64+ minutes after `cd ..`
-escaped the sandbox while trying to inspect the parent; the permission
-prompt never surfaced to the user because the worker is a subagent.
+Observed wt17: the lead engineer hung 64+ minutes after `cd ..` escaped
+the sandbox while trying to inspect the parent; the permission prompt
+never surfaced to the user because the worker is a subagent.
+
+**Relative `..` in file arguments is ALSO forbidden** — even when it
+resolves inside the sandbox. Path resolution follows your *cwd*, and a
+prior `cd` into a worktree makes `../x` ambiguous: the same string
+resolved from the sandbox root is legal but from a worktree points at
+`sandbox/reports` (missing) or outside entirely. Observed wt17 (second
+incident): a worker hung 4+ hours on `cat ../reports/<file>` issued from
+inside a worktree. Rule: from inside a worktree, reference sandbox-root
+files ABSOLUTELY; reserve `..` for nothing. Prefer failing fast with
+`test -f <absolute-path>` before reading.
 
 ## Inline compute (python3 -c is not granted)
 
