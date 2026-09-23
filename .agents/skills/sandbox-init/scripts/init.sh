@@ -329,6 +329,30 @@ fi
 # harness's config file so the game-build session can use them. Configured
 # servers are FAIL-soft: if a render fails we warn but continue (the session
 # can still build via file-based flows).
+
+# 5d. Sandbox path fence (fail-fast, not hang) — harness-specific ----------
+# opencode defaults external_directory to "ask"; subagents cannot surface
+# an ask prompt, so ANY tool touching a path outside the sandbox root
+# (cd .., cat ../x, cp /System/..., glob <repo-root>) hangs the worker
+# forever (four wt17 incidents). Deny-by-default makes those calls fail
+# fast with a visible permission error instead. Narrow read-only
+# carve-outs for system font dirs (asset vendoring, wt17 phil).
+if [ "$HARNESS" = "opencode" ]; then
+  [ -s "$SANDBOX/opencode.json" ] || echo '{}' > "$SANDBOX/opencode.json"
+  jq '.permission = ((.permission // {}) * {
+        external_directory: {
+          "*": "deny",
+          "/System/Library/Fonts/*": "allow",
+          "/Library/Fonts/*": "allow"
+        }
+      })' "$SANDBOX/opencode.json" > "$SANDBOX/opencode.json.tmp" &&
+    mv "$SANDBOX/opencode.json.tmp" "$SANDBOX/opencode.json" ||
+    fail "failed to write sandbox path fence into opencode.json"
+fi
+# Other harnesses (codex, claude): equivalent fencing TBD —
+# .claude/settings.json permissions and codex sandbox configs differ;
+# add per-harness blocks here as they are exercised.
+
 MCP_JSON="$PLUGIN_DIR/mcp.json"
 if [ -f "$MCP_JSON" ] && command -v jq >/dev/null 2>&1; then
   # Use jq to iterate safely (handles server names with spaces)
