@@ -8,7 +8,10 @@ description: >-
   evaluation), and perf (pre-ship performance gate — frame-time and hot-function profiling).
 ---
 
-> **Screenshot workflow:** `godot-mcp-runtime:take_screenshot()` → `read(path)` → write analysis (`Scene`/`Entity`/`Issues`/`Verdict`/`Next`). Do not substitute `godot-mcp-runtime:run_script` structural checks for `read()` — that's a known failure mode. (Screenshots are for aesthetics/layout; STATE reads go through `run_script`/node text — see `reference/live-engine-driving.md`.)
+> **Screenshot workflow:** `godot-mcp-runtime:take_screenshot()` → **mechanical blank-frame gate (BEFORE your own analysis)** → `read(path)` → write analysis (`Scene`/`Entity`/`Issues`/`Verdict`/`Next`). Do not substitute `godot-mcp-runtime:run_script` structural checks for `read()` — that's a known failure mode. (Screenshots are for aesthetics/layout; STATE reads go through `run_script`/node text — see `reference/live-engine-driving.md`.)
+
+> **⚠️ MANDATORY blank-frame gate (wt17 incident — agents HALLUCINATED content onto blank screenshots):**
+> Your visual inspection of low-information frames is UNTRUSTWORTHY: on a uniform dark frame, models describe paddles and balls that are not there. Therefore every screenshot MUST first pass the mechanical gate shipped with this skill (`scripts/visual_gate.gd`; run it via the engine binary: `--headless --script <this-skill>/scripts/visual_gate.gd -- <screenshot.png>`). The gate exits 0 with `VISUAL_PASS` or 1 with `VISUAL_FAIL_BLANK`. On FAIL → **the verdict is REJECT**. Do NOT rationalize ("background window", "render timing", "probably fine"). NOTHING IS RENDERED. File a bug (missing visual nodes is the usual root cause) and stop. Calibration: chromatic-ratio ≥ 1%, dominant-color-share < 98%.
 
 > **Analysis template (write in your response after every screenshot):**
 > ```
@@ -67,7 +70,7 @@ The framework uses genre-agnostic bots (chaos, pursuit, replay, nav_agent) and i
 
 ## Parameters
 
-- **mode**: `"fast-verify"` \| `"scene-verify"` \| `"functional"` \| `"vision"` \| `"critique"`
+- **mode**: `"perf"` \| `"fast-verify"` \| `"scene-verify"` \| `"functional"` \| `"vision"` \| `"critique"`
 - **scene**: Scene path — required for `scene-verify` only (e.g. `"res://scenes/player.tscn"`)
 - **scenario**: Scenario config path — optional, overrides default scenario for mode
 
@@ -115,7 +118,7 @@ REWORK cycle.
 
 3. **Verify invariants:** Report contains `violations[]` array and `metrics` dict. If `violations.is_empty()`, pass. Otherwise, take spot screenshots for each violation type for debugging.
 
-4. **Generate formatted report:** pipe the JSON report file through `./scripts/render_report.py <report.json>` (exit 1 if violations present).
+4. **Generate formatted report:** pipe the JSON report file through this skill's `scripts/render_report.py <report.json>` (exit 1 if violations present).
 
 5. **Finish — teardown (unless engine reuse applies):** Default is
    `godot-mcp-runtime:stop_project()` +
@@ -252,6 +255,6 @@ These run **once per game** (after all tasks complete), not per task — not bef
 
 Full workflows, scenario configs, and report templates: [reference/full-modes.md](reference/full-modes.md). Harness API cheat-sheet (symbols, report shape, path resolution — read instead of test_player.gd): [reference/harness-card.md](reference/harness-card.md).
 
-**Delta-verify (post-fix spot-check):** When re-verifying a *single* fix (bead title contains "fix" or "repair"), extract the affected invariant names from the bead description or the fix's commit message, then run a **minimal scenario** targeting only those invariants (15-30s duration, 3-5 invariants max). Do NOT re-run the full functional gauntlet — that's the qa-gate owner's job (rachel) on the *final* release chain. Delta-verify eliminates the verify→fix→re-verify round-trip (wt13: 60m wasted across 6 sessions).
+**Delta-verify (post-fix spot-check):** When re-verifying a *single* fix (bead title contains "fix" or "repair"), extract the affected invariant names from the bead description or the fix's commit message, then run a **minimal scenario** targeting only those invariants (15-30s duration, 3-5 invariants max). Do NOT re-run the full functional gauntlet — that's the qa-gate owner's job (the QA agent) on the *final* release chain. Delta-verify eliminates the verify→fix→re-verify round-trip (wt13: 60m wasted across 6 sessions).
 
 **Rate-limitation gotcha:** start_test invariants are checked for `duration_s` of gameplay — do not confuse run_script probe timeouts (MCP client-side) with the scenario clock. As of godot-mcp-runtime v3.2.4, long in-engine waits in `run_script` bodies are safe (server heartbeats keep the request alive) — see `../create-entity/reference/mcp-patterns.md`.

@@ -11,7 +11,10 @@ cd "$(dirname "$0")/../../.."
 status=0
 # Engine-specific nouns: file formats, tool names, process commands.
 # Engine-neutral terms ("engine", "runtime", "the engine plugin") are fine.
-pattern='(\.gd\b|\.tscn\b|\.tres\b|\.gdscript\b|run_script|start_test|stop_project|run_project|get_debug_output|simulate_input|take_screenshot|SceneTree|get_tree\(\)|godot )'
+# EXEMPT: shell-command invocations (godot --...) directed at humans,
+# not role-agent instructions. Those are human-workflow docs, not agent
+# persona text.
+pattern='(\.gd\b|\.tscn\b|\.tres\b|\.gdscript\b|run_script|start_test|stop_project|run_project|get_debug_output|simulate_input|take_screenshot|SceneTree|get_tree\(\)|godot [^-])'
 
 for f in agents/*.md; do
   [ -f "$f" ] || continue

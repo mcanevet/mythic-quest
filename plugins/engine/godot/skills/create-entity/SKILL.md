@@ -6,9 +6,23 @@ description: Create Godot entity scenes with scripts. Use when implementing game
 ## What I do
 
 Creates entity scenes and scripts:
-- `.tscn` scene with proper node hierarchy (root + collision shape + script)
+- `.tscn` scene with proper node hierarchy (root + **VISUAL NODE** + collision shape + script)
 - `.gd` script with test hooks (`_on_test_verify()`, `_on_test_get_state()`)
 - Groups for identification (never rely on `.name`)
+
+**VISUAL-NODE INVARIANT (wt17 invisible-game incident — game shipped with physics-only entities):**
+Every interactive entity MUST include a visible rendering node alongside its collision shape. **Never ship a scene that contains only a script + CollisionShape2D.** Choose one:
+- `ColorRect` — simplest; set `offset_*` bounds and `color`
+- `Polygon2D` + `Sprite2D` — for custom shapes or sprites
+- `MeshInstance2D` — for 3D-style effects
+
+The scaffold invariant: after creating an entity, capture a screenshot of
+its scene (playtest scene-verify or a plain engine run) and run the visual
+gate:
+```bash
+godot --headless --script plugins/engine/godot/skills/playtest/scripts/visual_gate.gd -- <path-to-screenshot.png>
+```
+If it returns `VISUAL_FAIL_BLANK` → **the entity has no visible content**. Add a visual node and re-test. Do not rationalize ("it renders in the editor", "collision shapes show in debug") — CollisionShape2D is invisible at runtime.
 
 ## Conventions
 
@@ -80,13 +94,13 @@ canonical schema in [../init-project/reference/testing-patterns.md](../init-proj
 
 ## Done when
 
-`.agents/plugins/engine/godot/skills/create-entity/scripts/validate.sh <res://scenes/....tscn>` runs without
+`plugins/engine/godot/skills/create-entity/scripts/validate.sh <res://scenes/....tscn>` runs without
 errors — it wraps `godot --headless <scene> --quit-after 1` — AND test hooks
 respond AND the entity is integrated into its parent scene (an entity not
 in the scene tree is dead code — integrate via `add_node` under the
 project's Main scene at the plan-specified node path, then confirm via
 `get_scene_tree()` that it appears under its parent). Before runtime
-verification, also run `.agents/plugins/engine/godot/skills/create-entity/scripts/validate.sh` with **no argument** — the
+verification, also run `plugins/engine/godot/skills/create-entity/scripts/validate.sh` with **no argument** — the
 headless project-boot mode (legacy `headless_check.sh` equivalent) catches
 script parse errors across the whole project that single-scene loading
 misses. AND `tests/scenarios/<entity_name>.json` exists for interactive

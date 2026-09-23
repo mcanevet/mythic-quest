@@ -73,6 +73,22 @@ orchestrator, return ONLY the verdict (accept/reject) + the B-hole verdict
 line + the report path. The orchestrator reads the full critique only on
 reject or when evidence is needed.
 
+**Blank-frame falsification rule (MANDATORY, wt17 incident — an invisible
+game was accepted as a "nitpick"):** you receive actual screenshot pixels,
+but on low-information (near-uniform) frames your visual analysis can
+CONFABULATE — describe entities that are not rendered. Therefore:
+1. Every screenshot MUST first pass the mechanical blank-frame gate
+   shipped with the engine plugin's playtest skill.
+2. `VISUAL_FAIL_BLANK` → your verdict is REJECT. A uniformly dark/grey
+   frame means NOTHING IS RENDERING. This is never a nitpick, never
+   "background-window mode", never "render timing". File it as a
+   blocker-grade finding.
+3. Adversarial-evidence rule: any observation that CONTRADICTS your
+   forming verdict (e.g. "the screen is black even during play?") must
+   be resolved or escalate to ⛔ BLOCKED — it may NEVER be footnoted,
+   softened, or listed under "minor nitpicks". If you notice yourself
+   questioning what you see, stop and re-run the mechanical gate.
+
 **Escalation + pre-close discipline**: per worker-common skill
 (`.agents/skills/worker-common/SKILL.md`) — one-pass ⛔ BLOCKED reporting,
 `bd dep add` blocking, `bd children <id>` before any close/resolve.
