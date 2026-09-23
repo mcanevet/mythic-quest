@@ -24,6 +24,8 @@ permission:
     "git add*": allow
     "git -C worktrees/*": allow  # wt16 bkk: worktree commit (git -C form) — scoped to worktree paths only
     "git commit*": allow  # wt16 bkk: commit worktree changes before merge-gate
+    "cp /System/Library/Fonts*": allow  # wt17: vendor system fonts into sandbox (read-only source; avoids subagent permission hang)
+    "cp /Library/Fonts*": allow  # wt17: vendor system fonts into sandbox (read-only source; avoids subagent permission hang)
     "bd ready --assignee phil*": allow  # phil: claim queue
     "bd update*": allow         # phil: claim assigned beads
     "bd --actor*": allow  # worker-common claim/close actor identity

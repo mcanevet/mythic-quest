@@ -172,6 +172,16 @@ Observed wt17: the lead engineer hung 64+ minutes after `cd ..` escaped
 the sandbox while trying to inspect the parent; the permission prompt
 never surfaced to the user because the worker is a subagent.
 
+**Reading external system assets (fonts, icons) triggers the same hang.**
+Any `bash` command whose *source* path lies outside the sandbox
+(`/System/Library/Fonts`, `/Library/Fonts`, etc.) asks permission —
+which a subagent cannot surface. If a profile grants it (e.g. phil's
+`cp /System/Library/Fonts*`), copy the asset INTO the sandbox once and
+reference only the vendored copy thereafter. If not granted, do not
+attempt the copy — substitute a project-local asset or file a blocker.
+Never point engines, importers, or config at absolute paths outside the
+sandbox.
+
 **Relative `..` in file arguments is ALSO forbidden** — even when it
 resolves inside the sandbox. Path resolution follows your *cwd*, and a
 prior `cd` into a worktree makes `../x` ambiguous: the same string
